@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Takeovers{% endblock %}
+
+{% block body %}
+    <h1>Create new Takeovers</h1>
+
+    {{ include('takeovers/_form.html.twig') }}
+
+    <a href="{{ path('app_takeovers_index') }}">back to list</a>
+{% endblock %}

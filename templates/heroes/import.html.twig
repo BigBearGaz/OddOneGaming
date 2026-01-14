@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Importer des héros{% endblock %}
+
+{% block body %}
+<div class="hero-detail-section" style="padding: 100px 0;">
+    <div class="container-custom" style="max-width: 800px; margin: 0 auto;">
+        <h1 style="color: #00ff88; margin-bottom: 30px;">📥 Importer des héros depuis Excel</h1>
+
+        <div style="background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 16px; margin-bottom: 30px;">
+            <h3 style="color: #00ccff; margin-bottom: 15px;">📋 Instructions</h3>
+            <ol style="color: rgba(255, 255, 255, 0.8); line-height: 2;">
+                <li>Télécharge le modèle Excel en cliquant sur "Exporter" dans la liste</li>
+                <li>Remplis le fichier avec tes héros (respecte les colonnes)</li>
+                <li>Enregistre le fichier</li>
+                <li>Upload-le ci-dessous</li>
+            </ol>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" style="background: rgba(255, 255, 255, 0.03); padding: 40px; border-radius: 16px;">
+            <div style="margin-bottom: 20px;">
+                <label style="color: #00ff88; display: block; margin-bottom: 10px; font-weight: 600;">
+                    Sélectionne ton fichier Excel (.xlsx ou .xls)
+                </label>
+                <input type="file" 
+                       name="excel_file" 
+                       accept=".xlsx,.xls" 
+                       required
+                       style="width: 100%; padding: 15px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(0, 255, 136, 0.3); border-radius: 12px; color: white;">
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+                <button type="submit" style="padding: 14px 35px; background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%); color: #0a0e27; border: none; border-radius: 25px; font-weight: 700; cursor: pointer;">
+                    ✅ Importer
+                </button>
+                <a href="{{ path('app_heroes_index') }}" style="padding: 14px 35px; background: rgba(255, 255, 255, 0.1); color: white; border-radius: 25px; text-decoration: none; font-weight: 700; display: inline-block;">
+                    ← Retour
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

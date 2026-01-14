@@ -1,0 +1,667 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ dungeon.name }} - Boss Guide{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Boss Detail Section */
+        .boss-detail-section {
+            position: relative;
+            min-height: 100vh;
+            background: 
+                linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%),
+                url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
+            padding: 180px 0 80px 0;
+        }
+
+        .boss-detail-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 0, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 100, 0, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .container-custom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb-custom {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 82, 82, 0.2);
+        }
+
+        .breadcrumb-link {
+            color: #ff5252;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .breadcrumb-link:hover {
+            color: #ff8a00;
+        }
+
+        .breadcrumb-separator {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .breadcrumb-current {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Layout Grid */
+        .boss-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* Left Sidebar */
+        .boss-sidebar {
+            position: sticky;
+            top: 100px;
+        }
+
+        .boss-info-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 82, 82, 0.3);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .boss-avatar {
+            position: relative;
+            height: 350px;
+            background: linear-gradient(135deg, #ff5252 0%, #ff8a00 100%);
+            overflow: hidden;
+        }
+
+        .boss-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+        }
+
+        .boss-avatar-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 25px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent);
+        }
+
+        .boss-main-name {
+            color: #ff5252;
+            font-size: 2rem;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .boss-id-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .boss-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff5252 0%, #ff8a00 100%);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 5px 20px rgba(255, 82, 82, 0.5);
+        }
+
+        .boss-info-body {
+            padding: 30px;
+        }
+
+        .info-section-title {
+            color: #ff5252;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid;
+        }
+
+        .stat-box-active {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-box-passive {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-box-active .stat-icon {
+            color: #667eea;
+        }
+
+        .stat-box-passive .stat-icon {
+            color: #ffd700;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .action-buttons {
+            display: grid;
+            gap: 12px;
+        }
+
+        .btn-action-sidebar {
+            padding: 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit-sidebar {
+            background: linear-gradient(135deg, #ff5252 0%, #ff8a00 100%);
+            color: #ffffff;
+        }
+
+        .btn-edit-sidebar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 82, 82, 0.4);
+            color: #ffffff;
+        }
+
+        .btn-delete-sidebar {
+            background: rgba(255, 82, 82, 0.2);
+            color: #ff5252;
+            border: 1px solid #ff5252;
+        }
+
+        .btn-delete-sidebar:hover {
+            background: rgba(255, 82, 82, 0.3);
+        }
+
+        .btn-back-sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-back-sidebar:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        /* Right Content */
+        .boss-content {
+            /* No sticky needed */
+        }
+
+        .content-header {
+            margin-bottom: 40px;
+        }
+
+        .content-title {
+            color: #ff5252;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .content-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+        }
+
+        /* Ability Cards */
+        .ability-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid;
+            overflow: hidden;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .ability-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .ability-card-a1 {
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .ability-card-a2 {
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+
+        .ability-card-a3 {
+            border-color: rgba(255, 82, 82, 0.3);
+        }
+
+        .ability-card-passive {
+            border-color: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 15px 50px rgba(255, 215, 0, 0.2);
+        }
+
+        .ability-header {
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ability-header-a1 {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(102, 126, 234, 0.1) 100%);
+        }
+
+        .ability-header-a2 {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3) 0%, rgba(0, 255, 136, 0.1) 100%);
+        }
+
+        .ability-header-a3 {
+            background: linear-gradient(135deg, rgba(255, 82, 82, 0.3) 0%, rgba(255, 82, 82, 0.1) 100%);
+        }
+
+        .ability-header-passive {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
+        }
+
+        .ability-badge {
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .ability-badge-a1 {
+            background: #667eea;
+            color: #ffffff;
+        }
+
+        .ability-badge-a2 {
+            background: #00ff88;
+            color: #0a0e27;
+        }
+
+        .ability-badge-a3 {
+            background: #ff5252;
+            color: #ffffff;
+        }
+
+        .ability-badge-passive {
+            background: #ffd700;
+            color: #0a0e27;
+        }
+
+        .ability-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+            flex: 1;
+        }
+
+        .ability-header-a1 .ability-name {
+            color: #667eea;
+        }
+
+        .ability-header-a2 .ability-name {
+            color: #00ff88;
+        }
+
+        .ability-header-a3 .ability-name {
+            color: #ff5252;
+        }
+
+        .ability-header-passive .ability-name {
+            color: #ffd700;
+        }
+
+        .cooldown-badge {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .ability-body {
+            padding: 30px;
+        }
+
+        .ability-card-passive .ability-body {
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .ability-description {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .ability-card-passive .ability-description {
+            font-weight: 600;
+        }
+
+        /* Tips Box */
+        .tips-box {
+            background: rgba(0, 200, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 200, 255, 0.3);
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        .tips-title {
+            color: #00ccff;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tips-text {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .boss-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .boss-sidebar {
+                position: relative;
+                top: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container-custom {
+                padding: 0 20px;
+            }
+
+            .boss-detail-section {
+                padding: 140px 0 60px 0;
+            }
+
+            .content-title {
+                font-size: 2rem;
+            }
+
+            .boss-avatar {
+                height: 250px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="boss-detail-section">
+        <div class="container-custom">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb-custom">
+                <a href="{{ path('app_dungeons_index') }}" class="breadcrumb-link">
+                    🏠 Bosses
+                </a>
+                <span class="breadcrumb-separator">›</span>
+                <span class="breadcrumb-current">{{ dungeon.name }}</span>
+            </nav>
+
+            <!-- Layout Grid -->
+            <div class="boss-layout">
+                <!-- Left Sidebar -->
+                <aside class="boss-sidebar">
+                    <div class="boss-info-card">
+                        <!-- Boss Avatar -->
+                        <div class="boss-avatar">
+                            <img src="{{ dungeon.imageUrl ? dungeon.imageUrl : 'https://ui-avatars.com/api/?name=' ~ dungeon.name|url_encode ~ '&size=400&background=dc3545&color=fff&bold=true&font-size=0.4' }}" 
+                                 alt="{{ dungeon.name }}">
+                            
+                            <div class="boss-avatar-overlay">
+                                <h2 class="boss-main-name">{{ dungeon.name }}</h2>
+                                <small class="boss-id-label">Boss ID: #{{ dungeon.id }}</small>
+                            </div>
+
+                            <div class="boss-badge">
+                                ⚠️ BOSS
+                            </div>
+                        </div>
+
+                        <!-- Boss Info Body -->
+                        <div class="boss-info-body">
+                            <h5 class="info-section-title">
+                                ℹ️ Boss Info
+                            </h5>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-box stat-box-active">
+                                    <div class="stat-icon">⚡</div>
+                                    <h6 class="stat-label">3 Active Skills</h6>
+                                </div>
+                                <div class="stat-box stat-box-passive">
+                                    <div class="stat-icon">⭐</div>
+                                    <h6 class="stat-label">
+                                        {% set passive_count = 0 %}
+                                        {% if dungeon.passif %}{% set passive_count = passive_count + 1 %}{% endif %}
+                                        {% if dungeon.passif2 %}{% set passive_count = passive_count + 1 %}{% endif %}
+                                        {% if dungeon.passif3 %}{% set passive_count = passive_count + 1 %}{% endif %}
+                                        {% if dungeon.passif4 %}{% set passive_count = passive_count + 1 %}{% endif %}
+                                        {{ passive_count }} Passive{{ passive_count > 1 ? 's' : '' }}
+                                    </h6>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <a href="{{ path('app_dungeons_edit', {'id': dungeon.id}) }}" class="btn-action-sidebar btn-edit-sidebar">
+                                    ✏️ Edit Boss
+                                </a>
+                                {{ include('dungeons/_delete_form.html.twig') }}
+                                <a href="{{ path('app_dungeons_index') }}" class="btn-action-sidebar btn-back-sidebar">
+                                    ← Back to List
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Right Content -->
+                <main class="boss-content">
+                    <!-- Content Header -->
+                    <div class="content-header">
+                        <h1 class="content-title">
+                            📖 Boss Abilities Guide
+                        </h1>
+                        <p class="content-subtitle">
+                            Complete breakdown of {{ dungeon.name }}'s skills and mechanics
+                        </p>
+                    </div>
+
+                    <!-- Spell 1 - Basic Attack -->
+                    {% if dungeon.spell1 %}
+                    <div class="ability-card ability-card-a1">
+                        <div class="ability-header ability-header-a1">
+                            <span class="ability-badge ability-badge-a1">A1</span>
+                            <h3 class="ability-name">{{ dungeon.spell1Name ? dungeon.spell1Name : 'Basic Attack' }}</h3>
+                        </div>
+                        <div class="ability-body">
+                            <p class="ability-description">{{ dungeon.spell1 }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Spell 2 - Core Attack -->
+                    {% if dungeon.spell2 %}
+                    <div class="ability-card ability-card-a2">
+                        <div class="ability-header ability-header-a2">
+                            <span class="ability-badge ability-badge-a2">A2</span>
+                            <h3 class="ability-name">{{ dungeon.spell2Name ? dungeon.spell2Name : 'Core Attack' }}</h3>
+                            {% if dungeon.spell2Cooldown %}
+                                <span class="cooldown-badge">⏱️ {{ dungeon.spell2Cooldown }} turn{{ dungeon.spell2Cooldown > 1 ? 's' : '' }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="ability-body">
+                            <p class="ability-description">{{ dungeon.spell2 }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Spell 3 - Ultimate Attack -->
+                    {% if dungeon.spell3 %}
+                    <div class="ability-card ability-card-a3">
+                        <div class="ability-header ability-header-a3">
+                            <span class="ability-badge ability-badge-a3">A3</span>
+                            <h3 class="ability-name">{{ dungeon.spell3Name ? dungeon.spell3Name : 'Ultimate Attack' }}</h3>
+                            {% if dungeon.spell3Cooldown %}
+                                <span class="cooldown-badge">⏱️ {{ dungeon.spell3Cooldown }} turn{{ dungeon.spell3Cooldown > 1 ? 's' : '' }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="ability-body">
+                            <p class="ability-description">{{ dungeon.spell3 }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Passive Abilities -->
+                    {% if dungeon.passif %}
+                    <div class="ability-card ability-card-passive">
+                        <div class="ability-header ability-header-passive">
+                            <span class="ability-badge ability-badge-passive">⭐</span>
+                            <h3 class="ability-name">Passive Ability</h3>
+                        </div>
+                        <div class="ability-body">
+                            <p class="ability-description">{{ dungeon.passif }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if dungeon.passif2 %}
+                    <div class="ability-card ability-card-passive">
+                        <div class="ability-header ability-header-passive">
+                            <span class="ability-badge ability-badge-passive">⭐</span>
+                            <h3 class="ability-name">Passive Ability 2</h3>
+                        </div>
+                        <div class="ability-body">
+                            <p class="ability-description">{{ dungeon.passif2 }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if dungeon.passif3 %}
+                    <div class="ability-card ability-card-passive">
+                        <div class="ability-header ability-header-passive">
+                            <span class="ability-badge ability-badge-passive">⭐</span>
+                            <h3 class="ability-name">Passive Ability 3</h3>
+                        </div>
+                        <div class="ability-body">
+                            <p class="ability-description">{{ dungeon.passif3 }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if dungeon.passif4 %}
+                    <div class="ability-card ability-card-passive">
+                        <div class="ability-header ability-header-passive">
+                            <span class="ability-badge ability-badge-passive">⭐</span>
+                            <h3 class="ability-name">Passive Ability 4</h3>
+                        </div>
+                        <div class="ability-body">
+                            <p class="ability-description">{{ dungeon.passif4 }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Tips Box -->
+                    <div class="tips-box">
+                        <h6 class="tips-title">
+                            💡 Strategy Tips
+                        </h6>
+                        <p class="tips-text">
+                            Study these abilities carefully to build an effective counter-team. 
+                            Pay special attention to the passive abilities as they often define the boss's core mechanics.
+                        </p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}

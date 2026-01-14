@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Heroes{% endblock %}
+
+{% block body %}
+    <h1>Edit Heroes</h1>
+
+    {{ include('heroes/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_heroes_index') }}">back to list</a>
+
+    {{ include('heroes/_delete_form.html.twig') }}
+{% endblock %}

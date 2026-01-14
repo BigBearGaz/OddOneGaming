@@ -1,0 +1,21 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+<div class="form-grid">
+    {% for field in form %}
+        {% if field.vars.name not in ['_token'] %}
+            <div class="form-group-custom {{ field.vars.block_prefixes[1] == 'textarea' ? 'form-grid-full' : '' }}">
+                {{ form_label(field, null, {'label_attr': {'class': 'form-label-custom' ~ (field.vars.required ? ' required' : '')}}) }}
+                {{ form_widget(field, {'attr': {'class': 'form-control-custom'}}) }}
+                {{ form_errors(field, {'attr': {'class': 'form-error'}}) }}
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<div class="form-actions">
+    <button type="submit" class="btn-custom btn-primary-custom">
+        💾 {{ dungeon is defined and dungeon.id ? 'Mettre à jour' : 'Créer le donjon' }}
+    </button>
+</div>
+
+{{ form_end(form) }}

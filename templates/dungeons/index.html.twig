@@ -1,0 +1,543 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dungeon Bosses - OddOne Gaming{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Dungeons Section */
+        .dungeons-section {
+            position: relative;
+            min-height: 100vh;
+            background: 
+                linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%),
+                url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
+            padding: 180px 0 80px 0;
+        }
+
+        .dungeons-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 0, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 100, 0, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .container-custom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff5252 0%, #ff8a00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+        }
+
+        .add-boss-btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #ff5252 0%, #ff8a00 100%);
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(255, 82, 82, 0.4);
+        }
+
+        .add-boss-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 82, 82, 0.6);
+            color: #ffffff;
+        }
+
+        /* Bosses Grid */
+        .bosses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(550px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        /* Boss Card */
+        .boss-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 82, 82, 0.3);
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .boss-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 82, 82, 0.6);
+            box-shadow: 0 20px 60px rgba(255, 82, 82, 0.3);
+        }
+
+        .boss-header {
+            background: linear-gradient(135deg, rgba(255, 82, 82, 0.3) 0%, rgba(255, 138, 0, 0.3) 100%);
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255, 82, 82, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .boss-name {
+            color: #ff5252;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .boss-id {
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .boss-body {
+            padding: 25px;
+        }
+
+        /* Spell Cards */
+        .spell-card {
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .spell-card:hover {
+            transform: translateX(5px);
+        }
+
+        .spell-card-spell1 {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+
+        .spell-card-spell2 {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: #00ff88;
+        }
+
+        .spell-card-spell3 {
+            background: rgba(255, 82, 82, 0.1);
+            border-color: #ff5252;
+        }
+
+        .spell-card-passive {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: #ffd700;
+        }
+
+        .spell-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .spell-badge {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .spell-badge-a1 {
+            background: #667eea;
+            color: #ffffff;
+        }
+
+        .spell-badge-a2 {
+            background: #00ff88;
+            color: #0a0e27;
+        }
+
+        .spell-badge-a3 {
+            background: #ff5252;
+            color: #ffffff;
+        }
+
+        .spell-badge-passive {
+            background: #ffd700;
+            color: #0a0e27;
+        }
+
+        .spell-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .spell-card-spell1 .spell-name {
+            color: #667eea;
+        }
+
+        .spell-card-spell2 .spell-name {
+            color: #00ff88;
+        }
+
+        .spell-card-spell3 .spell-name {
+            color: #ff5252;
+        }
+
+        .spell-card-passive .spell-name {
+            color: #ffd700;
+        }
+
+        .spell-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .boss-footer {
+            padding: 20px 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 82, 82, 0.2);
+        }
+
+        .boss-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-action {
+            padding: 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-details {
+            background: linear-gradient(135deg, #ff5252 0%, #ff8a00 100%);
+            color: #ffffff;
+        }
+
+        .btn-details:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 82, 82, 0.4);
+            color: #ffffff;
+        }
+
+        .btn-edit {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-edit:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ff5252;
+            color: #ff5252;
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 82, 82, 0.2);
+            padding: 60px 40px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .empty-title {
+            color: #ff5252;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .empty-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid;
+            padding: 35px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card:nth-child(1) {
+            border-color: rgba(255, 82, 82, 0.3);
+        }
+
+        .stat-card:nth-child(2) {
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-card:nth-child(3) {
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .stat-card:nth-child(1) .stat-icon {
+            color: #ff5252;
+        }
+
+        .stat-card:nth-child(2) .stat-icon {
+            color: #667eea;
+        }
+
+        .stat-card:nth-child(3) .stat-icon {
+            color: #ffd700;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .stat-card:nth-child(1) .stat-value {
+            color: #ff5252;
+        }
+
+        .stat-card:nth-child(2) .stat-value {
+            color: #667eea;
+        }
+
+        .stat-card:nth-child(3) .stat-value {
+            color: #ffd700;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container-custom {
+                padding: 0 20px;
+            }
+
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .bosses-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+
+            .boss-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="dungeons-section">
+        <div class="container-custom">
+            <!-- Header -->
+            <div class="page-header">
+                <h1 class="page-title">🏆 Dungeon Bosses</h1>
+                <p class="page-subtitle">RAID Shadow Legends - Boss Abilities Guide</p>
+                <a href="{{ path('app_dungeons_new') }}" class="add-boss-btn">
+                    ➕ Add New Boss
+                </a>
+            </div>
+
+            <!-- Bosses Grid -->
+            <div class="bosses-grid">
+                {% for dungeon in dungeons %}
+                    <div class="boss-card">
+                        <!-- Header -->
+                        <div class="boss-header">
+                            <h3 class="boss-name">
+                                🛡️ {{ dungeon.name }}
+                            </h3>
+                            <span class="boss-id">#{{ dungeon.id }}</span>
+                        </div>
+
+                        <!-- Body with Spells -->
+                        <div class="boss-body">
+                            <!-- Spell 1 -->
+                            <div class="spell-card spell-card-spell1">
+                                <div class="spell-header">
+                                    <span class="spell-badge spell-badge-a1">A1</span>
+                                    <span class="spell-name">Primary Attack</span>
+                                </div>
+                                <div class="spell-description">{{ dungeon.spell1 }}</div>
+                            </div>
+
+                            <!-- Spell 2 -->
+                            <div class="spell-card spell-card-spell2">
+                                <div class="spell-header">
+                                    <span class="spell-badge spell-badge-a2">A2</span>
+                                    <span class="spell-name">Secondary Attack</span>
+                                </div>
+                                <div class="spell-description">{{ dungeon.spell2 }}</div>
+                            </div>
+
+                            <!-- Spell 3 -->
+                            <div class="spell-card spell-card-spell3">
+                                <div class="spell-header">
+                                    <span class="spell-badge spell-badge-a3">A3</span>
+                                    <span class="spell-name">Ultimate Attack</span>
+                                </div>
+                                <div class="spell-description">{{ dungeon.spell3 }}</div>
+                            </div>
+
+                            <!-- Passive -->
+                            <div class="spell-card spell-card-passive">
+                                <div class="spell-header">
+                                    <span class="spell-badge spell-badge-passive">⭐</span>
+                                    <span class="spell-name">Passive Ability</span>
+                                </div>
+                                <div class="spell-description">{{ dungeon.passif }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="boss-footer">
+                            <div class="boss-actions">
+                                <a href="{{ path('app_dungeons_show', {'id': dungeon.id}) }}" class="btn-action btn-details">
+                                    👁️ Details
+                                </a>
+                                <a href="{{ path('app_dungeons_edit', {'id': dungeon.id}) }}" class="btn-action btn-edit">
+                                    ✏️ Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">🏰</div>
+                        <h3 class="empty-title">No Dungeon Bosses Found</h3>
+                        <p class="empty-text">Start by adding your first boss</p>
+                        <a href="{{ path('app_dungeons_new') }}" class="add-boss-btn">
+                            ➕ Create Boss
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Stats Section -->
+            {% if dungeons|length > 0 %}
+            <div class="stats-section">
+                <!-- Total Bosses -->
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value">{{ dungeons|length }}</div>
+                    <div class="stat-label">Total Bosses</div>
+                </div>
+
+                <!-- Active Abilities -->
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value">{{ dungeons|length * 3 }}</div>
+                    <div class="stat-label">Active Abilities</div>
+                </div>
+
+                <!-- Passive Abilities -->
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-value">{{ dungeons|length }}</div>
+                    <div class="stat-label">Passive Abilities</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}

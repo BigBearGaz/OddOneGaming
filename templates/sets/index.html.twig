@@ -1,0 +1,478 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Armor Sets - Godforge{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+            min-height: 100vh;
+            padding-top: 100px;
+        }
+
+        .sets-section {
+            padding: 50px 20px;
+            min-height: calc(100vh - 100px);
+        }
+
+        .sets-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.2rem;
+        }
+
+        /* Equipment Stats Section - VERSION JEU */
+        .equipment-stats-section {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 40px;
+            margin-bottom: 50px;
+        }
+
+        .equipment-stats-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            justify-content: center;
+        }
+
+        .equipment-stats-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        /* Grille d'inventaire */
+        .equipment-inventory {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .equipment-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Slot d'équipement */
+        .equipment-slot {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .equipment-slot::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffd700, transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .equipment-slot:hover {
+            transform: translateX(5px);
+            border-color: rgba(255, 215, 0, 0.6);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .equipment-slot:hover::before {
+            opacity: 1;
+        }
+
+        .slot-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+        }
+
+        .slot-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffd700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .slot-stats-inline {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            line-height: 1.8;
+            font-weight: 600;
+        }
+
+        /* Animation sur le hover de la colonne */
+        .equipment-column:hover .equipment-slot {
+            opacity: 0.6;
+        }
+
+        .equipment-column .equipment-slot:hover {
+            opacity: 1;
+        }
+
+        /* Armor Sets Grid */
+        .armor-sets-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .armor-sets-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .sets-count {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+        }
+
+        .sets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .set-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .set-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ffd700, transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .set-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 215, 0, 0.5);
+            box-shadow: 0 15px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        .set-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Set Image */
+        .set-image-container {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 237, 78, 0.1) 100%);
+        }
+
+        .set-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .set-card:hover .set-image {
+            transform: scale(1.1);
+        }
+
+        .set-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 237, 78, 0.1) 100%);
+        }
+
+        /* Set Content */
+        .set-content {
+            padding: 25px;
+        }
+
+        .set-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .set-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .set-bonus-section {
+            margin-bottom: 15px;
+        }
+
+        .bonus-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 215, 0, 0.15);
+            color: #ffd700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .bonus-2piece {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4caf50;
+        }
+
+        .bonus-4piece {
+            background: rgba(33, 150, 243, 0.15);
+            color: #2196f3;
+        }
+
+        .bonus-6piece {
+            background: rgba(156, 39, 176, 0.15);
+            color: #9c27b0;
+        }
+
+        .bonus-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            padding-left: 10px;
+        }
+
+        .set-divider {
+            border: none;
+            height: 1px;
+            background: rgba(255, 215, 0, 0.2);
+            margin: 15px 0;
+        }
+
+        .no-bonus {
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .sets-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .equipment-inventory {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .equipment-slot {
+                padding: 15px;
+            }
+
+            .slot-icon {
+                font-size: 2rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="sets-section">
+    <div class="sets-container">
+        {# Header #}
+        <div class="page-header">
+            <h1 class="page-title">🛡️ Armor Sets & Equipment</h1>
+            <p class="page-subtitle">Découvrez tous les sets d'armure et leurs bonus</p>
+        </div>
+
+        {# Equipment Stats Section - VERSION JEU #}
+        {% if equipment_stats %}
+            <div class="equipment-stats-section">
+                <div class="equipment-stats-header">
+                    <span style="font-size: 2.5rem;">⚙️</span>
+                    <h2 class="equipment-stats-title">Statistiques d'Équipement</h2>
+                </div>
+
+                <div class="equipment-inventory">
+                    {# Colonne gauche #}
+                    <div class="equipment-column left-column">
+                        {# Helmet #}
+                        <div class="equipment-slot">
+                            <div class="slot-icon">🪖</div>
+                            <div class="slot-label">Helmet</div>
+                            <div class="slot-stats-inline">{{ equipment_stats.helmet }}</div>
+                        </div>
+
+                        {# Pauldrons #}
+                        <div class="equipment-slot">
+                            <div class="slot-icon">🦾</div>
+                            <div class="slot-label">Pauldrons</div>
+                            <div class="slot-stats-inline">{{ equipment_stats.pauldrons }}</div>
+                        </div>
+
+                        {# Chest #}
+                        <div class="equipment-slot">
+                            <div class="slot-icon">🦺</div>
+                            <div class="slot-label">Chest</div>
+                            <div class="slot-stats-inline">{{ equipment_stats.chest }}</div>
+                        </div>
+                    </div>
+
+                    {# Colonne droite #}
+                    <div class="equipment-column right-column">
+                        {# Gauntlets #}
+                        <div class="equipment-slot">
+                            <div class="slot-icon">🧤</div>
+                            <div class="slot-label">Gauntlets</div>
+                            <div class="slot-stats-inline">{{ equipment_stats.gauntlets }}</div>
+                        </div>
+
+                        {# Legs #}
+                        <div class="equipment-slot">
+                            <div class="slot-icon">🦵</div>
+                            <div class="slot-label">Legs</div>
+                            <div class="slot-stats-inline">{{ equipment_stats.legs }}</div>
+                        </div>
+
+                        {# Boots #}
+                        <div class="equipment-slot">
+                            <div class="slot-icon">👢</div>
+                            <div class="slot-label">Boots</div>
+                            <div class="slot-stats-inline">{{ equipment_stats.boots }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {# Armor Sets Section #}
+        <div class="armor-sets-header">
+            <span style="font-size: 2.5rem;">🛡️</span>
+            <h2 class="armor-sets-title">Armor Sets</h2>
+            <span class="sets-count">({{ armor_sets|length }} sets disponibles)</span>
+        </div>
+
+        <div class="sets-grid">
+            {% for set in armor_sets %}
+                <div class="set-card">
+                    {# Image du set #}
+                    <div class="set-image-container">
+                        {% if set.imageUrl %}
+                            <img src="{{ set.imageUrl }}" alt="{{ set.name }}" class="set-image">
+                        {% else %}
+                            <div class="set-image-placeholder">
+                                🛡️
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Contenu du set #}
+                    <div class="set-content">
+                        <div class="set-header">
+                            <h3 class="set-name">{{ set.name }}</h3>
+                        </div>
+
+                        {# 2-Piece Bonus #}
+                        <div class="set-bonus-section">
+                            <div class="bonus-label bonus-2piece">
+                                <span>🔹</span> 2-Piece
+                            </div>
+                            <div class="bonus-description">
+                                {{ set.two }}
+                            </div>
+                        </div>
+
+                        {# 4-Piece Bonus #}
+                        {% if set.four %}
+                            <hr class="set-divider">
+                            <div class="set-bonus-section">
+                                <div class="bonus-label bonus-4piece">
+                                    <span>🔷</span> 4-Piece
+                                </div>
+                                <div class="bonus-description">
+                                    {{ set.four }}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {# 6-Piece Bonus #}
+                        {% if set.six %}
+                            <hr class="set-divider">
+                            <div class="set-bonus-section">
+                                <div class="bonus-label bonus-6piece">
+                                    <span>💎</span> 6-Piece
+                                </div>
+                                <div class="bonus-description">
+                                    {{ set.six }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: rgba(255, 255, 255, 0.6);">
+                    <p style="font-size: 1.5rem;">Aucun set d'armure disponible</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

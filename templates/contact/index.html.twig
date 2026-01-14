@@ -1,0 +1,658 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact - OddOne Gaming{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            position: relative;
+            height: 100vh;
+            background: 
+                linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%),
+                url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
+            padding: 120px 40px 20px 40px;
+            overflow: hidden;
+        }
+
+        .contact-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 100, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .contact-header {
+            text-align: center;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .contact-title {
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.5));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(0, 255, 136, 0.8));
+            }
+        }
+
+        .contact-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.05rem;
+            line-height: 1.4;
+            max-width: 700px;
+            margin: 0 auto 6px;
+        }
+
+        .contact-tagline {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        /* Contact Grid */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            flex: 1;
+            align-items: stretch;
+        }
+
+        /* Contact Card */
+        .contact-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(30px);
+            border-radius: 18px;
+            border: 2px solid;
+            padding: 18px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.4s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .contact-card:hover::before {
+            left: 100%;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+        }
+
+        /* YouTube Cards */
+        .contact-card.youtube-main {
+            border-color: rgba(255, 0, 0, 0.5);
+        }
+
+        .contact-card.youtube-main:hover {
+            border-color: #ff0000;
+            box-shadow: 0 25px 70px rgba(255, 0, 0, 0.4);
+        }
+
+        .contact-card.youtube-second {
+            border-color: rgba(255, 68, 68, 0.5);
+        }
+
+        .contact-card.youtube-second:hover {
+            border-color: #ff4444;
+            box-shadow: 0 25px 70px rgba(255, 68, 68, 0.4);
+        }
+
+        /* Twitch Card */
+        .contact-card.twitch {
+            border-color: rgba(145, 70, 255, 0.5);
+        }
+
+        .contact-card.twitch:hover {
+            border-color: #9146ff;
+            box-shadow: 0 25px 70px rgba(145, 70, 255, 0.4);
+        }
+
+        .contact-card.twitch.live {
+            border-color: #9146ff;
+            animation: livePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% {
+                box-shadow: 0 20px 60px rgba(145, 70, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 25px 70px rgba(145, 70, 255, 0.7);
+            }
+        }
+
+        /* Email Card */
+        .contact-card.email {
+            border-color: rgba(0, 255, 136, 0.5);
+        }
+
+        .contact-card.email:hover {
+            border-color: #00ff88;
+            box-shadow: 0 25px 70px rgba(0, 255, 136, 0.4);
+        }
+
+        /* Card Icon */
+        .card-icon-wrapper {
+            width: 65px;
+            height: 65px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.3rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .contact-card:hover .card-icon-wrapper {
+            transform: scale(1.1) rotateZ(5deg);
+        }
+
+        .youtube-main .card-icon-wrapper {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+        }
+
+        .youtube-second .card-icon-wrapper {
+            background: linear-gradient(135deg, #ff4444 0%, #ff0000 100%);
+        }
+
+        .twitch .card-icon-wrapper {
+            background: linear-gradient(135deg, #9146ff 0%, #772ce8 100%);
+        }
+
+        .email .card-icon-wrapper {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+        }
+
+        /* Live Indicator */
+        .live-indicator {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #ff0000;
+            border-radius: 50%;
+            border: 3px solid rgba(10, 14, 39, 0.95);
+            animation: liveBlip 1.5s ease-in-out infinite;
+        }
+
+        @keyframes liveBlip {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+            }
+        }
+
+        /* Card Content */
+        .card-content {
+            text-align: center;
+            flex: 1;
+        }
+
+        .card-platform {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .youtube-main .card-title {
+            color: #ff0000;
+        }
+
+        .youtube-second .card-title {
+            color: #ff4444;
+        }
+
+        .twitch .card-title {
+            color: #9146ff;
+        }
+
+        .email .card-title {
+            color: #00ff88;
+        }
+
+        .card-handle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+
+        .card-description {
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.4;
+            font-size: 0.82rem;
+        }
+
+        /* Live Badge */
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #ff0000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            animation: liveBadgePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes liveBadgePulse {
+            0%, 100% {
+                background: rgba(255, 0, 0, 0.2);
+            }
+            50% {
+                background: rgba(255, 0, 0, 0.3);
+            }
+        }
+
+        .live-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #ff0000;
+            border-radius: 50%;
+            animation: liveBlip 1.5s ease-in-out infinite;
+        }
+
+        .live-stream-title {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.3;
+            max-height: 2.6em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .live-viewers {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        /* Card Button */
+        .card-button {
+            padding: 9px 22px;
+            border-radius: 11px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .youtube-main .card-button {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            color: #ffffff;
+        }
+
+        .youtube-second .card-button {
+            background: linear-gradient(135deg, #ff4444 0%, #ff0000 100%);
+            color: #ffffff;
+        }
+
+        .twitch .card-button {
+            background: linear-gradient(135deg, #9146ff 0%, #772ce8 100%);
+            color: #ffffff;
+        }
+
+        .twitch.live .card-button {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            animation: liveButtonPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes liveButtonPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .email .card-button {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
+        }
+
+        .card-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .contact-section {
+                padding: 120px 20px 20px 20px;
+            }
+
+            .contact-title {
+                font-size: 2.2rem;
+            }
+
+            .contact-subtitle {
+                font-size: 1rem;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .contact-card {
+                padding: 20px;
+            }
+
+            .card-icon-wrapper {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+
+            .card-title {
+                font-size: 1.2rem;
+            }
+
+            .card-description {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="contact-section">
+        <div class="container-custom">
+            <!-- Header -->
+            <div class="contact-header">
+                <h1 class="contact-title">Let's Connect</h1>
+                <p class="contact-subtitle">
+                    Full time content creator covering Godforge & Dragonheir: Silent Gods
+                </p>
+                <p class="contact-tagline">
+                    Available for collaborations, sponsorships & partnerships
+                </p>
+            </div>
+
+            <!-- Contact Grid -->
+            <div class="contact-grid">
+                <!-- YouTube Main Channel -->
+                <a href="https://www.youtube.com/channel/UCA7t5xp8OEfRSXo355JJ1dg" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="contact-card youtube-main">
+                    <div class="card-icon-wrapper">
+                        📺
+                    </div>
+                    <div class="card-content">
+                        <div class="card-platform">YouTube</div>
+                        <h2 class="card-title">Main Channel</h2>
+                        <div class="card-handle">@OddOneGaming</div>
+                        <p class="card-description">
+                            In-depth guides, tier lists, and gameplay for Godforge & Dragonheir
+                        </p>
+                    </div>
+                    <div class="card-button">
+                        Watch Now →
+                    </div>
+                </a>
+
+                <!-- YouTube Second Channel -->
+                <a href="https://www.youtube.com/channel/UC1ivUEf_poI9_R2eVKa8wRQ" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="contact-card youtube-second">
+                    <div class="card-icon-wrapper">
+                        🎬
+                    </div>
+                    <div class="card-content">
+                        <div class="card-platform">YouTube</div>
+                        <h2 class="card-title">Second Channel</h2>
+                        <div class="card-handle">@OddOneGaming Alt</div>
+                        <p class="card-description">
+                            Alternative content, live streams, and behind the scenes
+                        </p>
+                    </div>
+                    <div class="card-button">
+                        Subscribe →
+                    </div>
+                </a>
+
+                <!-- Twitch -->
+                <a href="https://www.twitch.tv/rikbor_le_barbu" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="contact-card twitch"
+                   id="twitch-card">
+                    <div class="card-icon-wrapper">
+                        🎮
+                        <span class="live-indicator" id="live-indicator" style="display: none;"></span>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-platform">Twitch</div>
+                        <h2 class="card-title">Live Streams</h2>
+                        <div class="card-handle">@rikbor_le_barbu</div>
+                        <div id="live-info" style="display: none;">
+                            <div class="live-badge">🔴 Live Now</div>
+                            <div class="live-stream-title" id="stream-title"></div>
+                            <div class="live-viewers" id="viewer-count"></div>
+                        </div>
+                        <p class="card-description" id="default-description">
+                            Catch me live streaming gameplay, Q&A sessions, and community events
+                        </p>
+                    </div>
+                    <div class="card-button" id="twitch-button">
+                        <span id="button-text">Follow</span> →
+                    </div>
+                </a>
+
+                <!-- Business Email -->
+                <a href="mailto:OddOneGaming@a2zinfluencers.com" 
+                   class="contact-card email">
+                    <div class="card-icon-wrapper">
+                        💼
+                    </div>
+                    <div class="card-content">
+                        <div class="card-platform">Business Inquiries</div>
+                        <h2 class="card-title">Get In Touch</h2>
+                        <div class="card-handle">OddOneGaming@a2zinfluencers.com</div>
+                        <p class="card-description">
+                            For collaborations, sponsorships, and professional partnerships
+                        </p>
+                    </div>
+                    <div class="card-button">
+                        Email Me →
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    <script>
+        // Configuration Twitch
+        const TWITCH_USERNAME = 'rikbor_le_barbu';
+
+        async function checkTwitchStream() {
+            try {
+                // Utilisation d'une API proxy gratuite qui ne nécessite pas d'authentification
+                const response = await fetch(`https://decapi.me/twitch/uptime/${TWITCH_USERNAME}`);
+                const data = await response.text();
+                
+                // Si le stream est offline, l'API retourne un message d'erreur
+                if (data.includes('offline') || data.includes('error') || !data || data.length < 5) {
+                    updateTwitchCard(false);
+                } else {
+                    // Le stream est live, récupérer les infos supplémentaires
+                    const [titleResponse, viewersResponse] = await Promise.all([
+                        fetch(`https://decapi.me/twitch/title/${TWITCH_USERNAME}`),
+                        fetch(`https://decapi.me/twitch/viewercount/${TWITCH_USERNAME}`)
+                    ]);
+                    
+                    const title = await titleResponse.text();
+                    const viewers = await viewersResponse.text();
+                    
+                    updateTwitchCard(true, {
+                        title: title || 'Live Stream',
+                        viewer_count: parseInt(viewers) || 0
+                    });
+                }
+            } catch (error) {
+                console.error('Error checking Twitch stream:', error);
+                updateTwitchCard(false);
+            }
+        }
+
+        function updateTwitchCard(isLive, streamData = null) {
+            const card = document.getElementById('twitch-card');
+            const liveIndicator = document.getElementById('live-indicator');
+            const liveInfo = document.getElementById('live-info');
+            const defaultDescription = document.getElementById('default-description');
+            const buttonText = document.getElementById('button-text');
+
+            if (isLive && streamData) {
+                // Ajouter la classe "live"
+                card.classList.add('live');
+                
+                // Afficher l'indicateur live
+                liveIndicator.style.display = 'block';
+                
+                // Afficher les infos du stream
+                liveInfo.style.display = 'block';
+                defaultDescription.style.display = 'none';
+                
+                // Mettre à jour le titre du stream
+                document.getElementById('stream-title').textContent = streamData.title;
+                
+                // Mettre à jour le nombre de viewers
+                const viewerCount = streamData.viewer_count.toLocaleString();
+                document.getElementById('viewer-count').innerHTML = `👁️ ${viewerCount} viewers`;
+                
+                // Changer le texte du bouton
+                buttonText.textContent = 'Watch Live';
+            } else {
+                // Retirer la classe "live"
+                card.classList.remove('live');
+                
+                // Masquer l'indicateur live
+                liveIndicator.style.display = 'none';
+                
+                // Masquer les infos du stream
+                liveInfo.style.display = 'none';
+                defaultDescription.style.display = 'block';
+                
+                // Remettre le texte du bouton par défaut
+                buttonText.textContent = 'Follow';
+            }
+        }
+
+        // Vérifier le statut au chargement de la page
+        checkTwitchStream();
+
+        // Vérifier le statut toutes les 2 minutes
+        setInterval(checkTwitchStream, 120000);
+    </script>
+{% endblock %}
