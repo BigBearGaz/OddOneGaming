@@ -6,7 +6,6 @@
     {{ parent() }}
     {{ encore_entry_link_tags('app') }}
     <style>
-        /* Reset */
         * {
             margin: 0;
             padding: 0;
@@ -15,21 +14,16 @@
 
         body {
             overflow-x: hidden;
-        }
-
-        /* Hero Section avec fond château */
-        .heroes-section {
-            position: relative;
-            min-height: 100vh;
             background: 
                 linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%),
                 url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
-            padding: 180px 0 80px 0;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
         }
 
-        .heroes-section::before {
+        body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
@@ -38,6 +32,14 @@
                 radial-gradient(circle at 20% 50%, rgba(0, 255, 100, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.08) 0%, transparent 50%);
             pointer-events: none;
+            z-index: 0;
+        }
+
+        .heroes-section {
+            position: relative;
+            min-height: 100vh;
+            padding: 180px 0 80px 0;
+            z-index: 1;
         }
 
         .container-custom {
@@ -48,7 +50,6 @@
             z-index: 2;
         }
 
-        /* Header */
         .page-header {
             text-align: center;
             margin-bottom: 50px;
@@ -66,36 +67,19 @@
             letter-spacing: -1px;
         }
 
-        .add-hero-btn {
-            display: inline-block;
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
-            color: #0a0e27;
-            font-size: 1rem;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
-        }
-
-        .add-hero-btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.5);
-            color: #0a0e27;
-        }
-
-        /* Filters Card */
         .filters-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 35px;
             border: 1px solid rgba(0, 255, 136, 0.2);
+            padding: 35px;
             margin-bottom: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+        }
+
+        .filters-card:hover {
+            border-color: rgba(0, 255, 136, 0.4);
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.2);
         }
 
         .filters-header {
@@ -109,34 +93,42 @@
         }
 
         .filter-group {
-            margin-bottom: 20px;
+            margin-bottom: 0;
         }
 
         .filter-label {
             display: block;
-            color: #00ff88;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
         }
 
         .filter-select {
             width: 100%;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            border-radius: 10px;
+            padding: 0.875rem 1.25rem;
+            font-size: 1rem;
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.05);
             color: #ffffff;
-            font-size: 0.95rem;
             transition: all 0.3s ease;
             cursor: pointer;
+        }
+
+        .filter-select:hover {
+            border-color: rgba(0, 255, 136, 0.3);
+            background-color: rgba(255, 255, 255, 0.08);
         }
 
         .filter-select:focus {
             outline: none;
             border-color: #00ff88;
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1),
+                        0 8px 25px rgba(0, 255, 136, 0.15);
         }
 
         .filter-select option {
@@ -146,71 +138,212 @@
 
         .filters-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 25px;
+        }
+
+        .filter-checkboxes-section {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-checkboxes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .accordion-filter {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .accordion-filter:hover {
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+
+        .accordion-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 255, 136, 0.05);
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .accordion-header:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .accordion-header.active {
+            background: rgba(0, 255, 136, 0.15);
+        }
+
+        .accordion-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #00ff88;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .accordion-icon {
+            color: #00ff88;
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-body.active {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .accordion-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .accordion-body::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .accordion-body::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+        }
+
+        .accordion-body::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 255, 136, 0.5);
+        }
+
+        .checkbox-list {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #00ff88;
+        }
+
+        .checkbox-item label {
+            flex: 1;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .filter-actions {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
-        }
-
-        .btn-filter {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
-            color: #0a0e27;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-filter:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
         }
 
         .btn-reset {
             padding: 12px 30px;
             background: rgba(255, 255, 255, 0.05);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            font-weight: 700;
             text-decoration: none;
             cursor: pointer;
             transition: all 0.3s ease;
             display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .btn-reset:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.4);
-            color: #ffffff;
+            border-color: #00ff88;
+            color: #00ff88;
+            transform: translateY(-2px);
         }
 
-        /* Results Counter */
+        .btn-import {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-import:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.5);
+            color: #0a0e27;
+        }
+
         .results-counter {
-            color: #00ff88;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
             font-size: 1.2rem;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 30px;
             text-align: center;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
             transition: all 0.3s ease;
         }
 
-        /* Heroes Grid */
         .heroes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 30px;
             margin-bottom: 50px;
         }
 
-        /* Hero Card */
         .hero-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
@@ -233,8 +366,9 @@
 
         .hero-image {
             position: relative;
-            height: 250px;
+            height: 300px;
             overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .hero-image img {
@@ -248,119 +382,25 @@
             transform: scale(1.1);
         }
 
-        .leader-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            color: #0a0e27;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
-        }
-
         .hero-header {
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 204, 255, 0.2) 100%);
-            padding: 20px;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            padding: 15px 20px;
             text-align: center;
-            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
         }
 
         .hero-name {
-            color: #00ff88;
-            font-size: 1.5rem;
+            color: #0a0e27;
+            font-size: 1.25rem;
             font-weight: 700;
             margin: 0;
-        }
-
-        .hero-body {
-            padding: 25px;
-        }
-
-        .hero-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .badge-custom {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .badge-faction {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #ffffff;
-        }
-
-        .badge-type {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .badge-affinity {
-            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
-            color: #ffffff;
-        }
-
-        .hero-info {
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-        }
-
-        .hero-info strong {
-            color: #00ff88;
-        }
-
-        .hero-divider {
-            border: none;
-            height: 1px;
-            background: rgba(0, 255, 136, 0.2);
-            margin: 20px 0;
-        }
-
-        .skills-section {
-            margin-top: 15px;
-        }
-
-        .skills-title {
-            color: #00ccff;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .skill-item {
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-
-        .skill-badge {
-            display: inline-block;
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            margin-right: 8px;
-        }
-
-        .skill-text {
-            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .hero-footer {
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-top: 1px solid rgba(0, 255, 136, 0.1);
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .hero-actions {
@@ -369,14 +409,24 @@
             gap: 10px;
         }
 
+        .hero-actions-full {
+            grid-template-columns: 1fr;
+        }
+
         .btn-action {
             padding: 12px;
             border-radius: 12px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
             text-align: center;
             transition: all 0.3s ease;
             font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-view {
@@ -393,21 +443,21 @@
         .btn-edit {
             background: rgba(255, 255, 255, 0.05);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn-edit:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: #00ff88;
             color: #00ff88;
+            transform: translateY(-2px);
         }
 
-        /* Empty State */
         .empty-state {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
+            border: 2px dashed rgba(0, 255, 136, 0.2);
             padding: 60px 40px;
             text-align: center;
             grid-column: 1 / -1;
@@ -437,7 +487,6 @@
             margin-bottom: 30px;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .container-custom {
                 padding: 0 20px;
@@ -451,12 +500,27 @@
                 grid-template-columns: 1fr;
             }
 
-            .filters-grid {
+            .filters-grid,
+            .filter-checkboxes-grid {
                 grid-template-columns: 1fr;
             }
 
             .hero-actions {
                 grid-template-columns: 1fr;
+            }
+
+            .filters-card {
+                padding: 25px;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .btn-reset,
+            .btn-import {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -467,21 +531,23 @@
         <div class="container-custom">
             <!-- Header -->
             <div class="page-header">
-                <h1 class="page-title">Heroes Gallery</h1>
+                <h1 class="page-title">🎮 Heroes Gallery</h1>
             </div>
 
             <div class="filters-card">
                 <div class="filters-header">
-                    🔍 Filters
+                    <i class="fas fa-filter"></i>
+                    <span>Search Filters</span>
                 </div>
-                
+
+                <!-- Filtres simples (dropdowns) -->
                 <div class="filters-grid">
                     <div class="filter-group">
                         <label class="filter-label">⚔️ Faction</label>
                         <select id="filter-faction" class="filter-select">
-                            <option value="">All Factions</option>
+                            <option value="">All factions</option>
                             {% for faction in factions %}
-                                <option value="{{ faction }}">{{ faction }}</option>
+                                <option value="{{ faction.id }}">{{ faction.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -489,9 +555,9 @@
                     <div class="filter-group">
                         <label class="filter-label">🛡️ Type</label>
                         <select id="filter-type" class="filter-select">
-                            <option value="">All Types</option>
+                            <option value="">All types</option>
                             {% for type in types %}
-                                <option value="{{ type }}">{{ type }}</option>
+                                <option value="{{ type.id }}">{{ type.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -499,9 +565,9 @@
                     <div class="filter-group">
                         <label class="filter-label">⚡ Affinity</label>
                         <select id="filter-affinity" class="filter-select">
-                            <option value="">All Affinities</option>
+                            <option value="">All affinities</option>
                             {% for affinity in affinities %}
-                                <option value="{{ affinity }}">{{ affinity }}</option>
+                                <option value="{{ affinity.id }}">{{ affinity.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -509,171 +575,183 @@
                     <div class="filter-group">
                         <label class="filter-label">🚩 Allegiance</label>
                         <select id="filter-allegiance" class="filter-select">
-                            <option value="">All Allegiances</option>
+                            <option value="">All allegiances</option>
                             {% for allegiance in allegiances %}
-                                <option value="{{ allegiance }}">{{ allegiance }}</option>
+                                <option value="{{ allegiance.id }}">{{ allegiance.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
                     <div class="filter-group">
-                        <label class="filter-label">⭐ Leader Type</label>
+                        <label class="filter-label">⭐ Rarity</label>
+                        <select id="filter-rarity" class="filter-select">
+                            <option value="">All rarities</option>
+                            {% for rarity in rarities %}
+                                <option value="{{ rarity.id }}">{{ rarity.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">👑 Leader</label>
                         <select id="filter-leader" class="filter-select">
-                            <option value="">All Leaders</option>
-                            {% for leaderType in leaderTypes %}
-                                <option value="{{ leaderType }}">{{ leaderType }}</option>
+                            <option value="">All leaders</option>
+                            {% for leader in leaders %}
+                                <option value="{{ leader.id }}">{{ leader.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                </div>
 
-                    <div class="filter-group">
-                        <label class="filter-label">✨ Buffs</label>
-                        <select id="filter-buffs" class="filter-select">
-                            <option value="">All Buffs</option>
-                            {% for buff in buffs %}
-                                <option value="{{ buff }}">{{ buff }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                <!-- Filtres multiples avec accordéons -->
+                <div class="filter-checkboxes-section">
+                    <div class="filter-checkboxes-grid">
+                        <!-- Buffs Accordion -->
+                        <div class="accordion-filter">
+                            <div class="accordion-header" data-accordion="buffs">
+                                <div class="accordion-title">
+                                    <i class="fas fa-arrow-up"></i>
+                                    ✨ Buffs
+                                </div>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-body" id="accordion-buffs">
+                                <div class="checkbox-list">
+                                    {% for buff in buffs %}
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" 
+                                                   id="buff-{{ buff.id }}" 
+                                                   class="filter-buff-checkbox" 
+                                                   value="{{ buff.id }}">
+                                            <label for="buff-{{ buff.id }}">{{ buff.name }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="filter-group">
-                        <label class="filter-label">💀 Debuffs</label>
-                        <select id="filter-debuffs" class="filter-select">
-                            <option value="">All Debuffs</option>
-                            {% for debuff in debuffs %}
-                                <option value="{{ debuff }}">{{ debuff }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                        <!-- Debuffs Accordion -->
+                        <div class="accordion-filter">
+                            <div class="accordion-header" data-accordion="debuffs">
+                                <div class="accordion-title">
+                                    <i class="fas fa-arrow-down"></i>
+                                    💀 Debuffs
+                                </div>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-body" id="accordion-debuffs">
+                                <div class="checkbox-list">
+                                    {% for debuff in debuffs %}
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" 
+                                                   id="debuff-{{ debuff.id }}" 
+                                                   class="filter-debuff-checkbox" 
+                                                   value="{{ debuff.id }}">
+                                            <label for="debuff-{{ debuff.id }}">{{ debuff.name }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="filter-group">
-                        <label class="filter-label">🚫 Disables</label>
-                        <select id="filter-disable" class="filter-select">
-                            <option value="">All Disables</option>
-                            {% for disable in disables %}
-                                <option value="{{ disable }}">{{ disable }}</option>
-                            {% endfor %}
-                        </select>
+                        <!-- Disables Accordion -->
+                        <div class="accordion-filter">
+                            <div class="accordion-header" data-accordion="disables">
+                                <div class="accordion-title">
+                                    <i class="fas fa-ban"></i>
+                                    🚫 Disables
+                                </div>
+                                <i class="fas fa-chevron-down accordion-icon"></i>
+                            </div>
+                            <div class="accordion-body" id="accordion-disables">
+                                <div class="checkbox-list">
+                                    {% for disable in disables %}
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" 
+                                                   id="disable-{{ disable.id }}" 
+                                                   class="filter-disable-checkbox" 
+                                                   value="{{ disable.id }}">
+                                            <label for="disable-{{ disable.id }}">{{ disable.name }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="filter-actions">
                     <button type="button" id="btn-reset" class="btn-reset">
-                        ❌ Reset All
+                        <i class="fas fa-redo"></i> Reset
                     </button>
-                    <a href="{{ path('app_heroes_import') }}" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 25px; text-decoration: none; font-weight: 700;">
-                        📤 Importer depuis Excel
-                    </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_heroes_new') }}" class="btn-import">
+                            <i class="fas fa-plus-circle"></i> Add hero
+                        </a>
+                    {% endif %}
                 </div>
             </div>
 
             <!-- Results Counter -->
             <div class="results-counter" id="results-counter">
-                📊 {{ heroes|length }} hero{{ heroes|length != 1 ? 'es' : '' }} found
+                <i class="fas fa-chart-bar"></i> {{ heroes|length }} hero{{ heroes|length != 1 ? 'es' : '' }} found
             </div>
 
             <!-- Heroes Grid -->
             <div class="heroes-grid" id="heroes-grid">
                 {% for hero in heroes %}
-                    {% set leaderType = '' %}
-                    {% if hero.Leader %}
-                        {% set leaderLower = hero.Leader|lower %}
-                        {% if 'speed' in leaderLower %}
-                            {% set leaderType = 'Speed' %}
-                        {% elseif 'defense' in leaderLower %}
-                            {% set leaderType = 'Defense' %}
-                        {% elseif 'attack' in leaderLower %}
-                            {% set leaderType = 'Attack' %}
-                        {% elseif 'hp' in leaderLower %}
-                            {% set leaderType = 'Health' %}
-                        {% elseif 'initiative' in leaderLower or 'init' in leaderLower %}
-                            {% set leaderType = 'Initiative' %}
-                        {% elseif 'resistance' in leaderLower %}
-                            {% set leaderType = 'Resistance' %}
-                        {% elseif 'accuracy' in leaderLower %}
-                            {% set leaderType = 'Accuracy' %}
-                        {% elseif 'critical rate' in leaderLower or 'crit rate' in leaderLower %}
-                            {% set leaderType = 'Crit Rate' %}
-                        {% elseif 'critical damage' in leaderLower or 'crit damage' in leaderLower %}
-                            {% set leaderType = 'Crit Damage' %}
-                        {% endif %}
-                    {% endif %}
+                    {% set buffsList = [] %}
+                    {% set debuffsList = [] %}
+                    {% set disablesList = [] %}
+
+                    {% for buff in hero.heroBuffs %}
+                        {% set buffsList = buffsList|merge([buff.id]) %}
+                    {% endfor %}
+
+                    {% for debuff in hero.heroDebuffs %}
+                        {% set debuffsList = debuffsList|merge([debuff.id]) %}
+                    {% endfor %}
+
+                    {% for disable in hero.heroDisables %}
+                        {% set disablesList = disablesList|merge([disable.id]) %}
+                    {% endfor %}
 
                     <div class="hero-card" 
-                         data-faction="{{ hero.faction|lower }}"
-                         data-type="{{ hero.type|lower }}"
-                         data-affinity="{{ hero.affinity|lower }}"
-                         data-allegiance="{{ hero.allegiance|lower }}"
-                         data-leader="{{ hero.Leader ? 'yes' : 'no' }}"
-                         data-leader-type="{{ leaderType|lower }}"
-                         data-buffs="{{ hero.buffs|lower }}"
-                         data-debuffs="{{ hero.debuffs|lower }}"
-                         data-disable="{{ hero.disable|lower }}">
-                        
-                        <!-- Image -->
+                         data-faction="{{ hero.factionEntity ? hero.factionEntity.id : '' }}"
+                         data-type="{{ hero.typeEntity ? hero.typeEntity.id : '' }}"
+                         data-affinity="{{ hero.affinityEntity ? hero.affinityEntity.id : '' }}"
+                         data-allegiance="{{ hero.allegianceEntity ? hero.allegianceEntity.id : '' }}"
+                         data-rarity="{{ hero.rarityEntity ? hero.rarityEntity.id : '' }}"
+                         data-leader="{{ hero.leaderEntity ? hero.leaderEntity.id : '' }}"
+                         data-buffs="{{ buffsList|join(',') }}"
+                         data-debuffs="{{ debuffsList|join(',') }}"
+                         data-disable="{{ disablesList|join(',') }}">
+
+                        <!-- Hero image -->
                         <div class="hero-image">
                             {% if hero.imageUrl %}
-                                <img src="{{ hero.imageUrl }}" alt="{{ hero.Name }}">
+                                <img src="{{ hero.imageUrl }}" alt="{{ hero.Name }}" loading="lazy">
                             {% else %}
-                                <img src="https://via.placeholder.com/400x250/667eea/ffffff?text={{ hero.Name|url_encode }}" alt="{{ hero.Name }}">
-                            {% endif %}
-                            
-                            {% if hero.Leader %}
-                                <div class="leader-badge">⭐ {{ leaderType }}</div>
+                                <img src="https://via.placeholder.com/400x400/667eea/ffffff?text={{ hero.Name|url_encode }}" alt="{{ hero.Name }}">
                             {% endif %}
                         </div>
 
-                        <!-- Header -->
+                        <!-- Hero name -->
                         <div class="hero-header">
                             <h3 class="hero-name">{{ hero.Name }}</h3>
                         </div>
 
-                        <!-- Body -->
-                        <div class="hero-body">
-                            <!-- Badges -->
-                            <div class="hero-badges">
-                                <span class="badge-custom badge-faction">{{ hero.faction }}</span>
-                                <span class="badge-custom badge-type">{{ hero.type }}</span>
-                                <span class="badge-custom badge-affinity">{{ hero.affinity }}</span>
-                            </div>
-
-                            <!-- Info -->
-                            <div class="hero-info">
-                                <strong>🚩 Allegiance:</strong> {{ hero.allegiance }}
-                            </div>
-
-                            <hr class="hero-divider">
-
-                            <!-- Skills -->
-                            <div class="skills-section">
-                                <div class="skills-title">⚡ Skills</div>
-                                
-                                <div class="skill-item">
-                                    <span class="skill-badge">Base</span>
-                                    <span class="skill-text">{{ hero.base|length > 50 ? hero.base|slice(0, 50) ~ '...' : hero.base }}</span>
-                                </div>
-                                
-                                <div class="skill-item">
-                                    <span class="skill-badge">Core</span>
-                                    <span class="skill-text">{{ hero.core|length > 50 ? hero.core|slice(0, 50) ~ '...' : hero.core }}</span>
-                                </div>
-                                
-                                <div class="skill-item">
-                                    <span class="skill-badge">Ultimate</span>
-                                    <span class="skill-text">{{ hero.ultimate|length > 50 ? hero.ultimate|slice(0, 50) ~ '...' : hero.ultimate }}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Footer -->
+                        <!-- Actions -->
                         <div class="hero-footer">
-                            <div class="hero-actions">
+                            <div class="hero-actions {% if not is_granted('ROLE_ADMIN') %}hero-actions-full{% endif %}">
                                 <a href="{{ path('app_heroes_show', {'id': hero.id}) }}" class="btn-action btn-view">
-                                    👁️ View
+                                    <i class="fas fa-eye"></i> View
                                 </a>
-                                <a href="{{ path('app_heroes_edit', {'id': hero.id}) }}" class="btn-action btn-edit">
-                                    ✏️ Edit
-                                </a>
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <a href="{{ path('app_heroes_edit', {'id': hero.id}) }}" class="btn-action btn-edit">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -683,7 +761,7 @@
                 <div class="empty-state" id="empty-state">
                     <div class="empty-icon">📭</div>
                     <h3 class="empty-title">No Heroes Found</h3>
-                    <p class="empty-text">No heroes match your filter criteria.</p>
+                    <p class="empty-text">No hero matches your search criteria.</p>
                 </div>
             </div>
         </div>
@@ -695,34 +773,46 @@
     {{ encore_entry_script_tags('app') }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Récupère tous les filtres
-            const filters = {
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const targetId = this.dataset.accordion;
+                    const body = document.getElementById('accordion-' + targetId);
+                    this.classList.toggle('active');
+                    body.classList.toggle('active');
+                });
+            });
+
+            const selectFilters = {
                 faction: document.getElementById('filter-faction'),
                 type: document.getElementById('filter-type'),
                 affinity: document.getElementById('filter-affinity'),
                 allegiance: document.getElementById('filter-allegiance'),
-                leader: document.getElementById('filter-leader'),
-                buffs: document.getElementById('filter-buffs'),
-                debuffs: document.getElementById('filter-debuffs'),
-                disable: document.getElementById('filter-disable')
+                rarity: document.getElementById('filter-rarity'),
+                leader: document.getElementById('filter-leader')
             };
+
+            const buffCheckboxes = document.querySelectorAll('.filter-buff-checkbox');
+            const debuffCheckboxes = document.querySelectorAll('.filter-debuff-checkbox');
+            const disableCheckboxes = document.querySelectorAll('.filter-disable-checkbox');
 
             const heroCards = document.querySelectorAll('.hero-card');
             const resultsCounter = document.getElementById('results-counter');
             const emptyState = document.getElementById('empty-state');
             const btnReset = document.getElementById('btn-reset');
 
-            // Fonction de filtrage
             function filterHeroes() {
                 const selectedFilters = {
-                    faction: filters.faction.value.toLowerCase(),
-                    type: filters.type.value.toLowerCase(),
-                    affinity: filters.affinity.value.toLowerCase(),
-                    allegiance: filters.allegiance.value.toLowerCase(),
-                    leader: filters.leader.value.toLowerCase(),
-                    buffs: filters.buffs.value.toLowerCase(),
-                    debuffs: filters.debuffs.value.toLowerCase(),
-                    disable: filters.disable.value.toLowerCase()
+                    faction: selectFilters.faction.value,
+                    type: selectFilters.type.value,
+                    affinity: selectFilters.affinity.value,
+                    allegiance: selectFilters.allegiance.value,
+                    rarity: selectFilters.rarity.value,
+                    leader: selectFilters.leader.value,
+                    buffs: Array.from(buffCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
+                    debuffs: Array.from(debuffCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
+                    disables: Array.from(disableCheckboxes).filter(cb => cb.checked).map(cb => cb.value)
                 };
 
                 let visibleCount = 0;
@@ -730,39 +820,54 @@
                 heroCards.forEach(card => {
                     let shouldShow = true;
 
-                    // Vérifie chaque filtre
-                    for (const [key, value] of Object.entries(selectedFilters)) {
-                        if (value !== '') {
-                            let cardValue = '';
-                            
-                            // Pour le leader, utilise data-leader-type
-                            if (key === 'leader') {
-                                cardValue = card.dataset.leaderType.toLowerCase();
-                                if (cardValue !== value) {
-                                    shouldShow = false;
-                                    break;
-                                }
-                            }
-                            // Pour buffs, debuffs, disable : vérifie si la valeur est contenue
-                            else if (key === 'buffs' || key === 'debuffs' || key === 'disable') {
-                                cardValue = card.dataset[key].toLowerCase();
-                                if (!cardValue.includes(value)) {
-                                    shouldShow = false;
-                                    break;
-                                }
-                            } 
-                            // Pour les autres filtres : égalité stricte
-                            else {
-                                cardValue = card.dataset[key].toLowerCase();
-                                if (cardValue !== value) {
-                                    shouldShow = false;
-                                    break;
-                                }
-                            }
+                    if (selectedFilters.faction && card.dataset.faction !== selectedFilters.faction) {
+                        shouldShow = false;
+                    }
+
+                    if (selectedFilters.type && card.dataset.type !== selectedFilters.type) {
+                        shouldShow = false;
+                    }
+
+                    if (selectedFilters.affinity && card.dataset.affinity !== selectedFilters.affinity) {
+                        shouldShow = false;
+                    }
+
+                    if (selectedFilters.allegiance && card.dataset.allegiance !== selectedFilters.allegiance) {
+                        shouldShow = false;
+                    }
+
+                    if (selectedFilters.rarity && card.dataset.rarity !== selectedFilters.rarity) {
+                        shouldShow = false;
+                    }
+
+                    if (selectedFilters.leader && card.dataset.leader !== selectedFilters.leader) {
+                        shouldShow = false;
+                    }
+
+                    if (selectedFilters.buffs.length > 0) {
+                        const cardBuffs = card.dataset.buffs.split(',').filter(b => b);
+                        const hasAllBuffs = selectedFilters.buffs.every(buff => cardBuffs.includes(buff));
+                        if (!hasAllBuffs) {
+                            shouldShow = false;
                         }
                     }
 
-                    // Affiche ou cache la carte
+                    if (selectedFilters.debuffs.length > 0) {
+                        const cardDebuffs = card.dataset.debuffs.split(',').filter(d => d);
+                        const hasAllDebuffs = selectedFilters.debuffs.every(debuff => cardDebuffs.includes(debuff));
+                        if (!hasAllDebuffs) {
+                            shouldShow = false;
+                        }
+                    }
+
+                    if (selectedFilters.disables.length > 0) {
+                        const cardDisables = card.dataset.disable.split(',').filter(d => d);
+                        const hasAllDisables = selectedFilters.disables.every(disable => cardDisables.includes(disable));
+                        if (!hasAllDisables) {
+                            shouldShow = false;
+                        }
+                    }
+
                     if (shouldShow) {
                         card.classList.remove('hidden');
                         visibleCount++;
@@ -771,10 +876,8 @@
                     }
                 });
 
-                // Met à jour le compteur
-                resultsCounter.textContent = `📊 ${visibleCount} hero${visibleCount !== 1 ? 'es' : ''} found`;
+                resultsCounter.innerHTML = `<i class="fas fa-chart-bar"></i> ${visibleCount} hero${visibleCount !== 1 ? 'es' : ''} found`;
 
-                // Affiche l'état vide si aucun résultat
                 if (visibleCount === 0) {
                     emptyState.classList.add('show');
                 } else {
@@ -782,27 +885,36 @@
                 }
             }
 
-            // Ajoute les listeners sur chaque filtre
-            Object.values(filters).forEach(filter => {
+            Object.values(selectFilters).forEach(filter => {
                 filter.addEventListener('change', filterHeroes);
             });
 
-            // Bouton Reset
+            buffCheckboxes.forEach(cb => cb.addEventListener('change', filterHeroes));
+            debuffCheckboxes.forEach(cb => cb.addEventListener('change', filterHeroes));
+            disableCheckboxes.forEach(cb => cb.addEventListener('change', filterHeroes));
+
             btnReset.addEventListener('click', function() {
-                // Réinitialise tous les filtres
-                Object.values(filters).forEach(filter => {
+                Object.values(selectFilters).forEach(filter => {
                     filter.value = '';
                 });
-                
-                // Affiche toutes les cartes
+
+                buffCheckboxes.forEach(cb => cb.checked = false);
+                debuffCheckboxes.forEach(cb => cb.checked = false);
+                disableCheckboxes.forEach(cb => cb.checked = false);
+
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    header.classList.remove('active');
+                });
+                document.querySelectorAll('.accordion-body').forEach(body => {
+                    body.classList.remove('active');
+                });
+
                 heroCards.forEach(card => {
                     card.classList.remove('hidden');
                 });
 
-                // Met à jour le compteur
-                resultsCounter.textContent = `📊 ${heroCards.length} hero${heroCards.length !== 1 ? 'es' : ''} found`;
-                
-                // Cache l'état vide
+                resultsCounter.innerHTML = `<i class="fas fa-chart-bar"></i> ${heroCards.length} hero${heroCards.length !== 1 ? 'es' : ''} found`;
+
                 emptyState.classList.remove('show');
             });
         });

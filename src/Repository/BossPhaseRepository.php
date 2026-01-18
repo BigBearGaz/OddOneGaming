@@ -2,39 +2,39 @@
 
 namespace App\Repository;
 
-use App\Entity\Effects;
+use App\Entity\BossPhase;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Effects>
+ * @extends ServiceEntityRepository<BossPhase>
  */
-class EffectsRepository extends ServiceEntityRepository
+class BossPhaseRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Effects::class);
+        parent::__construct($registry, BossPhase::class);
     }
 
 //    /**
-//     * @return Effects[] Returns an array of Effects objects
+//     * @return BossPhase[] Returns an array of BossPhase objects
 //     */
 //    public function findByExampleField($value): array
 //    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
+//        return $this->createQueryBuilder('b')
+//            ->andWhere('b.exampleField = :val')
 //            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
+//            ->orderBy('b.id', 'ASC')
 //            ->setMaxResults(10)
 //            ->getQuery()
 //            ->getResult()
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Effects
+//    public function findOneBySomeField($value): ?BossPhase
 //    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
+//        return $this->createQueryBuilder('b')
+//            ->andWhere('b.exampleField = :val')
 //            ->setParameter('val', $value)
 //            ->getQuery()
 //            ->getOneOrNullResult()

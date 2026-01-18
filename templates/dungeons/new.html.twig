@@ -1,6 +1,40 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ dungeon is defined and dungeon.id ? 'Éditer ' ~ dungeon.name : 'Nouveau Donjon' }}{% endblock %}
+{% block title %}Nouveau Donjon{% endblock %}
+
+{# ============================= #}
+{#    CUSTOM FORM THEME          #}
+{# ============================= #}
+{% form_theme form _self %}
+
+{% block form_row %}
+    <div class="form-group mb-4">
+        {{ form_label(form, null, {
+            label_attr: { class: 'form-label fw-bold text-uppercase mb-2' }
+        }) }}
+        {{ form_widget(form) }}
+        {{ form_errors(form) }}
+    </div>
+{% endblock %}
+
+{% block textarea_widget %}
+    {% set attr = attr|merge({
+        class: (attr.class|default('') ~ ' form-control form-control-lg')|trim,
+        rows: attr.rows|default(4)
+    }) %}
+    <textarea {{ block('widget_attributes') }}>{{ value }}</textarea>
+{% endblock %}
+
+{% block choice_widget_expanded %}
+    <div {{ block('widget_container_attributes') }}>
+        {% for child in form %}
+            <div class="radio-item">
+                {{ form_widget(child) }}
+                {{ form_label(child, null, {translation_domain: choice_translation_domain}) }}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -12,291 +46,526 @@
         }
 
         body {
-            background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+            overflow-x: hidden;
+            background: 
+                linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%),
+                url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
             min-height: 100vh;
-            padding-top: 100px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 100, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .dungeon-form-section {
-            padding: 50px 20px;
-            min-height: calc(100vh - 100px);
+            position: relative;
+            min-height: 100vh;
+            padding: 180px 0 80px 0;
+            z-index: 1;
         }
 
-        .form-container {
-            max-width: 1200px;
+        .container-custom {
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 2;
         }
 
-        /* Breadcrumb */
-        .breadcrumb-custom {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 15px 25px;
-            border: 1px solid rgba(255, 136, 0, 0.2);
-            margin-bottom: 30px;
-        }
-
-        .breadcrumb-custom ol {
-            list-style: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0;
-            padding: 0;
-            flex-wrap: wrap;
-        }
-
-        .breadcrumb-custom li {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .breadcrumb-custom li:not(:last-child)::after {
-            content: '›';
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 1.2rem;
-        }
-
-        .breadcrumb-custom a {
-            color: #ff8800;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .breadcrumb-custom a:hover {
-            color: #ffaa00;
-        }
-
-        .breadcrumb-custom .active {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Header */
-        .page-header-form {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .page-title-form {
-            font-size: 3rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ff8800 0%, #ffaa00 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-
-        .page-subtitle-form {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.1rem;
-        }
-
-        /* Form Card */
-        .form-card {
+        .breadcrumb {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            border: 1px solid rgba(255, 136, 0, 0.2);
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            padding: 1rem 1.5rem;
+            margin-bottom: 30px;
         }
 
-        /* Form Groups */
-        .form-group-custom {
-            margin-bottom: 25px;
-        }
-
-        .form-label-custom {
-            display: block;
-            color: #ff8800;
+        .breadcrumb-item a {
+            color: #00ff88;
+            text-decoration: none;
             font-weight: 600;
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
-
-        .form-label-custom.required::after {
-            content: ' *';
-            color: #ff4757;
-        }
-
-        .form-control-custom {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 136, 0, 0.2);
-            border-radius: 12px;
-            color: #ffffff;
-            font-size: 1rem;
             transition: all 0.3s ease;
         }
 
-        .form-control-custom:focus {
-            outline: none;
-            border-color: #ff8800;
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 0 3px rgba(255, 136, 0, 0.1);
+        .breadcrumb-item a:hover {
+            color: #00ccff;
         }
 
-        .form-control-custom::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+        .breadcrumb-item.active {
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        textarea.form-control-custom {
-            min-height: 120px;
-            resize: vertical;
-            font-family: inherit;
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        select.form-control-custom {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ff8800' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            padding-right: 40px;
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: all 0.4s ease;
         }
 
-        select.form-control-custom option {
-            background: #1a1f3a;
+        .card:hover {
+            border-color: rgba(0, 255, 136, 0.4);
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.2);
+        }
+
+        .card-header {
+            border: none;
+            padding: 1.75rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header h2,
+        .card-header h3,
+        .card-header h4,
+        .card-header h5 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
             color: #ffffff;
         }
 
-        /* Form Grid */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
+        .card-header h2 {
+            font-size: 1.75rem;
         }
 
-        .form-grid-full {
-            grid-column: 1 / -1;
-        }
-
-        /* Section Divider */
-        .form-section-divider {
-            margin: 40px 0 30px 0;
-            padding: 0 0 15px 0;
-            border-bottom: 2px solid rgba(255, 136, 0, 0.2);
-        }
-
-        .form-section-title {
-            color: #ffaa00;
+        .card-header h3 {
             font-size: 1.5rem;
+        }
+
+        .card-header h4 {
+            font-size: 1.25rem;
+        }
+
+        .card-header h5 {
+            font-size: 1.125rem;
+        }
+
+        .card-body {
+            padding: 2.5rem;
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%) !important;
+        }
+
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%) !important;
+        }
+
+        .bg-gradient-purple {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%) !important;
+        }
+
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
+        }
+
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        }
+
+        .bg-gradient-dark {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+        }
+
+        .bg-gradient-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        }
+
+        .bg-gradient-cyan {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+        }
+
+        .form-label {
             font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem !important;
+            display: block;
+        }
+
+        .form-control {
+            padding: 0.875rem 1.25rem !important;
+            font-size: 1rem !important;
+            border: 2px solid rgba(0, 255, 136, 0.2) !important;
+            border-radius: 12px !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: #ffffff !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .form-control:hover {
+            border-color: rgba(0, 255, 136, 0.3) !important;
+            background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .form-control:focus {
+            border-color: #00ff88 !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1),
+                        0 8px 25px rgba(0, 255, 136, 0.15) !important;
+            outline: none;
+        }
+
+        textarea.form-control {
+            min-height: 120px !important;
+            resize: vertical;
+        }
+
+        /* Radio buttons pour la difficulté */
+        .difficulty-radio-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 0;
+            margin: 0;
+        }
+
+        .difficulty-radio-group .radio-item {
+            position: relative;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .difficulty-radio-group input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            width: 0;
+            height: 0;
+        }
+
+        .difficulty-radio-group label {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        /* Error Messages */
-        .form-error {
-            color: #ff4757;
+            justify-content: center;
+            padding: 1rem 1.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             font-size: 0.9rem;
-            margin-top: 5px;
+            width: 100%;
+            margin: 0;
         }
 
-        .form-control-custom.is-invalid {
-            border-color: #ff4757;
+        .difficulty-radio-group label:hover {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
         }
 
-        /* Help Text */
-        .form-help-text {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.85rem;
-            margin-top: 5px;
+        .difficulty-radio-group input[type="radio"]:checked + label {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        /* Couleurs spécifiques par difficulté */
+        .difficulty-radio-group input[value="Easy"]:checked + label {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+            color: #ffffff;
+        }
+
+        .difficulty-radio-group input[value="Normal"]:checked + label {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .difficulty-radio-group input[value="Hard"]:checked + label {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-color: #f59e0b;
+            color: #ffffff;
+        }
+
+        .difficulty-radio-group input[value="Hell"]:checked + label {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-color: #ef4444;
+            color: #ffffff;
+        }
+
+        /* Icônes pour chaque difficulté */
+        .difficulty-radio-group input[value="Easy"] + label::before {
+            content: "😊 ";
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .difficulty-radio-group input[value="Normal"] + label::before {
+            content: "⚡ ";
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .difficulty-radio-group input[value="Hard"] + label::before {
+            content: "🔥 ";
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .difficulty-radio-group input[value="Hell"] + label::before {
+            content: "💀 ";
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        /* Focus pour accessibilité */
+        .difficulty-radio-group input[type="radio"]:focus + label {
+            outline: 2px solid #00ff88;
+            outline-offset: 2px;
+        }
+
+        /* Phase Item */
+        .phase-item {
+            background: rgba(13, 110, 253, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(13, 110, 253, 0.3) !important;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .phase-item:hover {
+            border-color: rgba(13, 110, 253, 0.5) !important;
+            box-shadow: 0 10px 40px rgba(13, 110, 253, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .phase-item h5 {
+            color: #3b82f6;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Base Passive Item */
+        .base-passive-item {
+            background: rgba(16, 185, 129, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(16, 185, 129, 0.3) !important;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .base-passive-item:hover {
+            border-color: rgba(16, 185, 129, 0.5) !important;
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
+        }
+
+        .base-passive-item strong {
+            color: #10b981;
+        }
+
+        /* Phase Passive Item */
+        .phase-passive-item {
+            background: rgba(168, 85, 247, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(168, 85, 247, 0.3) !important;
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .phase-passive-item:hover {
+            border-color: rgba(168, 85, 247, 0.5) !important;
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.2);
+        }
+
+        .phase-passive-item strong {
+            color: #a855f7;
+        }
+
+        /* Accordion */
+        .accordion {
+            background: transparent;
+        }
+
+        .accordion-item {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px !important;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .accordion-button {
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background: rgba(13, 110, 253, 0.15);
+            color: #3b82f6;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+            border-color: transparent;
+        }
+
+        .accordion-button::after {
+            filter: brightness(0) saturate(100%) invert(65%) sepia(99%) saturate(2686%) hue-rotate(169deg) brightness(102%) contrast(101%);
+        }
+
+        .accordion-body {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
         }
 
         /* Buttons */
-        .form-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 40px;
-            flex-wrap: wrap;
-        }
-
-        .btn-custom {
-            padding: 15px 40px;
+        .btn {
+            padding: 1rem 2.5rem;
             border-radius: 50px;
             font-weight: 700;
-            font-size: 1rem;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             transition: all 0.3s ease;
+            border: none;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.625rem;
         }
 
-        .btn-primary-custom {
-            background: linear-gradient(135deg, #ff8800 0%, #ffaa00 100%);
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.5);
             color: #0a0e27;
         }
 
-        .btn-primary-custom:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(255, 136, 0, 0.4);
-        }
-
-        .btn-secondary-custom {
+        .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
-        .btn-secondary-custom:hover {
+        .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.4);
+            border-color: #00ff88;
+            color: #00ff88;
+            transform: translateY(-2px);
         }
 
-        .btn-danger-custom {
-            background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%);
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
             color: #ffffff;
         }
 
-        .btn-danger-custom:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
         }
 
-        /* Image Preview */
-        .image-preview-container {
-            margin-top: 15px;
+        .btn-danger:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
+            color: #ffffff;
         }
 
-        .image-preview {
-            max-width: 300px;
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 136, 0, 0.3);
+        .btn-light {
+            background: rgba(255, 255, 255, 0.9);
+            color: #0a0e27;
+            font-weight: 700;
         }
 
-        /* Responsive */
+        .btn-light:hover {
+            background: #ffffff;
+            color: #0a0e27;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-lg {
+            padding: 1.25rem 3rem;
+            font-size: 1.125rem;
+        }
+
         @media (max-width: 768px) {
-            .page-title-form {
-                font-size: 2rem;
+            .container-custom {
+                padding: 0 20px;
             }
 
-            .form-card {
-                padding: 25px;
+            .card-body {
+                padding: 1.5rem;
             }
 
-            .form-grid {
-                grid-template-columns: 1fr;
+            .card-header {
+                padding: 1.25rem 1.5rem;
             }
 
-            .form-actions {
+            .btn {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 0.5rem;
+            }
+
+            .phase-item,
+            .base-passive-item {
+                padding: 1.25rem;
+            }
+
+            .difficulty-radio-group {
                 flex-direction: column;
             }
 
-            .btn-custom {
+            .difficulty-radio-group .radio-item {
                 width: 100%;
-                justify-content: center;
             }
         }
     </style>
@@ -304,53 +573,300 @@
 
 {% block body %}
 <div class="dungeon-form-section">
-    <div class="form-container">
-        {# Breadcrumb #}
-        <nav class="breadcrumb-custom">
-            <ol>
-                <li>
-                    <a href="{{ path('app_dungeons_index') }}">🏰 Donjons</a>
+    <div class="container-custom">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ path('app_dungeons_index') }}">
+                        <i class="fas fa-home me-2"></i>Donjons
+                    </a>
                 </li>
-                <li class="active">
-                    {{ dungeon is defined and dungeon.id ? '✏️ Éditer' : '➕ Nouveau' }}
+                <li class="breadcrumb-item active" aria-current="page">
+                    Nouveau
                 </li>
             </ol>
         </nav>
 
-        {# Header #}
-        <div class="page-header-form">
-            <h1 class="page-title-form">
-                {{ dungeon is defined and dungeon.id ? '✏️ Éditer le Donjon' : '🏰 Créer un Donjon' }}
-            </h1>
-            <p class="page-subtitle-form">
-                {{ dungeon is defined and dungeon.id ? 'Modifiez les informations de votre donjon' : 'Ajoutez un nouveau donjon épique' }}
-            </p>
-        </div>
-
-        {# Formulaire Card #}
-        <div class="form-card">
-            {{ include('dungeons/_form.html.twig') }}
-
-            {# Actions #}
-            <div class="form-actions">
-                <a href="{{ path('app_dungeons_index') }}" class="btn-custom btn-secondary-custom">
-                    ← Retour à la liste
-                </a>
-
-                {% if dungeon is defined and dungeon.id %}
-                    <button type="button" class="btn-custom btn-danger-custom" onclick="if(confirm('Êtes-vous sûr de vouloir supprimer ce donjon ?')) { document.getElementById('delete-form').submit(); }">
-                        🗑️ Supprimer
-                    </button>
-                {% endif %}
+        <div class="card">
+            <div class="card-header bg-gradient-primary">
+                <h2>
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Nouveau Donjon</span>
+                </h2>
             </div>
 
-            {# Formulaire de suppression (si édition) #}
-            {% if dungeon is defined and dungeon.id %}
-                <form method="post" action="{{ path('app_dungeons_delete', {'id': dungeon.id}) }}" id="delete-form" style="display: none;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ dungeon.id) }}">
-                </form>
-            {% endif %}
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'dungeon-form'}}) }}
+
+                {# INFORMATIONS GÉNÉRALES #}
+                <div class="card">
+                    <div class="card-header bg-gradient-info">
+                        <h4>
+                            <i class="fas fa-info-circle"></i>
+                            <span>Informations Générales</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        {{ form_row(form.name) }}
+                        {{ form_row(form.imageUrl) }}
+                        {{ form_row(form.description) }}
+                        {{ form_row(form.difficulty) }}
+                    </div>
+                </div>
+
+                {# CAPACITÉS DE BASE #}
+                <div class="card">
+                    <div class="card-header bg-gradient-warning">
+                        <h4>
+                            <i class="fas fa-bolt"></i>
+                            <span>Capacités de Base</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="mb-3" style="color: #fbbf24;">Spells</h5>
+                        
+                        <div class="mb-4 pb-3 border-bottom border-secondary">
+                            <strong style="color: #3b82f6;">Spell 1 (Basic)</strong>
+                            {{ form_row(form.spell1Name) }}
+                            {{ form_row(form.spell1Description) }}
+                        </div>
+                        
+                        <div class="mb-4 pb-3 border-bottom border-secondary">
+                            <strong style="color: #10b981;">Spell 2 (Core)</strong>
+                            {{ form_row(form.spell2Name) }}
+                            {{ form_row(form.spell2Description) }}
+                            {{ form_row(form.spell2Cooldown) }}
+                        </div>
+                        
+                        <div class="mb-5 pb-3 border-bottom border-secondary">
+                            <strong style="color: #ef4444;">Spell 3 (Ultimate)</strong>
+                            {{ form_row(form.spell3Name) }}
+                            {{ form_row(form.spell3Description) }}
+                            {{ form_row(form.spell3Cooldown) }}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0" style="color: #10b981;">🔮 Passives de Base</h5>
+                            <button type="button" class="btn btn-success btn-sm" id="add-base-passive">
+                                <i class="fas fa-plus"></i> Ajouter
+                            </button>
+                        </div>
+                        <div id="base-passives-container" data-index="0">
+                        </div>
+                    </div>
+                </div>
+
+                {# PHASES #}
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-gradient-purple">
+                        <h4 class="mb-0">
+                            <i class="fas fa-layer-group"></i>
+                            <span>Phases du Boss</span>
+                        </h4>
+                        <button type="button" class="btn btn-light btn-sm" id="add-phase">
+                            <i class="fas fa-plus"></i> Ajouter une Phase
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="phases-container" data-index="0">
+                        </div>
+                    </div>
+                </div>
+
+                {# ACTIONS #}
+                <div class="d-flex gap-3 justify-content-center mt-5">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i>
+                        <span>Créer le Donjon</span>
+                    </button>
+                    <a href="{{ path('app_dungeons_index') }}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times"></i>
+                        <span>Annuler</span>
+                    </a>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        let phaseIndex = 0;
+        let basePassiveIndex = 0;
+        let phasePassiveIndexes = {};
+
+        // ========== PASSIVES DE BASE ==========
+        document.getElementById('add-base-passive').addEventListener('click', function() {
+            const container = document.getElementById('base-passives-container');
+            
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('base-passive-item', 'mb-3');
+            
+            wrapper.innerHTML = `
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>💫 Passive de base #${basePassiveIndex + 1}</strong>
+                    <button type="button" class="btn btn-danger btn-sm remove-base-passive">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Nom de la Passive</label>
+                    <input type="text" name="dungeons[passives][${basePassiveIndex}][name]" class="form-control" placeholder="Ex: Immortal, Regeneration">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Description</label>
+                    <textarea name="dungeons[passives][${basePassiveIndex}][description]" class="form-control" rows="3" placeholder="Description de la passive..."></textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Ordre</label>
+                    <input type="number" name="dungeons[passives][${basePassiveIndex}][passiveOrder]" class="form-control" value="${basePassiveIndex + 1}" min="1">
+                </div>
+            `;
+            
+            container.appendChild(wrapper);
+            
+            wrapper.querySelector('.remove-base-passive').addEventListener('click', function() {
+                wrapper.remove();
+            });
+            
+            basePassiveIndex++;
+        });
+
+        // ========== PHASES ==========
+        document.getElementById('add-phase').addEventListener('click', function() {
+            const container = document.getElementById('phases-container');
+            
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('phase-item');
+            wrapper.dataset.phaseIndex = phaseIndex;
+            
+            phasePassiveIndexes[phaseIndex] = 0;
+            
+            wrapper.innerHTML = `
+                <div class="d-flex justify-content-between mb-3">
+                    <h5 class="mb-0">📍 Phase #${phaseIndex + 1}</h5>
+                    <button type="button" class="btn btn-danger btn-sm remove-phase">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nom de la Phase</label>
+                        <input type="text" name="dungeons[phases][${phaseIndex}][name]" class="form-control" placeholder="Ex: Exhausted, Enraged">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ordre</label>
+                        <input type="number" name="dungeons[phases][${phaseIndex}][orderNum]" class="form-control" value="${phaseIndex + 1}" min="1">
+                    </div>
+                </div>
+
+                <div class="accordion mb-3" id="accordion-phase-${phaseIndex}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-spells-${phaseIndex}">
+                                ⚔️ Modifier les Spells (optionnel)
+                            </button>
+                        </h2>
+                        <div id="collapse-spells-${phaseIndex}" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Spell 1 - Nom Override</label>
+                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell1NameOverride]" class="form-control mb-2" placeholder="Laissez vide pour utiliser le spell de base">
+                                    <label class="form-label">Spell 1 - Description Override</label>
+                                    <textarea name="dungeons[phases][${phaseIndex}][spell1DescriptionOverride]" class="form-control" rows="2"></textarea>
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <label class="form-label">Spell 2 - Nom Override</label>
+                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell2NameOverride]" class="form-control mb-2" placeholder="Laissez vide pour utiliser le spell de base">
+                                    <label class="form-label">Spell 2 - Description Override</label>
+                                    <textarea name="dungeons[phases][${phaseIndex}][spell2DescriptionOverride]" class="form-control mb-2" rows="2"></textarea>
+                                    <label class="form-label">Spell 2 - Cooldown Override</label>
+                                    <input type="number" name="dungeons[phases][${phaseIndex}][spell2CooldownOverride]" class="form-control" min="0">
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <label class="form-label">Spell 3 - Nom Override</label>
+                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell3NameOverride]" class="form-control mb-2" placeholder="Laissez vide pour utiliser le spell de base">
+                                    <label class="form-label">Spell 3 - Description Override</label>
+                                    <textarea name="dungeons[phases][${phaseIndex}][spell3DescriptionOverride]" class="form-control mb-2" rows="2"></textarea>
+                                    <label class="form-label">Spell 3 - Cooldown Override</label>
+                                    <input type="number" name="dungeons[phases][${phaseIndex}][spell3CooldownOverride]" class="form-control" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0" style="color: #a855f7;">🔮 Passives de cette phase</h6>
+                        <button type="button" class="btn btn-success btn-sm add-phase-passive" data-phase-index="${phaseIndex}">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                    <div class="phase-passives-container" data-phase-index="${phaseIndex}">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(wrapper);
+            
+            wrapper.querySelector('.remove-phase').addEventListener('click', function() {
+                wrapper.remove();
+            });
+            
+            wrapper.querySelector('.add-phase-passive').addEventListener('click', function() {
+                const currentPhaseIndex = parseInt(this.dataset.phaseIndex);
+                addPassiveToPhase(currentPhaseIndex);
+            });
+            
+            phaseIndex++;
+        });
+
+        function addPassiveToPhase(phaseIdx) {
+            const passiveIdx = phasePassiveIndexes[phaseIdx];
+            const phaseElement = document.querySelector(`.phase-item[data-phase-index="${phaseIdx}"]`);
+            const passivesContainer = phaseElement.querySelector('.phase-passives-container');
+            
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('phase-passive-item', 'mb-3');
+            
+            wrapper.innerHTML = `
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>💫 Passive #${passiveIdx + 1}</strong>
+                    <button type="button" class="btn btn-danger btn-sm remove-phase-passive">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Nom de la Passive</label>
+                    <input type="text" name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][name]" class="form-control" placeholder="Ex: Exhausted, Enraged">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Description</label>
+                    <textarea name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][description]" class="form-control" rows="3" placeholder="Description de la passive..."></textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Ordre</label>
+                    <input type="number" name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][passiveOrder]" class="form-control" value="${passiveIdx + 1}" min="1">
+                </div>
+            `;
+            
+            passivesContainer.appendChild(wrapper);
+            
+            wrapper.querySelector('.remove-phase-passive').addEventListener('click', function() {
+                wrapper.remove();
+            });
+            
+            phasePassiveIndexes[phaseIdx]++;
+        }
+    </script>
 {% endblock %}

@@ -5,6 +5,15 @@ namespace App\Controller;
 use App\Entity\Heroes;
 use App\Form\HeroesType;
 use App\Repository\HeroesRepository;
+use App\Repository\FactionRepository;
+use App\Repository\TypeRepository;
+use App\Repository\AffinityRepository;
+use App\Repository\AllegianceRepository;
+use App\Repository\RarityRepository;
+use App\Repository\BuffsRepository;
+use App\Repository\DebuffsRepository;
+use App\Repository\DisableRepository;
+use App\Repository\LeaderRepository;
 use App\Service\ExcelExportService;
 use App\Service\ExcelImportService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,74 +26,58 @@ use Symfony\Component\Routing\Attribute\Route;
 final class HeroesController extends AbstractController
 {
     #[Route('/', name: 'app_heroes_index', methods: ['GET'])]
-    public function index(Request $request, HeroesRepository $heroesRepository): Response
+    public function index(
+        Request $request, 
+        HeroesRepository $heroesRepository,
+        FactionRepository $factionRepository,
+        TypeRepository $typeRepository,
+        AffinityRepository $affinityRepository,
+        AllegianceRepository $allegianceRepository,
+        RarityRepository $rarityRepository,
+        BuffsRepository $buffsRepository,
+        DebuffsRepository $debuffsRepository,
+        DisableRepository $disableRepository,
+        LeaderRepository $leaderRepository
+    ): Response
     {
         // Récupère les paramètres de filtre
-        $faction = $request->query->get('faction');
-        $type = $request->query->get('type');
-        $affinity = $request->query->get('affinity');
-        $allegiance = $request->query->get('allegiance');
-        $isLeader = $request->query->get('leader');
-        $buffs = $request->query->get('buffs');
-        $debuffs = $request->query->get('debuffs');
-        $disable = $request->query->get('disable');
+        $factionId = $request->query->get('faction');
+        $typeId = $request->query->get('type');
+        $affinityId = $request->query->get('affinity');
+        $allegianceId = $request->query->get('allegiance');
+        $rarityId = $request->query->get('rarity');
+        $leaderId = $request->query->get('leader');
+        $buffId = $request->query->get('buff');
+        $debuffId = $request->query->get('debuff');
+        $disableId = $request->query->get('disable');
 
         // Récupère les héros filtrés
-        $heroes = $heroesRepository->findByFilters(
-            $faction, 
-            $type, 
-            $affinity, 
-            $allegiance, 
-            $isLeader,
-            $buffs,
-            $debuffs,
-            $disable
-        );
-
-        // Récupère les valeurs uniques pour les filtres simples
-        $factions = $heroesRepository->findDistinctValues('faction');
-        $types = $heroesRepository->findDistinctValues('type');
-        $affinities = $heroesRepository->findDistinctValues('affinity');
-        $allegiances = $heroesRepository->findDistinctValues('allegiance');
-        
-        // Récupère les valeurs uniques pour les champs séparés par virgule
-        $buffsOptions = $heroesRepository->findDistinctValuesFromCommaSeparated('buffs');
-        $debuffsOptions = $heroesRepository->findDistinctValuesFromCommaSeparated('debuffs');
-        $disableOptions = $heroesRepository->findDistinctValuesFromCommaSeparated('disable');
-
-        // Extraire les TYPES de leaders (Defense, Speed, Attack, etc.)
-        $allHeroes = $heroesRepository->findAll();
-        $leaderTypes = [];
-        
-        foreach ($allHeroes as $hero) {
-            if ($hero->getLeader()) {
-                $leaderText = strtolower($hero->getLeader());
-                
-                // Détecter le type de leader
-                if (stripos($leaderText, 'speed') !== false) {
-                    $leaderTypes['Speed'] = true;
-                } elseif (stripos($leaderText, 'defense') !== false) {
-                    $leaderTypes['Defense'] = true;
-                } elseif (stripos($leaderText, 'attack') !== false) {
-                    $leaderTypes['Attack'] = true;
-                } elseif (stripos($leaderText, 'hp') !== false) {
-                    $leaderTypes['Health'] = true;
-                } elseif (stripos($leaderText, 'initiative') !== false || stripos($leaderText, 'init') !== false) {
-                    $leaderTypes['Initiative'] = true;
-                } elseif (stripos($leaderText, 'resistance') !== false) {
-                    $leaderTypes['Resistance'] = true;
-                } elseif (stripos($leaderText, 'accuracy') !== false) {
-                    $leaderTypes['Accuracy'] = true;
-                } elseif (stripos($leaderText, 'critical rate') !== false || stripos($leaderText, 'crit rate') !== false) {
-                    $leaderTypes['Crit Rate'] = true;
-                } elseif (stripos($leaderText, 'critical damage') !== false || stripos($leaderText, 'crit damage') !== false) {
-                    $leaderTypes['Crit Damage'] = true;
-                }
-            }
+        if ($factionId || $typeId || $affinityId || $allegianceId || $rarityId || $leaderId || $buffId || $debuffId || $disableId) {
+            $heroes = $heroesRepository->findByFilters(
+                factionId: $factionId,
+                typeId: $typeId,
+                affinityId: $affinityId,
+                allegianceId: $allegianceId,
+                rarityId: $rarityId,
+                isLeader: $leaderId ? true : null,
+                buffsIds: $buffId ? [$buffId] : null,
+                debuffsIds: $debuffId ? [$debuffId] : null,
+                disableIds: $disableId ? [$disableId] : null
+            );
+        } else {
+            $heroes = $heroesRepository->findAllWithRelations();
         }
-        
-        $leaderTypes = array_keys($leaderTypes);
-        sort($leaderTypes);
+
+        // Récupère toutes les entités pour les filtres
+        $factions = $factionRepository->findBy([], ['name' => 'ASC']);
+        $types = $typeRepository->findBy([], ['name' => 'ASC']);
+        $affinities = $affinityRepository->findBy([], ['name' => 'ASC']);
+        $allegiances = $allegianceRepository->findBy([], ['name' => 'ASC']);
+        $rarities = $rarityRepository->findBy([], ['name' => 'ASC']);
+        $leaders = $leaderRepository->findBy([], ['name' => 'ASC']);
+        $buffsEntities = $buffsRepository->findBy([], ['name' => 'ASC']);
+        $debuffsEntities = $debuffsRepository->findBy([], ['name' => 'ASC']);
+        $disableEntities = $disableRepository->findBy([], ['name' => 'ASC']);
 
         return $this->render('heroes/index.html.twig', [
             'heroes' => $heroes,
@@ -92,19 +85,21 @@ final class HeroesController extends AbstractController
             'types' => $types,
             'affinities' => $affinities,
             'allegiances' => $allegiances,
-            'buffs' => $buffsOptions,
-            'debuffs' => $debuffsOptions,
-            'disables' => $disableOptions,
-            'leaderTypes' => $leaderTypes,
+            'rarities' => $rarities,
+            'leaders' => $leaders,
+            'buffs' => $buffsEntities,
+            'debuffs' => $debuffsEntities,
+            'disables' => $disableEntities,
             'currentFilters' => [
-                'faction' => $faction,
-                'type' => $type,
-                'affinity' => $affinity,
-                'allegiance' => $allegiance,
-                'leader' => $isLeader,
-                'buffs' => $buffs,
-                'debuffs' => $debuffs,
-                'disable' => $disable,
+                'faction' => $factionId,
+                'type' => $typeId,
+                'affinity' => $affinityId,
+                'allegiance' => $allegianceId,
+                'rarity' => $rarityId,
+                'leader' => $leaderId,
+                'buff' => $buffId,
+                'debuff' => $debuffId,
+                'disable' => $disableId,
             ]
         ]);
     }
@@ -169,10 +164,22 @@ final class HeroesController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // 🔥 Associer le héros aux skillUpgrades
+            foreach ($hero->getSkillUpgrades() as $skillUpgrade) {
+                $skillUpgrade->setHero($hero);
+            }
+
+            // 🔥 Associer le héros aux awakenings
+            foreach ($hero->getAwakenings() as $awakening) {
+                $awakening->setHero($hero);
+            }
+
             $entityManager->persist($hero);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_heroes_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'Héros créé avec succès !');
+
+            return $this->redirectToRoute('app_heroes_show', ['id' => $hero->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('heroes/new.html.twig', [
@@ -196,9 +203,21 @@ final class HeroesController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // 🔥 Associer le héros aux skillUpgrades
+            foreach ($hero->getSkillUpgrades() as $skillUpgrade) {
+                $skillUpgrade->setHero($hero);
+            }
+
+            // 🔥 Associer le héros aux awakenings
+            foreach ($hero->getAwakenings() as $awakening) {
+                $awakening->setHero($hero);
+            }
+
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_heroes_index', [], Response::HTTP_SEE_OTHER);
+            $this->addFlash('success', 'Héros modifié avec succès !');
+
+            return $this->redirectToRoute('app_heroes_show', ['id' => $hero->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('heroes/edit.html.twig', [
@@ -213,6 +232,8 @@ final class HeroesController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$hero->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($hero);
             $entityManager->flush();
+
+            $this->addFlash('success', 'Héros supprimé avec succès !');
         }
 
         return $this->redirectToRoute('app_heroes_index', [], Response::HTTP_SEE_OTHER);

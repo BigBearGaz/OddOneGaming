@@ -1,26 +1,1090 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ hero is defined and hero.id ? 'Éditer ' ~ hero.Name : 'Nouveau Héros' }}{% endblock %}
+{% block title %}Nouveau Héros{% endblock %}
+
+{# ============================= #}
+{#    CUSTOM FORM THEME          #}
+{# ============================= #}
+{% form_theme form _self %}
+
+{% block form_row %}
+    <div class="form-group mb-4">
+        {{ form_label(form, null, {
+            label_attr: { class: 'form-label fw-bold text-uppercase mb-2' }
+        }) }}
+        {{ form_widget(form) }}
+        {{ form_errors(form) }}
+        {% if form.vars.help is defined and form.vars.help %}
+            <small class="form-text" style="color: rgba(255, 255, 255, 0.6);">{{ form.vars.help }}</small>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block textarea_widget %}
+    {% set attr = attr|merge({
+        class: (attr.class|default('') ~ ' form-control form-control-lg')|trim,
+        rows: attr.rows|default(4)
+    }) %}
+    <textarea {{ block('widget_attributes') }}>{{ value }}</textarea>
+{% endblock %}
+
+{# Custom rendering pour les checkboxes avec icônes #}
+{% block choice_widget_expanded %}
+    <div class="status-checkbox-grid">
+        {% for child in form %}
+            {% set entity = null %}
+            {% if child.parent.vars.choices is defined %}
+                {% for choice in child.parent.vars.choices %}
+                    {# Gestion des groupes (comme pour les imprints groupés par rareté) #}
+                    {% if choice.choices is defined %}
+                        {% for subChoice in choice.choices %}
+                            {% if subChoice.value == child.vars.value %}
+                                {% set entity = subChoice.data %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {# Choix simple non groupé #}
+                        {% if choice.value == child.vars.value %}
+                            {% set entity = choice.data %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <div class="status-checkbox-item">
+                <input type="{{ child.parent.vars.multiple ? 'checkbox' : 'radio' }}" 
+                       id="{{ child.vars.id }}" 
+                       name="{{ child.vars.full_name }}" 
+                       class="status-checkbox-input"
+                       value="{{ child.vars.value }}"
+                       {% if child.vars.checked %}checked{% endif %}>
+
+                <label for="{{ child.vars.id }}" class="status-checkbox-label">
+                    <span class="status-checkbox-box">
+                        <svg class="status-checkbox-checkmark" viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                    </span>
+
+                    {# Gestion intelligente des icônes : iconUrl puis imageUrl #}
+                    {% set hasImage = false %}
+                    {% set imageSource = null %}
+
+                    {% if entity %}
+                        {% if entity.iconUrl is defined and entity.iconUrl %}
+                            {% set hasImage = true %}
+                            {% set imageSource = entity.iconUrl %}
+                        {% elseif entity.imageUrl is defined and entity.imageUrl %}
+                            {% set hasImage = true %}
+                            {% set imageSource = entity.imageUrl %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% if hasImage and imageSource %}
+                        <img src="{{ imageSource }}" 
+                             alt="{{ child.vars.label }}" 
+                             class="status-icon"
+                             loading="lazy"
+                             onerror="this.style.display='none'">
+                    {% else %}
+                        <span class="status-icon-placeholder">
+                            <i class="fas fa-shield-alt"></i>
+                        </span>
+                    {% endif %}
+
+                    <span class="status-name">{{ child.vars.label }}</span>
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow-x: hidden;
+            background: 
+                linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%),
+                url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 100, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero-form-section {
+            position: relative;
+            min-height: 100vh;
+            padding: 180px 0 80px 0;
+            z-index: 1;
+        }
+
+        .container-custom {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            padding: 1rem 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .breadcrumb-item a {
+            color: #00ff88;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: #00ccff;
+        }
+
+        .breadcrumb-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            margin-bottom: 30px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 255, 136, 0.4);
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.2);
+        }
+
+        .card-header {
+            border: none;
+            padding: 1.75rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header h2,
+        .card-header h4 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .card-header h2 {
+            font-size: 1.75rem;
+        }
+
+        .card-header h4 {
+            font-size: 1.25rem;
+        }
+
+        .card-body {
+            padding: 2.5rem;
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%) !important;
+        }
+
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%) !important;
+        }
+
+        .bg-gradient-purple {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%) !important;
+        }
+
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
+        }
+
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        }
+
+        .bg-gradient-dark {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+        }
+
+        .bg-gradient-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        }
+
+        .bg-gradient-secondary {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
+        }
+
+        .bg-gradient-cyan {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem !important;
+            display: block;
+        }
+
+        .form-control,
+        .form-select {
+            padding: 0.875rem 1.25rem !important;
+            font-size: 1rem !important;
+            border: 2px solid rgba(0, 255, 136, 0.2) !important;
+            border-radius: 12px !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: #ffffff !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .form-control:hover,
+        .form-select:hover {
+            border-color: rgba(0, 255, 136, 0.3) !important;
+            background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #00ff88 !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1),
+                        0 8px 25px rgba(0, 255, 136, 0.15) !important;
+            outline: none;
+        }
+
+        textarea.form-control {
+            min-height: 120px !important;
+            resize: vertical;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2300ff88' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+            padding-right: 3rem !important;
+        }
+
+        .form-select option {
+            background-color: #1a1f3a;
+            color: #ffffff;
+            padding: 0.5rem;
+        }
+
+        .status-checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            padding: 0;
+            margin-bottom: 0;
+        }
+
+        .status-checkbox-item {
+            position: relative;
+        }
+
+        .status-checkbox-input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            width: 0;
+            height: 0;
+        }
+
+        .status-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0;
+        }
+
+        .status-checkbox-label:hover {
+            border-color: #00ff88;
+            transform: translateX(4px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .status-checkbox-input:checked + .status-checkbox-label {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.15);
+            box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1);
+        }
+
+        .status-checkbox-box {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .status-checkbox-input:checked + .status-checkbox-label .status-checkbox-box {
+            background: #00ff88;
+            border-color: #00ff88;
+        }
+
+        .status-checkbox-checkmark {
+            width: 16px;
+            height: 16px;
+            fill: #0a0e27;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+        }
+
+        .status-checkbox-input:checked + .status-checkbox-label .status-checkbox-checkmark {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .status-icon {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .status-icon-placeholder {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.5);
+            flex-shrink: 0;
+        }
+
+        .status-checkbox-label:hover .status-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .status-checkbox-input:checked + .status-checkbox-label .status-icon {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .status-name {
+            flex: 1;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9375rem;
+        }
+
+        .status-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .status-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            font-size: 1.125rem;
+            border-left: 4px solid;
+        }
+
+        .status-section-header i {
+            font-size: 1.25rem;
+        }
+
+        /* Status sections colors */
+        .status-section.buffs .status-section-header {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border-left-color: #10b981;
+        }
+
+        .status-section.debuffs .status-section-header {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-left-color: #ef4444;
+        }
+
+        .status-section.disable .status-section-header {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border-left-color: #f59e0b;
+        }
+
+        .status-section.sets .status-section-header {
+            background: rgba(6, 182, 212, 0.15);
+            color: #06b6d4;
+            border-left-color: #06b6d4;
+        }
+
+        .status-section.armor .status-section-header {
+            background: rgba(100, 116, 139, 0.15);
+            color: #64748b;
+            border-left-color: #64748b;
+        }
+
+        .status-section.weapons .status-section-header {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-left-color: #ef4444;
+        }
+
+        .status-section.factions .status-section-header {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            border-left-color: #a855f7;
+        }
+
+        .status-section.types .status-section-header {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border-left-color: #3b82f6;
+        }
+
+        .status-section.allegiances .status-section-header {
+            background: rgba(236, 72, 153, 0.15);
+            color: #ec4899;
+            border-left-color: #ec4899;
+        }
+
+        .status-section.affinities .status-section-header {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            border-left-color: #fbbf24;
+        }
+
+        .status-section.leaders .status-section-header {
+            background: rgba(5, 150, 105, 0.15);
+            color: #059669;
+            border-left-color: #059669;
+        }
+
+        .status-section.rarities .status-section-header {
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+            border-left-color: #eab308;
+        }
+
+        .status-section.imprints .status-section-header {
+            background: rgba(139, 92, 246, 0.15);
+            color: #8b5cf6;
+            border-left-color: #8b5cf6;
+        }
+
+        /* Collection items */
+        .collection-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .collection-item:hover {
+            border-color: rgba(0, 255, 136, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.15);
+        }
+
+        /* Skill upgrade sections */
+        .skill-upgrade-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border-left: 4px solid #06b6d4;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .skill-upgrade-section h5 {
+            color: #06b6d4;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.5);
+            color: #0a0e27;
+        }
+
+        .btn-outline-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #00ff88;
+            color: #00ff88;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
+            color: #ffffff;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-danger:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
+            color: #ffffff;
+        }
+
+        @media (max-width: 768px) {
+            .container-custom {
+                padding: 0 20px;
+            }
+
+            .status-checkbox-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .card-body {
+                padding: 1.5rem;
+            }
+
+            .card-header {
+                padding: 1.25rem 1.5rem;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            {# Breadcrumb #}
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{{ path('app_heroes_index') }}">Héros</a>
-                    </li>
-                    <li class="breadcrumb-item active">
-                        {{ hero is defined and hero.id ? 'Éditer' : 'Nouveau' }}
-                    </li>
-                </ol>
-            </nav>
+<div class="hero-form-section">
+    <div class="container-custom">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ path('app_heroes_index') }}">
+                        <i class="fas fa-home me-2"></i>Héros
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    Nouveau
+                </li>
+            </ol>
+        </nav>
 
-            {# Formulaire #}
-            {{ include('heroes/_form.html.twig') }}
+        <div class="card">
+            <div class="card-header bg-gradient-primary">
+                <h2>
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Nouveau Héros</span>
+                </h2>
+            </div>
+
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'hero-form'}}) }}
+
+                {# INFORMATIONS GÉNÉRALES #}
+                <div class="card">
+                    <div class="card-header bg-gradient-info">
+                        <h4>
+                            <i class="fas fa-info-circle"></i>
+                            <span>Informations générales</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            {{ form_row(form.Name) }}
+                        </div>
+
+                        <div class="status-section rarities">
+                            <div class="status-section-header">
+                                <i class="fas fa-star"></i>
+                                <span>Rareté</span>
+                            </div>
+                            {{ form_row(form.rarityEntity, {'label': false}) }}
+                        </div>
+
+                        <div class="status-section factions">
+                            <div class="status-section-header">
+                                <i class="fas fa-flag"></i>
+                                <span>Faction</span>
+                            </div>
+                            {{ form_row(form.factionEntity, {'label': false}) }}
+                        </div>
+
+                        <div class="status-section types">
+                            <div class="status-section-header">
+                                <i class="fas fa-users"></i>
+                                <span>Type / Archétype</span>
+                            </div>
+                            {{ form_row(form.typeEntity, {'label': false}) }}
+                        </div>
+
+                        <div class="status-section allegiances">
+                            <div class="status-section-header">
+                                <i class="fas fa-balance-scale"></i>
+                                <span>Allégeance</span>
+                            </div>
+                            {{ form_row(form.allegianceEntity, {'label': false}) }}
+                        </div>
+
+                        <div class="status-section affinities">
+                            <div class="status-section-header">
+                                <i class="fas fa-fire"></i>
+                                <span>Affinité Élémentaire</span>
+                            </div>
+                            {{ form_row(form.affinityEntity, {'label': false}) }}
+                        </div>
+
+                        <div class="status-section leaders">
+                            <div class="status-section-header">
+                                <i class="fas fa-crown"></i>
+                                <span>Leader Skill</span>
+                            </div>
+                            {{ form_row(form.leaderEntity, {'label': false}) }}
+                            <div class="mt-3">
+                                {{ form_row(form.leaderValue) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# URLs #}
+                <div class="card">
+                    <div class="card-header bg-gradient-purple">
+                        <h4>
+                            <i class="fas fa-image"></i>
+                            <span>URLs</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">{{ form_row(form.imageUrl) }}</div>
+                            <div class="col-md-6">{{ form_row(form.videosUrl) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {# COMPÉTENCES #}
+                <div class="card">
+                    <div class="card-header bg-gradient-warning">
+                        <h4>
+                            <i class="fas fa-bolt"></i>
+                            <span>Compétences</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        {{ form_row(form.base) }}
+                        {{ form_row(form.core) }}
+                        {{ form_row(form.ultimate) }}
+                        {{ form_row(form.passive) }}
+                    </div>
+                </div>
+
+                {# SKILL AWAKENINGS #}
+                <div class="card">
+                    <div class="card-header bg-gradient-warning">
+                        <h4>
+                            <i class="fas fa-star-half-alt"></i>
+                            <span>Skill Awakenings</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="collection-container" data-prototype="{{ form_widget(form.awakenings.vars.prototype)|e('html_attr') }}" data-index="{{ form.awakenings|length }}" data-collection="awakenings">
+                            <div class="awakenings-list">
+                                {% for awakening in form.awakenings %}
+                                    <div class="collection-item card mb-3 p-3">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                {{ form_row(awakening.skillType) }}
+                                            </div>
+                                            <div class="col-md-2">
+                                                {{ form_row(awakening.awakeningLevel) }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                {{ form_row(awakening.effectDescription) }}
+                                            </div>
+                                            <div class="col-md-1 d-flex align-items-end">
+                                                <button type="button" class="btn btn-danger w-100 remove-collection-item">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-success mt-3 add-collection-item">
+                                <i class="fas fa-plus"></i>
+                                <span>Ajouter un Awakening</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% do form.awakenings.setRendered %}
+
+{# SKILL LEVEL UPGRADES - 3 COMPÉTENCES (base, core, ultimate) #}
+<div class="card">
+    <div class="card-header bg-gradient-cyan">
+        <h4>
+            <i class="fas fa-chart-line"></i>
+            <span>📊 Skill Level Upgrades</span>
+        </h4>
+    </div>
+    <div class="card-body">
+        {% for skillUpgrade in form.skillUpgrades %}
+            <div class="skill-upgrade-section">
+                {# Titre de la compétence selon l'index (3 compétences seulement) #}
+                <h5>
+                    {% if loop.index == 1 %}
+                        <span style="background: rgba(102, 126, 234, 0.5); color: #fff; padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">S1</span>
+                        <span>⚡ Base Skill</span>
+                    {% elseif loop.index == 2 %}
+                        <span style="background: rgba(0, 255, 136, 0.5); color: #0a0e27; padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">S2</span>
+                        <span>⚡ Core Skill</span>
+                    {% elseif loop.index == 3 %}
+                        <span style="background: rgba(255, 82, 82, 0.5); color: #fff; padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">S3</span>
+                        <span>⚡ Ultimate</span>
+                    {% endif %}
+                </h5>
+
+                {# Champ caché pour skillType #}
+                {{ form_widget(skillUpgrade.skillType) }}
+
+                {# ✅ NOUVEAU : Champ Cooldown #}
+                <div class="mb-4">
+                    <label style="color: #00ff88; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-clock"></i>
+                        <span>Cooldown</span>
+                    </label>
+                    {{ form_widget(skillUpgrade.cooldown, {
+                        'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Nombre de tours (ex: 3)',
+                            'style': 'max-width: 250px; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(0, 255, 136, 0.3); color: #fff; padding: 0.75rem;'
+                        }
+                    }) }}
+                </div>
+
+                {# Grille des 6 niveaux #}
+                <div class="row g-3">
+                    {% for i in 1..6 %}
+                        <div class="col-md-6">
+                            <div class="form-group mb-0">
+                                <label style="color: #06b6d4; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                    <span style="background: rgba(6, 182, 212, 0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.85rem;">Level {{ i }}</span>
+                                </label>
+                                {{ form_widget(attribute(skillUpgrade, 'level' ~ i), {
+                                    'attr': {
+                                        'class': 'form-control',
+                                        'placeholder': 'Effet du niveau ' ~ i,
+                                        'style': 'background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(6, 182, 212, 0.3); color: #fff; padding: 0.75rem;'
+                                    }
+                                }) }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% do form.skillUpgrades.setRendered %}
+
+
+                {# EFFETS DE STATUT #}
+                <div class="card">
+                    <div class="card-header bg-gradient-success">
+                        <h4>
+                            <i class="fas fa-magic"></i>
+                            <span>Effets de Statut</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-section buffs">
+                            <div class="status-section-header">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>Buffs (Effets Positifs)</span>
+                            </div>
+                            {{ form_row(form.heroBuffs, {'label': false}) }}
+                        </div>
+
+                        <div class="status-section debuffs">
+                            <div class="status-section-header">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>Debuffs (Effets Négatifs)</span>
+                            </div>
+                            {{ form_row(form.heroDebuffs, {'label': false}) }}
+                        </div>
+
+                        <div class="status-section disable">
+                            <div class="status-section-header">
+                                <i class="fas fa-ban"></i>
+                                <span>Disable (Contrôle de Foule)</span>
+                            </div>
+                            {{ form_row(form.heroDisables, {'label': false}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# SETS RECOMMANDÉS #}
+                <div class="card">
+                    <div class="card-header bg-gradient-cyan">
+                        <h4>
+                            <i class="fas fa-boxes"></i>
+                            <span>Sets Recommandés</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-section sets">
+                            <div class="status-section-header">
+                                <i class="fas fa-layer-group"></i>
+                                <span>Sélectionner les Sets</span>
+                            </div>
+                            {{ form_row(form.recommendedSets, {'label': false}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# ÉQUIPEMENTS RECOMMANDÉS #}
+                <div class="card">
+                    <div class="card-header bg-gradient-secondary">
+                        <h4>
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Équipements Recommandés</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-section armor">
+                            <div class="status-section-header">
+                                <i class="fas fa-user-shield"></i>
+                                <span>Armures (1 seul par slot)</span>
+                            </div>
+                            {{ form_row(form.armors, {'label': false}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# ARMES RECOMMANDÉES #}
+                <div class="card">
+                    <div class="card-header bg-gradient-danger">
+                        <h4>
+                            <i class="fas fa-sword"></i>
+                            <span>Armes Recommandées</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-section weapons">
+                            <div class="status-section-header">
+                                <i class="fas fa-gavel"></i>
+                                <span>Sélectionner les Armes</span>
+                            </div>
+                            {{ form_row(form.weapons, {'label': false}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# IMPRINT #}
+                <div class="card">
+                    <div class="card-header bg-gradient-dark">
+                        <h4>
+                            <i class="fas fa-fingerprint"></i>
+                            <span>Imprint</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        {{ form_row(form.imprint) }}
+                        
+                        <div class="status-section imprints mt-4">
+                            <div class="status-section-header">
+                                <i class="fas fa-gem"></i>
+                                <span>Imprints (Bonus)</span>
+                            </div>
+                            {{ form_row(form.imprints, {'label': false}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# DIVINITY #}
+                <div class="card">
+                    <div class="card-header bg-gradient-purple">
+                        <h4>
+                            <i class="fas fa-sun"></i>
+                            <span>Divinity</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">{{ form_row(form.DivinityCost) }}</div>
+                            <div class="col-md-6">{{ form_row(form.InitialDivinity) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {# BONUS #}
+                <div class="card">
+                    <div class="card-header bg-gradient-success">
+                        <h4>
+                            <i class="fas fa-gift"></i>
+                            <span>Bonus</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        {{ form_row(form.awakeningBonuses) }}
+                        {{ form_row(form.ascensionBonuses) }}
+                    </div>
+                </div>
+
+                {# ACTIONS #}
+                <div class="d-flex gap-3 justify-content-center mt-5">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span>Créer le héros</span>
+                    </button>
+                    <a href="{{ path('app_heroes_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i>
+                        <span>Annuler</span>
+                    </a>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Collection management pour Awakenings
+        document.querySelectorAll('.add-collection-item').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const container = this.closest('.collection-container');
+                const list = container.querySelector('.awakenings-list');
+                const index = container.dataset.index;
+                const prototype = container.dataset.prototype;
+                
+                const newForm = prototype.replace(/__name__/g, index);
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = newForm;
+                wrapper.firstElementChild.classList.add('collection-item', 'card', 'mb-3', 'p-3');
+                
+                list.appendChild(wrapper.firstElementChild);
+                container.dataset.index = parseInt(index) + 1;
+                
+                attachDeleteHandlers();
+            });
+        });
+
+        function attachDeleteHandlers() {
+            document.querySelectorAll('.remove-collection-item').forEach(button => {
+                button.replaceWith(button.cloneNode(true));
+            });
+            
+            document.querySelectorAll('.remove-collection-item').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.closest('.collection-item').remove();
+                });
+            });
+        }
+
+        attachDeleteHandlers();
+    </script>
 {% endblock %}

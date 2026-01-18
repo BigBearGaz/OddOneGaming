@@ -2,15 +2,19 @@
 
 namespace App\Twig;
 
-use App\Repository\DungeonsRepository;
+use App\Entity\Dungeons;
+use Doctrine\ORM\EntityManagerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
-class AppExtension extends AbstractExtension
+class DungeonsExtension extends AbstractExtension
 {
-    public function __construct(
-        private DungeonsRepository $dungeonsRepository
-    ) {}
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
 
     public function getFunctions(): array
     {
@@ -21,6 +25,6 @@ class AppExtension extends AbstractExtension
 
     public function getAllDungeons(): array
     {
-        return $this->dungeonsRepository->findAll();
+        return $this->entityManager->getRepository(Dungeons::class)->findAll();
     }
 }

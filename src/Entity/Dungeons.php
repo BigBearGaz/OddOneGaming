@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DungeonsRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -14,53 +16,61 @@ class Dungeons
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageUrl = null;
 
-    // SPELL 1 (Basic)
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $difficulty = null;
+
+    // SPELL 1
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $spell1Name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $spell1 = null;
+    private ?string $spell1Description = null;
 
-    // SPELL 2 (Core)
+    // SPELL 2
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $spell2Name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $spell2 = null;
+    private ?string $spell2Description = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $spell2Cooldown = null;
 
-    // SPELL 3 (Ultimate)
+    // SPELL 3
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $spell3Name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $spell3 = null;
+    private ?string $spell3Description = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $spell3Cooldown = null;
 
-    // PASSIVES (jusqu'à 4)
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $passif = null;
+    // PASSIVES DE BASE
+    #[ORM\OneToMany(targetEntity: DungeonPassive::class, mappedBy: 'dungeon', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['passiveOrder' => 'ASC'])]
+    private Collection $passives;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $passif2 = null;
+    // PHASES
+    #[ORM\OneToMany(targetEntity: DungeonPhase::class, mappedBy: 'dungeon', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['orderNum' => 'ASC'])]
+    private Collection $phases;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $passif3 = null;
+    public function __construct()
+    {
+        $this->passives = new ArrayCollection();
+        $this->phases = new ArrayCollection();
+    }
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $passif4 = null;
-
-    // GETTERS & SETTERS
     public function getId(): ?int
     {
         return $this->id;
@@ -71,7 +81,7 @@ class Dungeons
         return $this->name;
     }
 
-    public function setName(?string $name): static
+    public function setName(string $name): static
     {
         $this->name = $name;
         return $this;
@@ -88,7 +98,28 @@ class Dungeons
         return $this;
     }
 
-    // Spell 1
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getDifficulty(): ?string
+    {
+        return $this->difficulty;
+    }
+
+    public function setDifficulty(?string $difficulty): static
+    {
+        $this->difficulty = $difficulty;
+        return $this;
+    }
+
     public function getSpell1Name(): ?string
     {
         return $this->spell1Name;
@@ -100,18 +131,17 @@ class Dungeons
         return $this;
     }
 
-    public function getSpell1(): ?string
+    public function getSpell1Description(): ?string
     {
-        return $this->spell1;
+        return $this->spell1Description;
     }
 
-    public function setSpell1(?string $spell1): static
+    public function setSpell1Description(?string $spell1Description): static
     {
-        $this->spell1 = $spell1;
+        $this->spell1Description = $spell1Description;
         return $this;
     }
 
-    // Spell 2
     public function getSpell2Name(): ?string
     {
         return $this->spell2Name;
@@ -123,14 +153,14 @@ class Dungeons
         return $this;
     }
 
-    public function getSpell2(): ?string
+    public function getSpell2Description(): ?string
     {
-        return $this->spell2;
+        return $this->spell2Description;
     }
 
-    public function setSpell2(?string $spell2): static
+    public function setSpell2Description(?string $spell2Description): static
     {
-        $this->spell2 = $spell2;
+        $this->spell2Description = $spell2Description;
         return $this;
     }
 
@@ -145,7 +175,6 @@ class Dungeons
         return $this;
     }
 
-    // Spell 3
     public function getSpell3Name(): ?string
     {
         return $this->spell3Name;
@@ -157,14 +186,14 @@ class Dungeons
         return $this;
     }
 
-    public function getSpell3(): ?string
+    public function getSpell3Description(): ?string
     {
-        return $this->spell3;
+        return $this->spell3Description;
     }
 
-    public function setSpell3(?string $spell3): static
+    public function setSpell3Description(?string $spell3Description): static
     {
-        $this->spell3 = $spell3;
+        $this->spell3Description = $spell3Description;
         return $this;
     }
 
@@ -179,48 +208,51 @@ class Dungeons
         return $this;
     }
 
-    // Passifs
-    public function getPassif(): ?string
+    public function getPassives(): Collection
     {
-        return $this->passif;
+        return $this->passives;
     }
 
-    public function setPassif(?string $passif): static
+    public function addPassive(DungeonPassive $passive): static
     {
-        $this->passif = $passif;
+        if (!$this->passives->contains($passive)) {
+            $this->passives->add($passive);
+            $passive->setDungeon($this);
+        }
         return $this;
     }
 
-    public function getPassif2(): ?string
+    public function removePassive(DungeonPassive $passive): static
     {
-        return $this->passif2;
-    }
-
-    public function setPassif2(?string $passif2): static
-    {
-        $this->passif2 = $passif2;
+        if ($this->passives->removeElement($passive)) {
+            if ($passive->getDungeon() === $this) {
+                $passive->setDungeon(null);
+            }
+        }
         return $this;
     }
 
-    public function getPassif3(): ?string
+    public function getPhases(): Collection
     {
-        return $this->passif3;
+        return $this->phases;
     }
 
-    public function setPassif3(?string $passif3): static
+    public function addPhase(DungeonPhase $phase): static
     {
-        $this->passif3 = $passif3;
+        if (!$this->phases->contains($phase)) {
+            $this->phases->add($phase);
+            $phase->setDungeon($this);
+        }
         return $this;
     }
 
-    public function getPassif4(): ?string
+    public function removePhase(DungeonPhase $phase): static
     {
-        return $this->passif4;
-    }
-
-    public function setPassif4(?string $passif4): static
-    {
-        $this->passif4 = $passif4;
+        if ($this->phases->removeElement($phase)) {
+            if ($phase->getDungeon() === $this) {
+                $phase->setDungeon(null);
+            }
+        }
         return $this;
     }
 }

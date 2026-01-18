@@ -1,0 +1,79 @@
+{# templates/security/dashboard.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Dashboard - OddOne Gaming{% endblock %}
+
+{% block body %}
+<div style="min-height: 100vh; background: linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%); padding: 100px 40px;">
+    <div style="max-width: 1400px; margin: 0 auto;">
+        
+        {# Header #}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div>
+                <h1 style="color: #00ff88; font-size: 2.5rem; margin-bottom: 10px;">👋 Welcome, {{ app.user.fullName }}</h1>
+                <p style="color: rgba(255, 255, 255, 0.6);">Admin Dashboard</p>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <a href="{{ path('app_home') }}" style="padding: 12px 25px; background: rgba(255, 255, 255, 0.05); color: white; text-decoration: none; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2);">
+                    🏠 View Site
+                </a>
+                <a href="{{ path('app_logout') }}" style="padding: 12px 25px; background: rgba(255, 82, 82, 0.2); color: #ff5252; text-decoration: none; border-radius: 10px; border: 1px solid #ff5252;">
+                    🚪 Logout
+                </a>
+            </div>
+        </div>
+
+        {# Stats Cards #}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 40px;">
+            
+            {# Heroes Stats #}
+            <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px; border: 1px solid rgba(0, 255, 136, 0.2);">
+                <div style="font-size: 3rem; margin-bottom: 15px;">⚔️</div>
+                <div style="font-size: 2.5rem; color: #00ff88; font-weight: 900; margin-bottom: 10px;">{{ heroes_count }}</div>
+                <div style="color: rgba(255, 255, 255, 0.7); font-weight: 600;">Total Heroes</div>
+            </div>
+
+            {# Dungeons Stats #}
+            <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px; border: 1px solid rgba(255, 82, 82, 0.2);">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🏰</div>
+                <div style="font-size: 2.5rem; color: #ff5252; font-weight: 900; margin-bottom: 10px;">{{ dungeons_count }}</div>
+                <div style="color: rgba(255, 255, 255, 0.7); font-weight: 600;">Total Dungeons</div>
+            </div>
+
+            {# Users Stats #}
+            <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px; border: 1px solid rgba(102, 126, 234, 0.2);">
+                <div style="font-size: 3rem; margin-bottom: 15px;">👥</div>
+                <div style="font-size: 2.5rem; color: #667eea; font-weight: 900; margin-bottom: 10px;">{{ users_count }}</div>
+                <div style="color: rgba(255, 255, 255, 0.7); font-weight: 600;">Admin Users</div>
+            </div>
+
+        </div>
+
+        {# Quick Actions #}
+        <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border-radius: 20px; padding: 40px; border: 1px solid rgba(0, 255, 136, 0.2);">
+            <h2 style="color: #00ff88; font-size: 1.8rem; margin-bottom: 25px;">🚀 Quick Actions</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                
+                <a href="{{ path('app_heroes_import') }}" style="padding: 25px; background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%); color: #0a0e27; text-decoration: none; border-radius: 15px; font-weight: 700; text-align: center; transition: all 0.3s ease;">
+                    📤 Import Heroes Excel
+                </a>
+
+                <a href="{{ path('app_heroes_new') }}" style="padding: 25px; background: rgba(0, 255, 136, 0.1); color: #00ff88; text-decoration: none; border-radius: 15px; font-weight: 700; text-align: center; border: 1px solid rgba(0, 255, 136, 0.3); transition: all 0.3s ease;">
+                    ➕ Add New Hero
+                </a>
+
+                <a href="{{ path('app_dungeons_new') }}" style="padding: 25px; background: rgba(255, 82, 82, 0.1); color: #ff5252; text-decoration: none; border-radius: 15px; font-weight: 700; text-align: center; border: 1px solid rgba(255, 82, 82, 0.3); transition: all 0.3s ease;">
+                    🏰 Add New Dungeon
+                </a>
+
+                <a href="{{ path('app_admin_users') }}" style="padding: 25px; background: rgba(102, 126, 234, 0.1); color: #667eea; text-decoration: none; border-radius: 15px; font-weight: 700; text-align: center; border: 1px solid rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
+                    👥 Manage Users
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

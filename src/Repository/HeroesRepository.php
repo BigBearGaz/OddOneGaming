@@ -17,57 +17,65 @@ class HeroesRepository extends ServiceEntityRepository
      * Filtre les héros selon les critères
      */
     public function findByFilters(
-        ?string $faction = null,
-        ?string $type = null,
-        ?string $affinity = null,
-        ?string $allegiance = null,
-        ?string $isLeader = null,
-        ?string $buffs = null,
-        ?string $debuffs = null,
-        ?string $disable = null
+        ?int $factionId = null,
+        ?int $typeId = null,
+        ?int $affinityId = null,
+        ?int $allegianceId = null,
+        ?int $rarityId = null,
+        ?bool $isLeader = null,
+        ?array $buffsIds = null,
+        ?array $debuffsIds = null,
+        ?array $disableIds = null
     ): array {
         $qb = $this->createQueryBuilder('h');
 
-        if ($faction) {
-            $qb->andWhere('h.faction = :faction')
-               ->setParameter('faction', $faction);
+        // Jointures pour les relations ManyToOne
+        if ($factionId) {
+            $qb->andWhere('h.factionEntity = :faction')
+               ->setParameter('faction', $factionId);
         }
 
-        if ($type) {
-            $qb->andWhere('h.type = :type')
-               ->setParameter('type', $type);
+        if ($typeId) {
+            $qb->andWhere('h.typeEntity = :type')
+               ->setParameter('type', $typeId);
         }
 
-        if ($affinity) {
-            $qb->andWhere('h.affinity = :affinity')
-               ->setParameter('affinity', $affinity);
+        if ($affinityId) {
+            $qb->andWhere('h.affinityEntity = :affinity')
+               ->setParameter('affinity', $affinityId);
         }
 
-        if ($allegiance) {
-            $qb->andWhere('h.allegiance = :allegiance')
-               ->setParameter('allegiance', $allegiance);
+        if ($allegianceId) {
+            $qb->andWhere('h.allegianceEntity = :allegiance')
+               ->setParameter('allegiance', $allegianceId);
         }
 
-        if ($isLeader === 'yes') {
-            $qb->andWhere('h.Leader IS NOT NULL')
-               ->andWhere('h.Leader != :empty')
-               ->setParameter('empty', '');
+        if ($rarityId) {
+            $qb->andWhere('h.rarityEntity = :rarity')
+               ->setParameter('rarity', $rarityId);
         }
 
-        // NOUVEAUX FILTRES avec LIKE
-        if ($buffs) {
-            $qb->andWhere('h.buffs LIKE :buffs')
-               ->setParameter('buffs', '%' . $buffs . '%');
+        if ($isLeader === true) {
+            $qb->andWhere('h.leaderEntity IS NOT NULL');
         }
 
-        if ($debuffs) {
-            $qb->andWhere('h.debuffs LIKE :debuffs')
-               ->setParameter('debuffs', '%' . $debuffs . '%');
+        // Filtres pour les relations ManyToMany (buffs, debuffs, disable)
+        if ($buffsIds && !empty($buffsIds)) {
+            $qb->innerJoin('h.heroBuffs', 'buff')
+               ->andWhere('buff.id IN (:buffsIds)')
+               ->setParameter('buffsIds', $buffsIds);
         }
 
-        if ($disable) {
-            $qb->andWhere('h.disable LIKE :disable')
-               ->setParameter('disable', '%' . $disable . '%');
+        if ($debuffsIds && !empty($debuffsIds)) {
+            $qb->innerJoin('h.heroDebuffs', 'debuff')
+               ->andWhere('debuff.id IN (:debuffsIds)')
+               ->setParameter('debuffsIds', $debuffsIds);
+        }
+
+        if ($disableIds && !empty($disableIds)) {
+            $qb->innerJoin('h.heroDisables', 'disable')
+               ->andWhere('disable.id IN (:disableIds)')
+               ->setParameter('disableIds', $disableIds);
         }
 
         return $qb->orderBy('h.Name', 'ASC')
@@ -76,65 +84,166 @@ class HeroesRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les valeurs distinctes pour un champ simple (faction, type, etc.)
+     * Récupère tous les héros avec leurs relations chargées (évite le N+1)
      */
-    public function findDistinctValues(string $field): array
+    public function findAllWithRelations(): array
     {
-        $qb = $this->createQueryBuilder('h')
-            ->select("h.$field")
-            ->distinct()
-            ->where("h.$field IS NOT NULL")
-            ->andWhere("h.$field != ''")
-            ->orderBy("h.$field", 'ASC');
-
-        $results = $qb->getQuery()->getResult();
-        
-        return array_filter(
-            array_map(fn($row) => $row[$field] ?? null, $results),
-            fn($value) => !empty($value)
-        );
+        return $this->createQueryBuilder('h')
+            ->leftJoin('h.factionEntity', 'f')
+            ->leftJoin('h.typeEntity', 't')
+            ->leftJoin('h.allegianceEntity', 'al')
+            ->leftJoin('h.affinityEntity', 'af')
+            ->leftJoin('h.rarityEntity', 'r')
+            ->leftJoin('h.leaderEntity', 'l')
+            ->addSelect('f', 't', 'al', 'af', 'r', 'l')
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**
-     * Récupère les valeurs distinctes pour un champ contenant plusieurs valeurs séparées par virgule
-     * (utilisé pour buffs, debuffs, disable)
+     * Récupère les héros par faction
      */
-    public function findDistinctValuesFromCommaSeparated(string $field): array
+    public function findByFaction($factionId): array
     {
-        // Récupère toutes les valeurs du champ
-        $qb = $this->createQueryBuilder('h')
-            ->select("h.$field")
-            ->where("h.$field IS NOT NULL")
-            ->andWhere("h.$field != ''");
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.factionEntity = :faction')
+            ->setParameter('faction', $factionId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-        $results = $qb->getQuery()->getResult();
+    /**
+     * Récupère les héros par type
+     */
+    public function findByType($typeId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.typeEntity = :type')
+            ->setParameter('type', $typeId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-        $uniqueValues = [];
+    /**
+     * Récupère les héros par rareté
+     */
+    public function findByRarity($rarityId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.rarityEntity = :rarity')
+            ->setParameter('rarity', $rarityId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-        // Pour chaque ligne, split par virgule et ajoute chaque valeur
-        foreach ($results as $row) {
-            $value = $row[$field] ?? '';
-            if (empty($value)) {
-                continue;
-            }
+    /**
+     * Récupère les héros ayant un buff spécifique
+     */
+    public function findByBuff($buffId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->innerJoin('h.heroBuffs', 'buff')
+            ->andWhere('buff.id = :buffId')
+            ->setParameter('buffId', $buffId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-            // Split par virgule
-            $parts = explode(',', $value);
-            
-            foreach ($parts as $part) {
-                // Nettoie les espaces
-                $cleaned = trim($part);
-                if (!empty($cleaned)) {
-                    $uniqueValues[$cleaned] = true;
-                }
-            }
-        }
+    /**
+     * Récupère les héros ayant un debuff spécifique
+     */
+    public function findByDebuff($debuffId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->innerJoin('h.heroDebuffs', 'debuff')
+            ->andWhere('debuff.id = :debuffId')
+            ->setParameter('debuffId', $debuffId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-        // Récupère les clés (valeurs uniques) et trie
-        $result = array_keys($uniqueValues);
-        sort($result);
+    /**
+     * Récupère les héros ayant un disable spécifique
+     */
+    public function findByDisable($disableId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->innerJoin('h.heroDisables', 'disable')
+            ->andWhere('disable.id = :disableId')
+            ->setParameter('disableId', $disableId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 
-        return $result;
+    /**
+     * Recherche de héros par nom
+     */
+    public function searchByName(string $searchTerm): array
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.Name LIKE :search')
+            ->setParameter('search', '%' . $searchTerm . '%')
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte les héros par faction
+     */
+    public function countByFaction(): array
+    {
+        return $this->createQueryBuilder('h')
+            ->select('IDENTITY(h.factionEntity) as faction_id, COUNT(h.id) as total')
+            ->groupBy('h.factionEntity')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte les héros par rareté
+     */
+    public function countByRarity(): array
+    {
+        return $this->createQueryBuilder('h')
+            ->select('IDENTITY(h.rarityEntity) as rarity_id, COUNT(h.id) as total')
+            ->groupBy('h.rarityEntity')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * ✅ Récupère un héros avec TOUTES ses relations (pour la page show)
+     */
+    public function findOneWithAllRelations(int $id): ?Heroes
+    {
+        return $this->createQueryBuilder('h')
+            ->leftJoin('h.skillUpgrades', 'su')->addSelect('su')
+            ->leftJoin('h.awakenings', 'aw')->addSelect('aw')
+            ->leftJoin('h.rarityEntity', 'r')->addSelect('r')
+            ->leftJoin('h.factionEntity', 'f')->addSelect('f')
+            ->leftJoin('h.typeEntity', 't')->addSelect('t')
+            ->leftJoin('h.affinityEntity', 'af')->addSelect('af')
+            ->leftJoin('h.allegianceEntity', 'al')->addSelect('al')
+            ->leftJoin('h.leaderEntity', 'l')->addSelect('l')
+            ->leftJoin('h.weapons', 'w')->addSelect('w')
+            ->leftJoin('h.armors', 'a')->addSelect('a')
+            ->leftJoin('h.imprints', 'i')->addSelect('i')
+            ->leftJoin('h.recommendedSets', 's')->addSelect('s')
+            ->leftJoin('h.heroBuffs', 'hb')->addSelect('hb')
+            ->leftJoin('h.heroDebuffs', 'hd')->addSelect('hd')
+            ->leftJoin('h.heroDisables', 'hdi')->addSelect('hdi')
+            ->where('h.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function save(Heroes $entity, bool $flush = false): void

@@ -167,6 +167,10 @@
             gap: 10px;
         }
 
+        .service-actions-full {
+            grid-template-columns: 1fr;
+        }
+
         .btn-action {
             padding: 12px;
             border-radius: 12px;
@@ -327,9 +331,11 @@
             <div class="page-header">
                 <h1 class="page-title">Takeover Services</h1>
                 <p class="page-subtitle">Professional Account Boosting & Coaching</p>
-                <a href="{{ path('app_takeovers_new') }}" class="add-service-btn">
-                    ➕ Add New Service
-                </a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_takeovers_new') }}" class="add-service-btn">
+                        ➕ Add New Service
+                    </a>
+                {% endif %}
             </div>
 
             <!-- Services Grid -->
@@ -355,13 +361,15 @@
                         {% endif %}
 
                         <!-- Actions -->
-                        <div class="service-actions">
+                        <div class="service-actions {% if not is_granted('ROLE_ADMIN') %}service-actions-full{% endif %}">
                             <a href="{{ path('app_takeovers_show', {'id': takeover.id}) }}" class="btn-action btn-view">
                                 👁️ View
                             </a>
-                            <a href="{{ path('app_takeovers_edit', {'id': takeover.id}) }}" class="btn-action btn-edit">
-                                ✏️ Edit
-                            </a>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <a href="{{ path('app_takeovers_edit', {'id': takeover.id}) }}" class="btn-action btn-edit">
+                                    ✏️ Edit
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 {% else %}
@@ -369,9 +377,11 @@
                         <div class="empty-icon">📋</div>
                         <h3 class="empty-title">No Services Available</h3>
                         <p class="empty-text">Start by creating your first takeover service</p>
-                        <a href="{{ path('app_takeovers_new') }}" class="add-service-btn">
-                            ➕ Create Now
-                        </a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_takeovers_new') }}" class="add-service-btn">
+                                ➕ Create Now
+                            </a>
+                        {% endif %}
                     </div>
                 {% endfor %}
             </div>

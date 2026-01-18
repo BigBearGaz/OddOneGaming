@@ -1,30 +1,288 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Takeovers{% endblock %}
+{% block title %}{{ takeover.Name }} - Takeover Details{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        .detail-section {
+            position: relative;
+            min-height: 100vh;
+            padding: 150px 40px 80px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #00ff88;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.95rem;
+        }
+
+        .back-button:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: #00ff88;
+            transform: translateX(-5px);
+            color: #00ff88;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .detail-header {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .detail-title {
+            color: #0a0e27;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .detail-body {
+            padding: 40px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .info-box:hover {
+            border-color: rgba(0, 255, 136, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+        }
+
+        .info-label {
+            color: #00ff88;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-value {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .info-value.price {
+            color: #00ff88;
+            font-size: 1.8rem;
+            font-weight: 900;
+        }
+
+        .details-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .details-title {
+            color: #00ff88;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .details-content {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-edit {
+            flex: 1;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.5);
+            color: #0a0e27;
+        }
+
+        .btn-delete {
+            padding: 16px 40px;
+            background: rgba(255, 82, 82, 0.1);
+            color: #ff5252;
+            border: 2px solid #ff5252;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 82, 82, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 82, 82, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .detail-section {
+                padding: 100px 20px 60px;
+            }
+
+            .detail-title {
+                font-size: 1.8rem;
+            }
+
+            .detail-body {
+                padding: 25px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Takeovers</h1>
+    <div class="detail-section">
+        <a href="{{ path('app_takeovers_index') }}" class="back-button">
+            ← Back to list
+        </a>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ takeover.id }}</td>
-            </tr>
-            <tr>
-                <th>Name</th>
-                <td>{{ takeover.Name }}</td>
-            </tr>
-            <tr>
-                <th>Price</th>
-                <td>{{ takeover.price }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <div class="detail-card">
+            <!-- Header -->
+            <div class="detail-header">
+                <h1 class="detail-title">{{ takeover.Name }}</h1>
+            </div>
 
-    <a href="{{ path('app_takeovers_index') }}">back to list</a>
+            <!-- Body -->
+            <div class="detail-body">
+                <!-- Info Grid -->
+                <div class="info-grid">
+                    <div class="info-box">
+                        <div class="info-label">
+                            🆔 ID
+                        </div>
+                        <div class="info-value">#{{ takeover.id }}</div>
+                    </div>
 
-    <a href="{{ path('app_takeovers_edit', {'id': takeover.id}) }}">edit</a>
+                    <div class="info-box">
+                        <div class="info-label">
+                            💰 Price
+                        </div>
+                        <div class="info-value price">{{ takeover.price }} €</div>
+                    </div>
 
-    {{ include('takeovers/_delete_form.html.twig') }}
+                    <div class="info-box">
+                        <div class="info-label">
+                            🏷️ Category
+                        </div>
+                        <div class="info-value">{{ takeover.category }}</div>
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div class="details-section">
+                    <div class="details-title">
+                        📋 Details
+                    </div>
+                    <div class="details-content">{{ takeover.details }}</div>
+                </div>
+
+                <!-- Action Buttons (ADMIN ONLY) -->
+                {% if is_granted('ROLE_ADMIN') %}
+                    <div class="action-buttons">
+                        <a href="{{ path('app_takeovers_edit', {'id': takeover.id}) }}" class="btn-edit">
+                            ✏️ Edit
+                        </a>
+                        {{ include('takeovers/_delete_form.html.twig') }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock %}
