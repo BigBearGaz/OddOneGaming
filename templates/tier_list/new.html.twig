@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create New Tier List{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+            min-height: 100vh;
+        }
+
+        .new-container {
+            max-width: 800px;
+            margin: 150px auto 50px;
+            padding: 0 20px;
+        }
+
+        .new-card {
+            background: rgba(26, 31, 58, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 2px solid rgba(0, 255, 136, 0.4);
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .new-title {
+            color: #00ff88;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .new-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            color: #00ff88;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid rgba(0, 255, 136, 0.4);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            background: rgba(10, 14, 39, 0.95);
+        }
+
+        .form-hint {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .btn-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
+            padding: 16px 40px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 16px 40px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .examples {
+            background: rgba(0, 255, 136, 0.05);
+            border-left: 3px solid #00ff88;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .examples-title {
+            color: #00ff88;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .examples-list {
+            color: rgba(255, 255, 255, 0.7);
+            list-style: none;
+            padding: 0;
+        }
+
+        .examples-list li {
+            padding: 5px 0;
+        }
+
+        .examples-list li:before {
+            content: "•";
+            color: #00ff88;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="new-container">
+    <div class="new-card">
+        <h1 class="new-title">➕ Create New Tier List</h1>
+        <p class="new-subtitle">Create a new category for ranking heroes</p>
+
+        <form method="post">
+            <div class="form-group">
+                <label class="form-label" for="categoryName">Category Name</label>
+                <input type="text" 
+                       id="categoryName" 
+                       name="categoryName" 
+                       class="form-control" 
+                       placeholder="Ex: PVP Arena, PVE Campaign, Guild Wars..."
+                       required
+                       autofocus>
+                <p class="form-hint">Choose a clear and descriptive name for your tier list category</p>
+
+                <div class="examples">
+                    <div class="examples-title">💡 Examples:</div>
+                    <ul class="examples-list">
+                        <li>PVP Arena</li>
+                        <li>PVE Campaign</li>
+                        <li>Dungeons</li>
+                        <li>Guild Wars</li>
+                        <li>Raids</li>
+                        <li>Overall</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="btn-actions">
+                <button type="submit" class="btn-submit">
+                    ✨ Create & Start Ranking
+                </button>
+                <a href="{{ path('app_tier_list_index') }}" class="btn-cancel">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

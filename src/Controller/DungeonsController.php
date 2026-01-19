@@ -6,6 +6,7 @@ use App\Entity\Dungeons;
 use App\Entity\DungeonPassive;
 use App\Entity\DungeonPhase;
 use App\Form\DungeonsType;
+use App\Repository\DungeonTeamSuggestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -263,12 +264,19 @@ class DungeonsController extends AbstractController
         return $this->redirectToRoute('app_dungeons_index');
     }
 
-    // ========== SHOW (Afficher un donjon) ==========
+    // ========== SHOW (Afficher un donjon avec team suggestions) ==========
     #[Route('/{id}', name: 'app_dungeons_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(Dungeons $dungeon): Response
+    public function show(Dungeons $dungeon, DungeonTeamSuggestionRepository $teamSuggestionRepo): Response
     {
+        // Récupérer les team suggestions pour ce donjon
+        $teamSuggestions = $teamSuggestionRepo->findBy(
+            ['dungeon' => $dungeon],
+            ['id' => 'ASC'] // Ordre par ID croissant
+        );
+
         return $this->render('dungeons/show.html.twig', [
             'dungeon' => $dungeon,
+            'teamSuggestions' => $teamSuggestions,
         ]);
     }
 }

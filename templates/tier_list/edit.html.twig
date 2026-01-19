@@ -1,0 +1,546 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit {{ category }} Tier List{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .manage-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 100px 20px 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .manage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .manage-title {
+            color: #00ff88;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-view:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 2px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        /* Category Selector */
+        .category-selector {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .category-selector label {
+            color: #00ff88;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .category-selector select {
+            padding: 6px 12px;
+            background: rgba(10, 14, 39, 0.8);
+            border: 2px solid rgba(0, 255, 136, 0.4);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .btn-new-category {
+            padding: 6px 12px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-new-category:hover {
+            background: rgba(0, 255, 136, 0.3);
+        }
+
+        /* Unranked Heroes - Compact */
+        .unranked-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .unranked-title {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .unranked-grid {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 4px 0;
+        }
+
+        .unranked-grid::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .unranked-grid::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .unranked-grid::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 136, 0.4);
+            border-radius: 10px;
+        }
+
+        /* Tiers Wrapper */
+        .tiers-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 0;
+        }
+
+        /* Tier Row Editable */
+        .tier-row-edit {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .tier-label-edit {
+            width: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+        }
+
+        .tier-dropzone {
+            flex: 1;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 6px;
+            padding: 8px;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .tier-dropzone::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .tier-dropzone::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .tier-dropzone::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 136, 0.4);
+            border-radius: 10px;
+        }
+
+        .tier-dropzone.dragover {
+            background: rgba(0, 255, 136, 0.1);
+            outline: 2px dashed #00ff88;
+        }
+
+        /* Hero Card Draggable */
+        .hero-card-drag {
+            position: relative;
+            width: 60px;
+            height: 75px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            transition: all 0.3s ease;
+            cursor: grab;
+            flex-shrink: 0;
+        }
+
+        .hero-card-drag:active {
+            cursor: grabbing;
+        }
+
+        .hero-card-drag.dragging {
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+
+        .hero-card-drag:hover {
+            transform: translateY(-3px);
+            border-color: #00ff88;
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4);
+            z-index: 10;
+        }
+
+        .hero-card-drag img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .hero-card-drag .hero-name-drag {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.95));
+            color: #fff;
+            padding: 4px 2px;
+            text-align: center;
+            font-size: 0.55rem;
+            font-weight: 700;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        .hero-card-drag .remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(239, 68, 68, 0.9);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .hero-card-drag:hover .remove-btn {
+            display: flex;
+        }
+
+        /* Tier Colors */
+        .tier-S { border-color: #ff1744; background: linear-gradient(90deg, rgba(255, 23, 68, 0.2) 0%, rgba(255, 23, 68, 0.05) 70px); }
+        .tier-S .tier-label-edit { background: linear-gradient(135deg, #ff1744 0%, #c2185b 100%); }
+
+        .tier-A { border-color: #ff9100; background: linear-gradient(90deg, rgba(255, 145, 0, 0.2) 0%, rgba(255, 145, 0, 0.05) 70px); }
+        .tier-A .tier-label-edit { background: linear-gradient(135deg, #ff9100 0%, #ff6f00 100%); }
+
+        .tier-B { border-color: #ffd600; background: linear-gradient(90deg, rgba(255, 214, 0, 0.2) 0%, rgba(255, 214, 0, 0.05) 70px); }
+        .tier-B .tier-label-edit { background: linear-gradient(135deg, #ffd600 0%, #ffab00 100%); color: #000; }
+
+        .tier-C { border-color: #00e676; background: linear-gradient(90deg, rgba(0, 230, 118, 0.2) 0%, rgba(0, 230, 118, 0.05) 70px); }
+        .tier-C .tier-label-edit { background: linear-gradient(135deg, #00e676 0%, #00c853 100%); }
+
+        .tier-D { border-color: #2979ff; background: linear-gradient(90deg, rgba(41, 121, 255, 0.2) 0%, rgba(41, 121, 255, 0.05) 70px); }
+        .tier-D .tier-label-edit { background: linear-gradient(135deg, #2979ff 0%, #2962ff 100%); }
+
+        .tier-F { border-color: #9e9e9e; background: linear-gradient(90deg, rgba(158, 158, 158, 0.2) 0%, rgba(158, 158, 158, 0.05) 70px); }
+        .tier-F .tier-label-edit { background: linear-gradient(135deg, #9e9e9e 0%, #616161 100%); }
+
+        @media (max-width: 768px) {
+            .tier-label-edit {
+                width: 50px;
+                font-size: 1.6rem;
+            }
+
+            .hero-card-drag {
+                width: 50px;
+                height: 65px;
+            }
+
+            .manage-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="manage-container">
+    <div class="manage-header">
+        <h1 class="manage-title">⚙️ Edit {{ category }}</h1>
+        <div class="header-actions">
+            <a href="{{ path('app_tier_list_show', {category: category}) }}" class="btn-action btn-view">
+                👁️ View
+            </a>
+            <button id="save-btn" class="btn-action btn-save">
+                💾 Save
+            </button>
+            <form method="post" action="{{ path('app_tier_list_delete', {category: category}) }}" style="display: inline;" onsubmit="return confirm('Delete this tier list?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category) }}">
+                <button type="submit" class="btn-action btn-delete">
+                    🗑️ Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Selector -->
+    <div class="category-selector">
+        <label>Category:</label>
+        <select id="category-select" onchange="window.location.href = '{{ path('app_tier_list_edit', {category: 'PLACEHOLDER'}) }}'.replace('PLACEHOLDER', this.value)">
+            {% for cat in allCategories %}
+                <option value="{{ cat }}" {{ cat == category ? 'selected' : '' }}>{{ cat }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="window.location.href = '{{ path('app_tier_list_new') }}'" class="btn-new-category">
+            ➕ New
+        </button>
+    </div>
+
+    <!-- Unranked Heroes -->
+    <div class="unranked-section">
+        <h3 class="unranked-title">📦 Unranked (Drag to Tiers)</h3>
+        <div class="unranked-grid tier-dropzone" id="unranked-zone" data-tier="unranked">
+            {% if unrankedHeroes|length > 0 %}
+                {% for hero in unrankedHeroes %}
+                    <div class="hero-card-drag" draggable="true" data-hero-id="{{ hero.id }}" data-entry-id="">
+                        <img src="{{ hero.imageUrl }}" alt="{{ hero.name }}">
+                        <div class="hero-name-drag">{{ hero.name }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.8rem; margin: 0;">All ranked!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Tier Rows -->
+    <div class="tiers-wrapper">
+        {% for tier in ['S', 'A', 'B', 'C', 'D', 'F'] %}
+            <div class="tier-row-edit tier-{{ tier }}">
+                <div class="tier-label-edit">{{ tier }}</div>
+                <div class="tier-dropzone" data-tier="{{ tier }}">
+                    {% if tierData[tier]|length > 0 %}
+                        {% for entry in tierData[tier] %}
+                            <div class="hero-card-drag" draggable="true" data-hero-id="{{ entry.hero.id }}" data-entry-id="{{ entry.id }}">
+                                <img src="{{ entry.hero.imageUrl }}" alt="{{ entry.hero.name }}">
+                                <div class="hero-name-drag">{{ entry.hero.name }}</div>
+                                <button class="remove-btn" onclick="removeFromTier({{ entry.id }}, this)">✕</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+const category = '{{ category }}';
+let draggedElement = null;
+
+document.querySelectorAll('.hero-card-drag').forEach(card => {
+    card.addEventListener('dragstart', function(e) {
+        draggedElement = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+
+    card.addEventListener('dragend', function() {
+        this.classList.remove('dragging');
+        draggedElement = null;
+    });
+});
+
+document.querySelectorAll('.tier-dropzone').forEach(zone => {
+    zone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+        e.dataTransfer.dropEffect = 'move';
+    });
+
+    zone.addEventListener('dragleave', function() {
+        this.classList.remove('dragover');
+    });
+
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        
+        if (draggedElement) {
+            this.appendChild(draggedElement);
+        }
+    });
+});
+
+document.getElementById('save-btn').addEventListener('click', async function() {
+    const saveBtn = this;
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳...';
+
+    const updates = [];
+    
+    document.querySelectorAll('.tier-dropzone').forEach((zone) => {
+        const tier = zone.dataset.tier;
+        
+        if (tier === 'unranked') return;
+        
+        const cards = zone.querySelectorAll('.hero-card-drag');
+        
+        cards.forEach((card, order) => {
+            const heroId = card.dataset.heroId;
+            const entryId = card.dataset.entryId;
+            
+            updates.push({
+                id: entryId || null,
+                heroId: heroId,
+                tier: tier,
+                order: order,
+                category: category
+            });
+        });
+    });
+
+    try {
+        for (const update of updates) {
+            if (!update.id) {
+                const response = await fetch('{{ path('app_tier_list_api_add') }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        heroId: update.heroId,
+                        tier: update.tier,
+                        category: category
+                    })
+                });
+                const data = await response.json();
+                if (data.entryId) {
+                    update.id = data.entryId;
+                }
+            }
+        }
+
+        const existingUpdates = updates.filter(u => u.id);
+        if (existingUpdates.length > 0) {
+            await fetch('{{ path('app_tier_list_api_update_order') }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(existingUpdates)
+            });
+        }
+
+        alert('✅ Saved!');
+        location.reload();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error');
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Save';
+    }
+});
+
+async function removeFromTier(entryId, button) {
+    if (!confirm('Remove?')) return;
+
+    try {
+        const response = await fetch('{{ path('app_tier_list_api_remove', {id: 'ENTRY_ID'}) }}'.replace('ENTRY_ID', entryId), {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            const card = button.closest('.hero-card-drag');
+            const unrankedZone = document.getElementById('unranked-zone');
+            
+            card.querySelector('.remove-btn').remove();
+            card.dataset.entryId = '';
+            
+            unrankedZone.appendChild(card);
+            
+            alert('✅ Removed!');
+        } else {
+            alert('❌ Error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error');
+    }
+}
+</script>
+{% endblock %}

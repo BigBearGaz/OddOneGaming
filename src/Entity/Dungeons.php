@@ -65,10 +65,15 @@ class Dungeons
     #[ORM\OrderBy(['orderNum' => 'ASC'])]
     private Collection $phases;
 
+    // TEAM SUGGESTIONS
+    #[ORM\OneToMany(targetEntity: DungeonTeamSuggestion::class, mappedBy: 'dungeon', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $teamSuggestions;
+
     public function __construct()
     {
         $this->passives = new ArrayCollection();
         $this->phases = new ArrayCollection();
+        $this->teamSuggestions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -208,6 +213,9 @@ class Dungeons
         return $this;
     }
 
+    /**
+     * @return Collection<int, DungeonPassive>
+     */
     public function getPassives(): Collection
     {
         return $this->passives;
@@ -232,6 +240,9 @@ class Dungeons
         return $this;
     }
 
+    /**
+     * @return Collection<int, DungeonPhase>
+     */
     public function getPhases(): Collection
     {
         return $this->phases;
@@ -251,6 +262,33 @@ class Dungeons
         if ($this->phases->removeElement($phase)) {
             if ($phase->getDungeon() === $this) {
                 $phase->setDungeon(null);
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, DungeonTeamSuggestion>
+     */
+    public function getTeamSuggestions(): Collection
+    {
+        return $this->teamSuggestions;
+    }
+
+    public function addTeamSuggestion(DungeonTeamSuggestion $teamSuggestion): static
+    {
+        if (!$this->teamSuggestions->contains($teamSuggestion)) {
+            $this->teamSuggestions->add($teamSuggestion);
+            $teamSuggestion->setDungeon($this);
+        }
+        return $this;
+    }
+
+    public function removeTeamSuggestion(DungeonTeamSuggestion $teamSuggestion): static
+    {
+        if ($this->teamSuggestions->removeElement($teamSuggestion)) {
+            if ($teamSuggestion->getDungeon() === $this) {
+                $teamSuggestion->setDungeon(null);
             }
         }
         return $this;

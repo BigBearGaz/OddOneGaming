@@ -1,0 +1,367 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ category }} Tier List{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .tier-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 100px 20px 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .tier-header {
+            text-align: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .tier-title {
+            color: #00ff88;
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .tier-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb-custom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            flex-shrink: 0;
+        }
+
+        .breadcrumb-link {
+            color: #00ff88;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .breadcrumb-link:hover {
+            color: #00ccff;
+        }
+
+        .breadcrumb-separator {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .breadcrumb-current {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+
+        /* Category Navigation */
+        .category-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .category-btn {
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: #00ff88;
+            color: #00ff88;
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            border-color: #00ff88;
+            color: #0a0e27;
+        }
+
+        /* Tier Rows Container */
+        .tiers-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        /* Tier Rows */
+        .tier-row {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .tier-label {
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+        }
+
+        .tier-heroes {
+            flex: 1;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 10px;
+            padding: 12px;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .tier-heroes::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .tier-heroes::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .tier-heroes::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 136, 0.4);
+            border-radius: 10px;
+        }
+
+        .tier-heroes::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 255, 136, 0.6);
+        }
+
+        /* Tier Colors */
+        .tier-S {
+            border-color: #ff1744;
+            background: linear-gradient(90deg, rgba(255, 23, 68, 0.2) 0%, rgba(255, 23, 68, 0.05) 80px);
+        }
+        .tier-S .tier-label {
+            background: linear-gradient(135deg, #ff1744 0%, #c2185b 100%);
+        }
+
+        .tier-A {
+            border-color: #ff9100;
+            background: linear-gradient(90deg, rgba(255, 145, 0, 0.2) 0%, rgba(255, 145, 0, 0.05) 80px);
+        }
+        .tier-A .tier-label {
+            background: linear-gradient(135deg, #ff9100 0%, #ff6f00 100%);
+        }
+
+        .tier-B {
+            border-color: #ffd600;
+            background: linear-gradient(90deg, rgba(255, 214, 0, 0.2) 0%, rgba(255, 214, 0, 0.05) 80px);
+        }
+        .tier-B .tier-label {
+            background: linear-gradient(135deg, #ffd600 0%, #ffab00 100%);
+            color: #000;
+        }
+
+        .tier-C {
+            border-color: #00e676;
+            background: linear-gradient(90deg, rgba(0, 230, 118, 0.2) 0%, rgba(0, 230, 118, 0.05) 80px);
+        }
+        .tier-C .tier-label {
+            background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+        }
+
+        .tier-D {
+            border-color: #2979ff;
+            background: linear-gradient(90deg, rgba(41, 121, 255, 0.2) 0%, rgba(41, 121, 255, 0.05) 80px);
+        }
+        .tier-D .tier-label {
+            background: linear-gradient(135deg, #2979ff 0%, #2962ff 100%);
+        }
+
+        .tier-F {
+            border-color: #9e9e9e;
+            background: linear-gradient(90deg, rgba(158, 158, 158, 0.2) 0%, rgba(158, 158, 158, 0.05) 80px);
+        }
+        .tier-F .tier-label {
+            background: linear-gradient(135deg, #9e9e9e 0%, #616161 100%);
+        }
+
+        /* Hero Card */
+        .hero-card {
+            position: relative;
+            width: 70px;
+            height: 85px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .hero-card:hover {
+            transform: translateY(-5px) scale(1.08);
+            border-color: #00ff88;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+            z-index: 10;
+        }
+
+        .hero-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-card .hero-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.95));
+            color: #fff;
+            padding: 6px 4px;
+            text-align: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        /* Empty State */
+        .empty-tier {
+            color: rgba(255, 255, 255, 0.3);
+            font-style: italic;
+            padding: 15px;
+            font-size: 0.85rem;
+        }
+
+        /* Admin Button */
+        .admin-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            color: #0a0e27;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.6);
+            color: #0a0e27;
+        }
+
+        @media (max-width: 768px) {
+            .tier-label {
+                width: 50px;
+                font-size: 1.8rem;
+            }
+
+            .hero-card {
+                width: 55px;
+                height: 70px;
+            }
+
+            .tier-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="tier-container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-custom">
+        <a href="{{ path('app_tier_list_index') }}" class="breadcrumb-link">
+            🏠 Tier Lists
+        </a>
+        <span class="breadcrumb-separator">›</span>
+        <span class="breadcrumb-current">{{ category }}</span>
+    </nav>
+
+    <div class="tier-header">
+        <h1 class="tier-title">🏆 {{ category }} Tier List</h1>
+        <p class="tier-subtitle">Community rankings and meta analysis</p>
+    </div>
+
+    <!-- Category Navigation -->
+    <div class="category-nav">
+        {% for cat in allCategories %}
+            <a href="{{ path('app_tier_list_show', {category: cat}) }}" 
+               class="category-btn {{ cat == category ? 'active' : '' }}">
+                {{ cat }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Tier Rows -->
+    <div class="tiers-wrapper">
+        {% for tier, heroes in tierData %}
+            <div class="tier-row tier-{{ tier }}">
+                <div class="tier-label">{{ tier }}</div>
+                <div class="tier-heroes">
+                    {% if heroes|length > 0 %}
+                        {% for entry in heroes %}
+                            <div class="hero-card" title="{{ entry.hero.name }}{% if entry.notes %} - {{ entry.notes }}{% endif %}">
+                                <img src="{{ entry.hero.imageUrl }}" alt="{{ entry.hero.name }}" loading="lazy">
+                                <div class="hero-name">{{ entry.hero.name }}</div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-tier">No heroes in this tier</div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if is_granted('ROLE_ADMIN') %}
+        <a href="{{ path('app_tier_list_edit', {category: category}) }}" class="admin-btn">
+            ⚙️ Edit Tier List
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
