@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau Héros{% endblock %}
+{% block title %}New Hero{% endblock %}
 
 {# ============================= #}
 {#    CUSTOM FORM THEME          #}
@@ -28,14 +28,14 @@
     <textarea {{ block('widget_attributes') }}>{{ value }}</textarea>
 {% endblock %}
 
-{# Custom rendering pour les checkboxes avec icônes #}
+{# Custom rendering for checkboxes with icons #}
 {% block choice_widget_expanded %}
     <div class="status-checkbox-grid">
         {% for child in form %}
             {% set entity = null %}
             {% if child.parent.vars.choices is defined %}
                 {% for choice in child.parent.vars.choices %}
-                    {# Gestion des groupes (comme pour les imprints groupés par rareté) #}
+                    {# Group management (like imprints grouped by rarity) #}
                     {% if choice.choices is defined %}
                         {% for subChoice in choice.choices %}
                             {% if subChoice.value == child.vars.value %}
@@ -43,7 +43,7 @@
                             {% endif %}
                         {% endfor %}
                     {% else %}
-                        {# Choix simple non groupé #}
+                        {# Simple ungrouped choice #}
                         {% if choice.value == child.vars.value %}
                             {% set entity = choice.data %}
                         {% endif %}
@@ -66,7 +66,7 @@
                         </svg>
                     </span>
 
-                    {# Gestion intelligente des icônes : iconUrl puis imageUrl #}
+                    {# Smart icon management: iconUrl then imageUrl #}
                     {% set hasImage = false %}
                     {% set imageSource = null %}
 
@@ -658,11 +658,11 @@
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
                     <a href="{{ path('app_heroes_index') }}">
-                        <i class="fas fa-home me-2"></i>Héros
+                        <i class="fas fa-home me-2"></i>Heroes
                     </a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    Nouveau
+                    New
                 </li>
             </ol>
         </nav>
@@ -671,19 +671,19 @@
             <div class="card-header bg-gradient-primary">
                 <h2>
                     <i class="fas fa-plus-circle"></i>
-                    <span>Nouveau Héros</span>
+                    <span>New Hero</span>
                 </h2>
             </div>
 
             <div class="card-body">
                 {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'hero-form'}}) }}
 
-                {# INFORMATIONS GÉNÉRALES #}
+                {# GENERAL INFORMATION #}
                 <div class="card">
                     <div class="card-header bg-gradient-info">
                         <h4>
                             <i class="fas fa-info-circle"></i>
-                            <span>Informations générales</span>
+                            <span>General Information</span>
                         </h4>
                     </div>
                     <div class="card-body">
@@ -694,7 +694,7 @@
                         <div class="status-section rarities">
                             <div class="status-section-header">
                                 <i class="fas fa-star"></i>
-                                <span>Rareté</span>
+                                <span>Rarity</span>
                             </div>
                             {{ form_row(form.rarityEntity, {'label': false}) }}
                         </div>
@@ -710,7 +710,7 @@
                         <div class="status-section types">
                             <div class="status-section-header">
                                 <i class="fas fa-users"></i>
-                                <span>Type / Archétype</span>
+                                <span>Type / Archetype</span>
                             </div>
                             {{ form_row(form.typeEntity, {'label': false}) }}
                         </div>
@@ -718,7 +718,7 @@
                         <div class="status-section allegiances">
                             <div class="status-section-header">
                                 <i class="fas fa-balance-scale"></i>
-                                <span>Allégeance</span>
+                                <span>Allegiance</span>
                             </div>
                             {{ form_row(form.allegianceEntity, {'label': false}) }}
                         </div>
@@ -726,7 +726,7 @@
                         <div class="status-section affinities">
                             <div class="status-section-header">
                                 <i class="fas fa-fire"></i>
-                                <span>Affinité Élémentaire</span>
+                                <span>Elemental Affinity</span>
                             </div>
                             {{ form_row(form.affinityEntity, {'label': false}) }}
                         </div>
@@ -734,7 +734,7 @@
                         <div class="status-section leaders">
                             <div class="status-section-header">
                                 <i class="fas fa-crown"></i>
-                                <span>Leader Skill</span>
+                                <span>Leader Aura</span>
                             </div>
                             {{ form_row(form.leaderEntity, {'label': false}) }}
                             <div class="mt-3">
@@ -760,12 +760,12 @@
                     </div>
                 </div>
 
-                {# COMPÉTENCES #}
+                {# SKILLS #}
                 <div class="card">
                     <div class="card-header bg-gradient-warning">
                         <h4>
                             <i class="fas fa-bolt"></i>
-                            <span>Compétences</span>
+                            <span>Skills</span>
                         </h4>
                     </div>
                     <div class="card-body">
@@ -810,14 +810,14 @@
                             </div>
                             <button type="button" class="btn btn-success mt-3 add-collection-item">
                                 <i class="fas fa-plus"></i>
-                                <span>Ajouter un Awakening</span>
+                                <span>Add Awakening</span>
                             </button>
                         </div>
                     </div>
                 </div>
                 {% do form.awakenings.setRendered %}
 
-{# SKILL LEVEL UPGRADES - 3 COMPÉTENCES (base, core, ultimate) #}
+{# SKILL LEVEL UPGRADES - 3 SKILLS (base, core, ultimate) #}
 <div class="card">
     <div class="card-header bg-gradient-cyan">
         <h4>
@@ -828,7 +828,7 @@
     <div class="card-body">
         {% for skillUpgrade in form.skillUpgrades %}
             <div class="skill-upgrade-section">
-                {# Titre de la compétence selon l'index (3 compétences seulement) #}
+                {# Skill title based on index (3 skills only) #}
                 <h5>
                     {% if loop.index == 1 %}
                         <span style="background: rgba(102, 126, 234, 0.5); color: #fff; padding: 5px 12px; border-radius: 8px; font-size: 0.9rem;">S1</span>
@@ -842,10 +842,10 @@
                     {% endif %}
                 </h5>
 
-                {# Champ caché pour skillType #}
+                {# Hidden field for skillType #}
                 {{ form_widget(skillUpgrade.skillType) }}
 
-                {# ✅ NOUVEAU : Champ Cooldown #}
+                {# ✅ NEW: Cooldown field #}
                 <div class="mb-4">
                     <label style="color: #00ff88; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-clock"></i>
@@ -854,13 +854,13 @@
                     {{ form_widget(skillUpgrade.cooldown, {
                         'attr': {
                             'class': 'form-control',
-                            'placeholder': 'Nombre de tours (ex: 3)',
+                            'placeholder': 'Number of turns (e.g.: 3)',
                             'style': 'max-width: 250px; background: rgba(0, 0, 0, 0.3); border: 2px solid rgba(0, 255, 136, 0.3); color: #fff; padding: 0.75rem;'
                         }
                     }) }}
                 </div>
 
-                {# Grille des 6 niveaux #}
+                {# Grid of 6 levels #}
                 <div class="row g-3">
                     {% for i in 1..6 %}
                         <div class="col-md-6">
@@ -871,7 +871,7 @@
                                 {{ form_widget(attribute(skillUpgrade, 'level' ~ i), {
                                     'attr': {
                                         'class': 'form-control',
-                                        'placeholder': 'Effet du niveau ' ~ i,
+                                        'placeholder': 'Level ' ~ i ~ ' effect',
                                         'style': 'background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(6, 182, 212, 0.3); color: #fff; padding: 0.75rem;'
                                     }
                                 }) }}
@@ -885,20 +885,19 @@
 </div>
 {% do form.skillUpgrades.setRendered %}
 
-
-                {# EFFETS DE STATUT #}
+                {# STATUS EFFECTS #}
                 <div class="card">
                     <div class="card-header bg-gradient-success">
                         <h4>
                             <i class="fas fa-magic"></i>
-                            <span>Effets de Statut</span>
+                            <span>Status Effects</span>
                         </h4>
                     </div>
                     <div class="card-body">
                         <div class="status-section buffs">
                             <div class="status-section-header">
                                 <i class="fas fa-arrow-up"></i>
-                                <span>Buffs (Effets Positifs)</span>
+                                <span>Buffs (Positive Effects)</span>
                             </div>
                             {{ form_row(form.heroBuffs, {'label': false}) }}
                         </div>
@@ -906,7 +905,7 @@
                         <div class="status-section debuffs">
                             <div class="status-section-header">
                                 <i class="fas fa-arrow-down"></i>
-                                <span>Debuffs (Effets Négatifs)</span>
+                                <span>Debuffs (Negative Effects)</span>
                             </div>
                             {{ form_row(form.heroDebuffs, {'label': false}) }}
                         </div>
@@ -914,64 +913,64 @@
                         <div class="status-section disable">
                             <div class="status-section-header">
                                 <i class="fas fa-ban"></i>
-                                <span>Disable (Contrôle de Foule)</span>
+                                <span>Disable (Crowd Control)</span>
                             </div>
                             {{ form_row(form.heroDisables, {'label': false}) }}
                         </div>
                     </div>
                 </div>
 
-                {# SETS RECOMMANDÉS #}
+                {# RECOMMENDED SETS #}
                 <div class="card">
                     <div class="card-header bg-gradient-cyan">
                         <h4>
                             <i class="fas fa-boxes"></i>
-                            <span>Sets Recommandés</span>
+                            <span>Recommended Sets</span>
                         </h4>
                     </div>
                     <div class="card-body">
                         <div class="status-section sets">
                             <div class="status-section-header">
                                 <i class="fas fa-layer-group"></i>
-                                <span>Sélectionner les Sets</span>
+                                <span>Select Sets</span>
                             </div>
                             {{ form_row(form.recommendedSets, {'label': false}) }}
                         </div>
                     </div>
                 </div>
 
-                {# ÉQUIPEMENTS RECOMMANDÉS #}
+                {# RECOMMENDED EQUIPMENT #}
                 <div class="card">
                     <div class="card-header bg-gradient-secondary">
                         <h4>
                             <i class="fas fa-shield-alt"></i>
-                            <span>Équipements Recommandés</span>
+                            <span>Recommended Equipment</span>
                         </h4>
                     </div>
                     <div class="card-body">
                         <div class="status-section armor">
                             <div class="status-section-header">
                                 <i class="fas fa-user-shield"></i>
-                                <span>Armures (1 seul par slot)</span>
+                                <span>Armors (1 per slot only)</span>
                             </div>
                             {{ form_row(form.armors, {'label': false}) }}
                         </div>
                     </div>
                 </div>
 
-                {# ARMES RECOMMANDÉES #}
+                {# RECOMMENDED WEAPONS #}
                 <div class="card">
                     <div class="card-header bg-gradient-danger">
                         <h4>
                             <i class="fas fa-sword"></i>
-                            <span>Armes Recommandées</span>
+                            <span>Recommended Weapons</span>
                         </h4>
                     </div>
                     <div class="card-body">
                         <div class="status-section weapons">
                             <div class="status-section-header">
                                 <i class="fas fa-gavel"></i>
-                                <span>Sélectionner les Armes</span>
+                                <span>Select Weapons</span>
                             </div>
                             {{ form_row(form.weapons, {'label': false}) }}
                         </div>
@@ -992,7 +991,7 @@
                         <div class="status-section imprints mt-4">
                             <div class="status-section-header">
                                 <i class="fas fa-gem"></i>
-                                <span>Imprints (Bonus)</span>
+                                <span>Imprints (Bonuses)</span>
                             </div>
                             {{ form_row(form.imprints, {'label': false}) }}
                         </div>
@@ -1015,12 +1014,12 @@
                     </div>
                 </div>
 
-                {# BONUS #}
+                {# BONUSES #}
                 <div class="card">
                     <div class="card-header bg-gradient-success">
                         <h4>
                             <i class="fas fa-gift"></i>
-                            <span>Bonus</span>
+                            <span>Bonuses</span>
                         </h4>
                     </div>
                     <div class="card-body">
@@ -1033,11 +1032,11 @@
                 <div class="d-flex gap-3 justify-content-center mt-5">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i>
-                        <span>Créer le héros</span>
+                        <span>Save Hero</span>
                     </button>
                     <a href="{{ path('app_heroes_index') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-times"></i>
-                        <span>Annuler</span>
+                        <span>Cancel</span>
                     </a>
                 </div>
 
@@ -1051,7 +1050,7 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        // Collection management pour Awakenings
+        // Collection management for Awakenings
         document.querySelectorAll('.add-collection-item').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();

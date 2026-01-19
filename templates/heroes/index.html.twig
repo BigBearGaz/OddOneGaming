@@ -364,6 +364,89 @@
             box-shadow: 0 20px 60px rgba(0, 255, 136, 0.3);
         }
 
+        /* Styles par rareté - Légendaire (Jaune/Or) */
+        .hero-card[data-rarity-name="legendary"],
+        .hero-card[data-rarity-name="Legendary"],
+        .hero-card[data-rarity-name="Légendaire"],
+        .hero-card[data-rarity-name="LEGENDARY"] {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(218, 165, 32, 0.15) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+        }
+
+        .hero-card[data-rarity-name="legendary"]:hover,
+        .hero-card[data-rarity-name="Legendary"]:hover,
+        .hero-card[data-rarity-name="Légendaire"]:hover,
+        .hero-card[data-rarity-name="LEGENDARY"]:hover {
+            border-color: rgba(255, 215, 0, 0.9);
+            box-shadow: 0 20px 60px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Styles par rareté - Epic (Violet) */
+        .hero-card[data-rarity-name="epic"],
+        .hero-card[data-rarity-name="Epic"],
+        .hero-card[data-rarity-name="Épique"],
+        .hero-card[data-rarity-name="EPIC"] {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.15) 0%, rgba(148, 0, 211, 0.15) 100%);
+            border: 2px solid rgba(138, 43, 226, 0.6);
+        }
+
+        .hero-card[data-rarity-name="epic"]:hover,
+        .hero-card[data-rarity-name="Epic"]:hover,
+        .hero-card[data-rarity-name="Épique"]:hover,
+        .hero-card[data-rarity-name="EPIC"]:hover {
+            border-color: rgba(138, 43, 226, 0.9);
+            box-shadow: 0 20px 60px rgba(138, 43, 226, 0.5);
+        }
+
+        /* Styles par rareté - Rare (Bleu) */
+        .hero-card[data-rarity-name="rare"],
+        .hero-card[data-rarity-name="Rare"],
+        .hero-card[data-rarity-name="RARE"] {
+            background: linear-gradient(135deg, rgba(30, 144, 255, 0.15) 0%, rgba(65, 105, 225, 0.15) 100%);
+            border: 2px solid rgba(30, 144, 255, 0.6);
+        }
+
+        .hero-card[data-rarity-name="rare"]:hover,
+        .hero-card[data-rarity-name="Rare"]:hover,
+        .hero-card[data-rarity-name="RARE"]:hover {
+            border-color: rgba(30, 144, 255, 0.9);
+            box-shadow: 0 20px 60px rgba(30, 144, 255, 0.5);
+        }
+
+        /* Styles par rareté - Uncommon (Vert) */
+        .hero-card[data-rarity-name="uncommon"],
+        .hero-card[data-rarity-name="Uncommon"],
+        .hero-card[data-rarity-name="Peu commun"],
+        .hero-card[data-rarity-name="UNCOMMON"] {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.15) 100%);
+            border: 2px solid rgba(34, 197, 94, 0.6);
+        }
+
+        .hero-card[data-rarity-name="uncommon"]:hover,
+        .hero-card[data-rarity-name="Uncommon"]:hover,
+        .hero-card[data-rarity-name="Peu commun"]:hover,
+        .hero-card[data-rarity-name="UNCOMMON"]:hover {
+            border-color: rgba(34, 197, 94, 0.9);
+            box-shadow: 0 20px 60px rgba(34, 197, 94, 0.5);
+        }
+
+        /* Styles par rareté - Common (Gris) */
+        .hero-card[data-rarity-name="common"],
+        .hero-card[data-rarity-name="Common"],
+        .hero-card[data-rarity-name="Commun"],
+        .hero-card[data-rarity-name="COMMON"] {
+            background: linear-gradient(135deg, rgba(156, 163, 175, 0.15) 0%, rgba(107, 114, 128, 0.15) 100%);
+            border: 2px solid rgba(156, 163, 175, 0.6);
+        }
+
+        .hero-card[data-rarity-name="common"]:hover,
+        .hero-card[data-rarity-name="Common"]:hover,
+        .hero-card[data-rarity-name="Commun"]:hover,
+        .hero-card[data-rarity-name="COMMON"]:hover {
+            border-color: rgba(156, 163, 175, 0.9);
+            box-shadow: 0 20px 60px rgba(156, 163, 175, 0.5);
+        }
+
         .hero-image {
             position: relative;
             height: 300px;
@@ -553,9 +636,9 @@
                     </div>
 
                     <div class="filter-group">
-                        <label class="filter-label">🛡️ Type</label>
+                        <label class="filter-label">🛡️ ARCHETYPE</label>
                         <select id="filter-type" class="filter-select">
-                            <option value="">All types</option>
+                            <option value="">All archetypes</option>
                             {% for type in types %}
                                 <option value="{{ type.id }}">{{ type.name }}</option>
                             {% endfor %}
@@ -593,9 +676,9 @@
                     </div>
 
                     <div class="filter-group">
-                        <label class="filter-label">👑 Leader</label>
+                        <label class="filter-label">👑  Leader Aura</label>
                         <select id="filter-leader" class="filter-select">
-                            <option value="">All leaders</option>
+                            <option value=""> Leader Auras</option>
                             {% for leader in leaders %}
                                 <option value="{{ leader.id }}">{{ leader.name }}</option>
                             {% endfor %}
@@ -722,6 +805,7 @@
                          data-affinity="{{ hero.affinityEntity ? hero.affinityEntity.id : '' }}"
                          data-allegiance="{{ hero.allegianceEntity ? hero.allegianceEntity.id : '' }}"
                          data-rarity="{{ hero.rarityEntity ? hero.rarityEntity.id : '' }}"
+                         data-rarity-name="{{ hero.rarityEntity ? hero.rarityEntity.name|lower : '' }}"
                          data-leader="{{ hero.leaderEntity ? hero.leaderEntity.id : '' }}"
                          data-buffs="{{ buffsList|join(',') }}"
                          data-debuffs="{{ debuffsList|join(',') }}"

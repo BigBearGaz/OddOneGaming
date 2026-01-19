@@ -230,17 +230,74 @@
             outline: 2px dashed #00ff88;
         }
 
-        /* Hero Card Draggable */
+        /* Hero Card Draggable - RARITY COLORS */
         .hero-card-drag {
             position: relative;
             width: 60px;
             height: 75px;
             border-radius: 6px;
             overflow: hidden;
-            border: 2px solid rgba(0, 255, 136, 0.3);
+            border: 2px solid;
             transition: all 0.3s ease;
             cursor: grab;
             flex-shrink: 0;
+        }
+
+        /* Legendary - Or/Jaune */
+        .hero-card-drag.rarity-legendary,
+        .hero-card-drag.rarity-légendaire {
+            border-color: #ffd700;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+
+        .hero-card-drag.rarity-legendary:hover,
+        .hero-card-drag.rarity-légendaire:hover {
+            border-color: #ffed4e;
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.6);
+        }
+
+        /* Epic - Violet */
+        .hero-card-drag.rarity-epic {
+            border-color: #a855f7;
+            box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+        }
+
+        .hero-card-drag.rarity-epic:hover {
+            border-color: #c084fc;
+            box-shadow: 0 8px 20px rgba(168, 85, 247, 0.6);
+        }
+
+        /* Rare - Bleu */
+        .hero-card-drag.rarity-rare {
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .hero-card-drag.rarity-rare:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        /* Uncommon - Vert */
+        .hero-card-drag.rarity-uncommon {
+            border-color: #10b981;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .hero-card-drag.rarity-uncommon:hover {
+            border-color: #34d399;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.6);
+        }
+
+        /* Common - Gris */
+        .hero-card-drag.rarity-common {
+            border-color: #9ca3af;
+            box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3);
+        }
+
+        .hero-card-drag.rarity-common:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 8px 20px rgba(156, 163, 175, 0.6);
         }
 
         .hero-card-drag:active {
@@ -254,8 +311,6 @@
 
         .hero-card-drag:hover {
             transform: translateY(-3px);
-            border-color: #00ff88;
-            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4);
             z-index: 10;
         }
 
@@ -281,6 +336,47 @@
             line-height: 1;
         }
 
+        /* RARITY BADGE */
+        .hero-rarity-badge {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+            line-height: 1;
+        }
+
+        .rarity-badge-legendary,
+        .rarity-badge-légendaire {
+            background: rgba(255, 215, 0, 0.95);
+            color: #0a0e27;
+        }
+
+        .rarity-badge-epic {
+            background: rgba(168, 85, 247, 0.95);
+            color: #ffffff;
+        }
+
+        .rarity-badge-rare {
+            background: rgba(59, 130, 246, 0.95);
+            color: #ffffff;
+        }
+
+        .rarity-badge-uncommon {
+            background: rgba(16, 185, 129, 0.95);
+            color: #ffffff;
+        }
+
+        .rarity-badge-common {
+            background: rgba(156, 163, 175, 0.95);
+            color: #ffffff;
+        }
+
         .hero-card-drag .remove-btn {
             position: absolute;
             top: 2px;
@@ -298,6 +394,7 @@
             font-size: 0.7rem;
             font-weight: 700;
             line-height: 1;
+            z-index: 3;
         }
 
         .hero-card-drag:hover .remove-btn {
@@ -380,7 +477,12 @@
         <div class="unranked-grid tier-dropzone" id="unranked-zone" data-tier="unranked">
             {% if unrankedHeroes|length > 0 %}
                 {% for hero in unrankedHeroes %}
-                    <div class="hero-card-drag" draggable="true" data-hero-id="{{ hero.id }}" data-entry-id="">
+                    <div class="hero-card-drag {% if hero.rarityEntity %}rarity-{{ hero.rarityEntity.name|lower }}{% endif %}" draggable="true" data-hero-id="{{ hero.id }}" data-entry-id="">
+                        {% if hero.rarityEntity %}
+                            <span class="hero-rarity-badge rarity-badge-{{ hero.rarityEntity.name|lower }}">
+                                {{ hero.rarityEntity.name|slice(0, 1) }}
+                            </span>
+                        {% endif %}
                         <img src="{{ hero.imageUrl }}" alt="{{ hero.name }}">
                         <div class="hero-name-drag">{{ hero.name }}</div>
                     </div>
@@ -399,7 +501,12 @@
                 <div class="tier-dropzone" data-tier="{{ tier }}">
                     {% if tierData[tier]|length > 0 %}
                         {% for entry in tierData[tier] %}
-                            <div class="hero-card-drag" draggable="true" data-hero-id="{{ entry.hero.id }}" data-entry-id="{{ entry.id }}">
+                            <div class="hero-card-drag {% if entry.hero.rarityEntity %}rarity-{{ entry.hero.rarityEntity.name|lower }}{% endif %}" draggable="true" data-hero-id="{{ entry.hero.id }}" data-entry-id="{{ entry.id }}">
+                                {% if entry.hero.rarityEntity %}
+                                    <span class="hero-rarity-badge rarity-badge-{{ entry.hero.rarityEntity.name|lower }}">
+                                        {{ entry.hero.rarityEntity.name|slice(0, 1) }}
+                                    </span>
+                                {% endif %}
                                 <img src="{{ entry.hero.imageUrl }}" alt="{{ entry.hero.name }}">
                                 <div class="hero-name-drag">{{ entry.hero.name }}</div>
                                 <button class="remove-btn" onclick="removeFromTier({{ entry.id }}, this)">✕</button>

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau Donjon{% endblock %}
+{% block title %}New Dungeon{% endblock %}
 
 {# ============================= #}
 {#    CUSTOM FORM THEME          #}
@@ -234,7 +234,7 @@
             resize: vertical;
         }
 
-        /* Radio buttons pour la difficulté */
+        /* Radio buttons for difficulty */
         .difficulty-radio-group {
             display: flex;
             gap: 1rem;
@@ -289,7 +289,7 @@
             box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4);
         }
 
-        /* Couleurs spécifiques par difficulté */
+        /* Specific colors by difficulty */
         .difficulty-radio-group input[value="Easy"]:checked + label {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border-color: #10b981;
@@ -314,7 +314,7 @@
             color: #ffffff;
         }
 
-        /* Icônes pour chaque difficulté */
+        /* Icons for each difficulty */
         .difficulty-radio-group input[value="Easy"] + label::before {
             content: "😊 ";
             margin-right: 0.5rem;
@@ -339,7 +339,7 @@
             font-size: 1.2rem;
         }
 
-        /* Focus pour accessibilité */
+        /* Focus for accessibility */
         .difficulty-radio-group input[type="radio"]:focus + label {
             outline: 2px solid #00ff88;
             outline-offset: 2px;
@@ -578,11 +578,11 @@
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
                     <a href="{{ path('app_dungeons_index') }}">
-                        <i class="fas fa-home me-2"></i>Donjons
+                        <i class="fas fa-home me-2"></i>Dungeons
                     </a>
                 </li>
                 <li class="breadcrumb-item active" aria-current="page">
-                    Nouveau
+                    New
                 </li>
             </ol>
         </nav>
@@ -591,19 +591,19 @@
             <div class="card-header bg-gradient-primary">
                 <h2>
                     <i class="fas fa-plus-circle"></i>
-                    <span>Nouveau Donjon</span>
+                    <span>New Dungeon</span>
                 </h2>
             </div>
 
             <div class="card-body">
                 {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'dungeon-form'}}) }}
 
-                {# INFORMATIONS GÉNÉRALES #}
+                {# GENERAL INFORMATION #}
                 <div class="card">
                     <div class="card-header bg-gradient-info">
                         <h4>
                             <i class="fas fa-info-circle"></i>
-                            <span>Informations Générales</span>
+                            <span>General Information</span>
                         </h4>
                     </div>
                     <div class="card-body">
@@ -614,12 +614,12 @@
                     </div>
                 </div>
 
-                {# CAPACITÉS DE BASE #}
+                {# BASE ABILITIES #}
                 <div class="card">
                     <div class="card-header bg-gradient-warning">
                         <h4>
                             <i class="fas fa-bolt"></i>
-                            <span>Capacités de Base</span>
+                            <span>Base Abilities</span>
                         </h4>
                     </div>
                     <div class="card-body">
@@ -648,9 +648,9 @@
                         <hr class="my-4">
 
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0" style="color: #10b981;">🔮 Passives de Base</h5>
+                            <h5 class="mb-0" style="color: #10b981;">🔮 Base Passives</h5>
                             <button type="button" class="btn btn-success btn-sm" id="add-base-passive">
-                                <i class="fas fa-plus"></i> Ajouter
+                                <i class="fas fa-plus"></i> Add
                             </button>
                         </div>
                         <div id="base-passives-container" data-index="0">
@@ -663,10 +663,10 @@
                     <div class="card-header d-flex justify-content-between align-items-center bg-gradient-purple">
                         <h4 class="mb-0">
                             <i class="fas fa-layer-group"></i>
-                            <span>Phases du Boss</span>
+                            <span>Boss Phases</span>
                         </h4>
                         <button type="button" class="btn btn-light btn-sm" id="add-phase">
-                            <i class="fas fa-plus"></i> Ajouter une Phase
+                            <i class="fas fa-plus"></i> Add Phase
                         </button>
                     </div>
                     <div class="card-body">
@@ -679,11 +679,11 @@
                 <div class="d-flex gap-3 justify-content-center mt-5">
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-save"></i>
-                        <span>Créer le Donjon</span>
+                        <span>Create Dungeon</span>
                     </button>
                     <a href="{{ path('app_dungeons_index') }}" class="btn btn-secondary btn-lg">
                         <i class="fas fa-times"></i>
-                        <span>Annuler</span>
+                        <span>Cancel</span>
                     </a>
                 </div>
 
@@ -701,7 +701,7 @@
         let basePassiveIndex = 0;
         let phasePassiveIndexes = {};
 
-        // ========== PASSIVES DE BASE ==========
+        // ========== BASE PASSIVES ==========
         document.getElementById('add-base-passive').addEventListener('click', function() {
             const container = document.getElementById('base-passives-container');
             
@@ -710,21 +710,21 @@
             
             wrapper.innerHTML = `
                 <div class="d-flex justify-content-between mb-2">
-                    <strong>💫 Passive de base #${basePassiveIndex + 1}</strong>
+                    <strong>💫 Base Passive #${basePassiveIndex + 1}</strong>
                     <button type="button" class="btn btn-danger btn-sm remove-base-passive">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Nom de la Passive</label>
-                    <input type="text" name="dungeons[passives][${basePassiveIndex}][name]" class="form-control" placeholder="Ex: Immortal, Regeneration">
+                    <label class="form-label">Passive Name</label>
+                    <input type="text" name="dungeons[passives][${basePassiveIndex}][name]" class="form-control" placeholder="E.g.: Immortal, Regeneration">
                 </div>
                 <div class="mb-2">
                     <label class="form-label">Description</label>
-                    <textarea name="dungeons[passives][${basePassiveIndex}][description]" class="form-control" rows="3" placeholder="Description de la passive..."></textarea>
+                    <textarea name="dungeons[passives][${basePassiveIndex}][description]" class="form-control" rows="3" placeholder="Passive description..."></textarea>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Ordre</label>
+                    <label class="form-label">Order</label>
                     <input type="number" name="dungeons[passives][${basePassiveIndex}][passiveOrder]" class="form-control" value="${basePassiveIndex + 1}" min="1">
                 </div>
             `;
@@ -752,17 +752,17 @@
                 <div class="d-flex justify-content-between mb-3">
                     <h5 class="mb-0">📍 Phase #${phaseIndex + 1}</h5>
                     <button type="button" class="btn btn-danger btn-sm remove-phase">
-                        <i class="fas fa-trash"></i> Supprimer
+                        <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
                 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Nom de la Phase</label>
-                        <input type="text" name="dungeons[phases][${phaseIndex}][name]" class="form-control" placeholder="Ex: Exhausted, Enraged">
+                        <label class="form-label">Phase Name</label>
+                        <input type="text" name="dungeons[phases][${phaseIndex}][name]" class="form-control" placeholder="E.g.: Exhausted, Enraged">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Ordre</label>
+                        <label class="form-label">Order</label>
                         <input type="number" name="dungeons[phases][${phaseIndex}][orderNum]" class="form-control" value="${phaseIndex + 1}" min="1">
                     </div>
                 </div>
@@ -771,21 +771,21 @@
                     <div class="accordion-item">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-spells-${phaseIndex}">
-                                ⚔️ Modifier les Spells (optionnel)
+                                ⚔️ Modify Spells (optional)
                             </button>
                         </h2>
                         <div id="collapse-spells-${phaseIndex}" class="accordion-collapse collapse">
                             <div class="accordion-body">
                                 <div class="mb-3">
-                                    <label class="form-label">Spell 1 - Nom Override</label>
-                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell1NameOverride]" class="form-control mb-2" placeholder="Laissez vide pour utiliser le spell de base">
+                                    <label class="form-label">Spell 1 - Name Override</label>
+                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell1NameOverride]" class="form-control mb-2" placeholder="Leave empty to use base spell">
                                     <label class="form-label">Spell 1 - Description Override</label>
                                     <textarea name="dungeons[phases][${phaseIndex}][spell1DescriptionOverride]" class="form-control" rows="2"></textarea>
                                 </div>
                                 <hr>
                                 <div class="mb-3">
-                                    <label class="form-label">Spell 2 - Nom Override</label>
-                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell2NameOverride]" class="form-control mb-2" placeholder="Laissez vide pour utiliser le spell de base">
+                                    <label class="form-label">Spell 2 - Name Override</label>
+                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell2NameOverride]" class="form-control mb-2" placeholder="Leave empty to use base spell">
                                     <label class="form-label">Spell 2 - Description Override</label>
                                     <textarea name="dungeons[phases][${phaseIndex}][spell2DescriptionOverride]" class="form-control mb-2" rows="2"></textarea>
                                     <label class="form-label">Spell 2 - Cooldown Override</label>
@@ -793,8 +793,8 @@
                                 </div>
                                 <hr>
                                 <div class="mb-3">
-                                    <label class="form-label">Spell 3 - Nom Override</label>
-                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell3NameOverride]" class="form-control mb-2" placeholder="Laissez vide pour utiliser le spell de base">
+                                    <label class="form-label">Spell 3 - Name Override</label>
+                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell3NameOverride]" class="form-control mb-2" placeholder="Leave empty to use base spell">
                                     <label class="form-label">Spell 3 - Description Override</label>
                                     <textarea name="dungeons[phases][${phaseIndex}][spell3DescriptionOverride]" class="form-control mb-2" rows="2"></textarea>
                                     <label class="form-label">Spell 3 - Cooldown Override</label>
@@ -807,9 +807,9 @@
 
                 <div class="mt-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0" style="color: #a855f7;">🔮 Passives de cette phase</h6>
+                        <h6 class="mb-0" style="color: #a855f7;">🔮 Passives for this phase</h6>
                         <button type="button" class="btn btn-success btn-sm add-phase-passive" data-phase-index="${phaseIndex}">
-                            <i class="fas fa-plus"></i> Ajouter
+                            <i class="fas fa-plus"></i> Add
                         </button>
                     </div>
                     <div class="phase-passives-container" data-phase-index="${phaseIndex}">
@@ -847,15 +847,15 @@
                     </button>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Nom de la Passive</label>
-                    <input type="text" name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][name]" class="form-control" placeholder="Ex: Exhausted, Enraged">
+                    <label class="form-label">Passive Name</label>
+                    <input type="text" name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][name]" class="form-control" placeholder="E.g.: Exhausted, Enraged">
                 </div>
                 <div class="mb-2">
                     <label class="form-label">Description</label>
-                    <textarea name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][description]" class="form-control" rows="3" placeholder="Description de la passive..."></textarea>
+                    <textarea name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][description]" class="form-control" rows="3" placeholder="Passive description..."></textarea>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Ordre</label>
+                    <label class="form-label">Order</label>
                     <input type="number" name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][passiveOrder]" class="form-control" value="${passiveIdx + 1}" min="1">
                 </div>
             `;

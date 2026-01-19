@@ -31,6 +31,7 @@
             font-weight: 900;
             margin-bottom: 15px;
             text-align: center;
+            text-shadow: 0 2px 20px rgba(0, 255, 136, 0.3);
         }
 
         .new-subtitle {
@@ -159,6 +160,20 @@
             display: inline-block;
             width: 1em;
             margin-left: -1em;
+        }
+
+        @media (max-width: 768px) {
+            .new-card {
+                padding: 30px 20px;
+            }
+
+            .new-title {
+                font-size: 2rem;
+            }
+
+            .btn-actions {
+                flex-direction: column;
+            }
         }
     </style>
 {% endblock %}

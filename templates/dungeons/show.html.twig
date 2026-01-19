@@ -539,7 +539,7 @@
             gap: 8px;
         }
 
-        /* Team Suggestions */
+        /* Team Suggestions - RARITY BASED COLORS */
         .teams-grid {
             display: grid;
             gap: 25px;
@@ -591,19 +591,76 @@
             margin-bottom: 20px;
         }
 
+        /* HERO CARDS WITH RARITY COLORS */
         .team-hero-card {
             position: relative;
             border-radius: 12px;
             overflow: hidden;
-            border: 2px solid rgba(0, 255, 136, 0.3);
+            border: 2px solid;
             transition: all 0.3s ease;
             aspect-ratio: 3/4;
         }
 
         .team-hero-card:hover {
             transform: scale(1.05);
-            border-color: #00ff88;
-            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Legendary - Or/Jaune */
+        .team-hero-card.rarity-legendary,
+        .team-hero-card.rarity-légendaire {
+            border-color: #ffd700;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .team-hero-card.rarity-legendary:hover,
+        .team-hero-card.rarity-légendaire:hover {
+            border-color: #ffed4e;
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+        }
+
+        /* Epic - Violet */
+        .team-hero-card.rarity-epic {
+            border-color: #a855f7;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+        }
+
+        .team-hero-card.rarity-epic:hover {
+            border-color: #c084fc;
+            box-shadow: 0 8px 30px rgba(168, 85, 247, 0.6);
+        }
+
+        /* Rare - Bleu */
+        .team-hero-card.rarity-rare {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .team-hero-card.rarity-rare:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.6);
+        }
+
+        /* Uncommon - Vert */
+        .team-hero-card.rarity-uncommon {
+            border-color: #10b981;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .team-hero-card.rarity-uncommon:hover {
+            border-color: #34d399;
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.6);
+        }
+
+        /* Common - Gris */
+        .team-hero-card.rarity-common {
+            border-color: #9ca3af;
+            box-shadow: 0 4px 15px rgba(156, 163, 175, 0.3);
+        }
+
+        .team-hero-card.rarity-common:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 8px 30px rgba(156, 163, 175, 0.6);
         }
 
         .team-hero-card img {
@@ -623,6 +680,51 @@
             text-align: center;
             font-weight: 600;
             font-size: 0.9rem;
+        }
+
+        /* Badge de rareté sur l'image du héros */
+        .team-hero-rarity-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+        }
+
+        .rarity-badge-legendary,
+        .rarity-badge-légendaire {
+            background: rgba(255, 215, 0, 0.9);
+            color: #0a0e27;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+        }
+
+        .rarity-badge-epic {
+            background: rgba(168, 85, 247, 0.9);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(168, 85, 247, 0.5);
+        }
+
+        .rarity-badge-rare {
+            background: rgba(59, 130, 246, 0.9);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+        }
+
+        .rarity-badge-uncommon {
+            background: rgba(16, 185, 129, 0.9);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.5);
+        }
+
+        .rarity-badge-common {
+            background: rgba(156, 163, 175, 0.9);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(156, 163, 175, 0.5);
         }
 
         .team-description {
@@ -1008,7 +1110,12 @@
 
                                         <div class="team-heroes-grid">
                                             {% for hero in suggestion.heroes %}
-                                                <div class="team-hero-card">
+                                                <div class="team-hero-card {% if hero.rarityEntity %}rarity-{{ hero.rarityEntity.name|lower }}{% endif %}">
+                                                    {% if hero.rarityEntity %}
+                                                        <span class="team-hero-rarity-badge rarity-badge-{{ hero.rarityEntity.name|lower }}">
+                                                            {{ hero.rarityEntity.name|slice(0, 1) }}
+                                                        </span>
+                                                    {% endif %}
                                                     <img src="{{ hero.imageUrl }}" alt="{{ hero.name }}" loading="lazy">
                                                     <div class="team-hero-name">{{ hero.name }}</div>
                                                 </div>

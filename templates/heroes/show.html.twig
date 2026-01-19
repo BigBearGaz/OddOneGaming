@@ -16,6 +16,68 @@
             overflow-x: hidden;
         }
 
+        /* ===== RARITY COLORS ===== */
+        {# Legendary - Or/Jaune #}
+        {% if hero.rarityEntity and (hero.rarityEntity.name == 'Legendary' or hero.rarityEntity.name == 'Légendaire') %}
+            :root {
+                --rarity-primary: #ffd700;
+                --rarity-secondary: #ffed4e;
+                --rarity-glow: rgba(255, 215, 0, 0.5);
+                --rarity-bg: rgba(255, 215, 0, 0.1);
+                --rarity-border: rgba(255, 215, 0, 0.3);
+            }
+        
+        {# Epic - Violet #}
+        {% elseif hero.rarityEntity and hero.rarityEntity.name == 'Epic' %}
+            :root {
+                --rarity-primary: #a855f7;
+                --rarity-secondary: #c084fc;
+                --rarity-glow: rgba(168, 85, 247, 0.5);
+                --rarity-bg: rgba(168, 85, 247, 0.1);
+                --rarity-border: rgba(168, 85, 247, 0.3);
+            }
+        
+        {# Rare - Bleu #}
+        {% elseif hero.rarityEntity and hero.rarityEntity.name == 'Rare' %}
+            :root {
+                --rarity-primary: #3b82f6;
+                --rarity-secondary: #60a5fa;
+                --rarity-glow: rgba(59, 130, 246, 0.5);
+                --rarity-bg: rgba(59, 130, 246, 0.1);
+                --rarity-border: rgba(59, 130, 246, 0.3);
+            }
+        
+        {# Uncommon - Vert #}
+        {% elseif hero.rarityEntity and hero.rarityEntity.name == 'Uncommon' %}
+            :root {
+                --rarity-primary: #10b981;
+                --rarity-secondary: #34d399;
+                --rarity-glow: rgba(16, 185, 129, 0.5);
+                --rarity-bg: rgba(16, 185, 129, 0.1);
+                --rarity-border: rgba(16, 185, 129, 0.3);
+            }
+        
+        {# Common - Gris #}
+        {% elseif hero.rarityEntity and hero.rarityEntity.name == 'Common' %}
+            :root {
+                --rarity-primary: #9ca3af;
+                --rarity-secondary: #d1d5db;
+                --rarity-glow: rgba(156, 163, 175, 0.5);
+                --rarity-bg: rgba(156, 163, 175, 0.1);
+                --rarity-border: rgba(156, 163, 175, 0.3);
+            }
+        
+        {# Default - Cyan (fallback) #}
+        {% else %}
+            :root {
+                --rarity-primary: #00ff88;
+                --rarity-secondary: #00ccff;
+                --rarity-glow: rgba(0, 255, 136, 0.5);
+                --rarity-bg: rgba(0, 255, 136, 0.1);
+                --rarity-border: rgba(0, 255, 136, 0.3);
+            }
+        {% endif %}
+
         /* Hero Detail Section */
         .hero-detail-section {
             position: relative;
@@ -34,7 +96,7 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(0, 255, 100, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 20% 50%, var(--rarity-bg) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.08) 0%, transparent 50%);
             pointer-events: none;
         }
@@ -54,8 +116,8 @@
             gap: 8px;
             padding: 10px 24px;
             background: rgba(255, 255, 255, 0.05);
-            color: #00ff88;
-            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: var(--rarity-primary);
+            border: 1px solid var(--rarity-border);
             border-radius: 20px;
             text-decoration: none;
             font-weight: 600;
@@ -65,10 +127,10 @@
         }
 
         .back-btn:hover {
-            background: rgba(0, 255, 136, 0.1);
-            border-color: #00ff88;
+            background: var(--rarity-bg);
+            border-color: var(--rarity-primary);
             transform: translateX(-5px);
-            color: #00ff88;
+            color: var(--rarity-primary);
         }
 
         /* Main Hero Card */
@@ -76,7 +138,7 @@
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
+            border: 1px solid var(--rarity-border);
             overflow: hidden;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
         }
@@ -110,11 +172,12 @@
         }
 
         .hero-main-title {
-            color: #00ff88;
+            color: var(--rarity-primary);
             font-size: 2rem;
             font-weight: 900;
             margin: 0;
             text-transform: uppercase;
+            text-shadow: 0 2px 12px var(--rarity-glow);
         }
 
         .hero-id {
@@ -138,7 +201,7 @@
 
         /* Rarity Display */
         .rarity-display {
-            color: #ffd700;
+            color: var(--rarity-primary);
             font-size: 1rem;
             font-weight: 700;
             margin-top: 8px;
@@ -147,7 +210,7 @@
             padding: 5px 10px;
             border-radius: 6px;
             display: inline-block;
-            border: 2px solid rgba(255, 215, 0, 0.5);
+            border: 2px solid var(--rarity-border);
         }
 
         /* Hero Info Section */
@@ -194,20 +257,19 @@
         }
 
         .badge-faction {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
             color: #ffffff;
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .badge-type {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: #ffffff;
             border: 2px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
         }
 
         .badge-affinity {
-            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
             color: #ffffff;
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
@@ -234,8 +296,8 @@
         }
 
         .info-box-weapons {
-            background: rgba(102, 126, 234, 0.1);
-            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.5);
         }
 
         .info-box-leader {
@@ -253,7 +315,7 @@
         }
 
         .info-box-weapons .info-box-title {
-            color: #667eea;
+            color: #3b82f6;
         }
 
         .info-box-leader .info-box-title {
@@ -274,7 +336,7 @@
         }
 
         .weapon-item:hover {
-            background: rgba(102, 126, 234, 0.2);
+            background: rgba(59, 130, 246, 0.2);
             transform: translateX(3px);
         }
 
@@ -283,8 +345,8 @@
             height: 45px;
             border-radius: 10px;
             overflow: hidden;
-            background: rgba(102, 126, 234, 0.2);
-            border: 2px solid rgba(102, 126, 234, 0.5);
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid rgba(59, 130, 246, 0.5);
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -298,7 +360,7 @@
         }
 
         .weapon-number {
-            background: rgba(102, 126, 234, 0.5);
+            background: rgba(59, 130, 246, 0.5);
             color: #ffffff;
             padding: 3px 8px;
             border-radius: 6px;
@@ -346,7 +408,7 @@
         }
 
         .section-title {
-            color: #00ff88;
+            color: var(--rarity-primary);
             font-size: 1.3rem;
             font-weight: 700;
             margin-bottom: 16px;
@@ -363,8 +425,8 @@
 
         .imprint-box {
             padding: 12px;
-            background: rgba(0, 255, 136, 0.05);
-            border: 1px solid rgba(0, 255, 136, 0.3);
+            background: var(--rarity-bg);
+            border: 1px solid var(--rarity-border);
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -373,9 +435,10 @@
         }
 
         .imprint-box:hover {
-            background: rgba(0, 255, 136, 0.1);
-            border-color: rgba(0, 255, 136, 0.5);
+            background: var(--rarity-bg);
+            border-color: var(--rarity-primary);
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px var(--rarity-glow);
         }
 
         .imprint-image {
@@ -383,13 +446,13 @@
             height: 50px;
             border-radius: 50%;
             overflow: hidden;
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 255, 136, 0.1));
-            border: 2px solid rgba(0, 255, 136, 0.5);
+            background: linear-gradient(135deg, var(--rarity-bg), var(--rarity-bg));
+            border: 2px solid var(--rarity-primary);
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+            box-shadow: 0 4px 15px var(--rarity-glow);
         }
 
         .imprint-image img {
@@ -403,7 +466,7 @@
         }
 
         .imprint-level {
-            background: rgba(0, 255, 136, 0.3);
+            background: var(--rarity-border);
             color: #ffffff;
             padding: 3px 10px;
             border-radius: 6px;
@@ -423,14 +486,14 @@
         .sets-triangle-container {
             padding: 20px;
             background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%);
-            border: 2px solid rgba(0, 255, 136, 0.3);
+            border: 2px solid var(--rarity-border);
             border-radius: 16px;
             box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
             margin-bottom: 20px;
         }
 
         .sets-triangle-title {
-            color: #00ff88;
+            color: var(--rarity-primary);
             font-size: 0.9rem;
             font-weight: 700;
             text-align: center;
@@ -441,8 +504,8 @@
 
         .set-item-triangle {
             position: relative;
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.15) 0%, rgba(0, 255, 136, 0.05) 100%);
-            border: 2px solid rgba(0, 255, 136, 0.4);
+            background: linear-gradient(135deg, var(--rarity-bg) 0%, var(--rarity-bg) 100%);
+            border: 2px solid var(--rarity-border);
             border-radius: 12px;
             padding: 10px;
             transition: all 0.3s ease;
@@ -451,15 +514,15 @@
 
         .set-item-triangle:hover {
             transform: scale(1.05) translateY(-3px);
-            border-color: rgba(0, 255, 136, 0.8);
-            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+            border-color: var(--rarity-primary);
+            box-shadow: 0 10px 30px var(--rarity-glow);
         }
 
         .set-item-triangle img {
             width: 55px;
             height: 55px;
             object-fit: contain;
-            filter: drop-shadow(0 3px 10px rgba(0, 255, 136, 0.6));
+            filter: drop-shadow(0 3px 10px var(--rarity-glow));
         }
 
         /* Equipment Section */
@@ -474,8 +537,8 @@
         }
 
         .equipment-item {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(102, 126, 234, 0.05) 100%);
-            border: 2px solid rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 2px solid rgba(59, 130, 246, 0.3);
             border-radius: 14px;
             padding: 16px;
             transition: all 0.3s ease;
@@ -483,8 +546,8 @@
 
         .equipment-item:hover {
             transform: translateY(-2px);
-            border-color: rgba(102, 126, 234, 0.6);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            border-color: rgba(59, 130, 246, 0.6);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
         }
 
         .equipment-content {
@@ -492,7 +555,7 @@
         }
 
         .equipment-name {
-            color: #667eea;
+            color: #3b82f6;
             font-weight: 700;
             font-size: 1rem;
             margin-bottom: 10px;
@@ -501,13 +564,13 @@
         }
 
         .equipment-main-stat {
-            color: #00ff88;
+            color: var(--rarity-primary);
             font-weight: 700;
             font-size: 1.05rem;
             margin-bottom: 12px;
             padding: 8px 12px;
-            background: rgba(0, 255, 136, 0.1);
-            border-left: 3px solid #00ff88;
+            background: var(--rarity-bg);
+            border-left: 3px solid var(--rarity-primary);
             border-radius: 6px;
         }
 
@@ -523,13 +586,13 @@
             padding: 6px 10px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 5px;
-            border-left: 2px solid rgba(102, 126, 234, 0.5);
+            border-left: 2px solid rgba(59, 130, 246, 0.5);
             line-height: 1.4;
         }
 
         .equipment-substat::before {
             content: '▸';
-            color: #667eea;
+            color: #3b82f6;
             margin-right: 6px;
             font-size: 0.75rem;
         }
@@ -543,7 +606,7 @@
 
         .btn-edit {
             padding: 12px 28px;
-            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+            background: linear-gradient(135deg, var(--rarity-primary) 0%, var(--rarity-secondary) 100%);
             color: #0a0e27;
             border: none;
             border-radius: 20px;
@@ -558,15 +621,15 @@
 
         .btn-edit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 255, 136, 0.4);
+            box-shadow: 0 8px 24px var(--rarity-glow);
             color: #0a0e27;
         }
 
         .btn-delete {
             padding: 12px 28px;
-            background: rgba(255, 82, 82, 0.2);
-            color: #ff5252;
-            border: 1px solid #ff5252;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
             border-radius: 20px;
             font-weight: 700;
             font-size: 0.95rem;
@@ -575,7 +638,7 @@
         }
 
         .btn-delete:hover {
-            background: rgba(255, 82, 82, 0.3);
+            background: rgba(239, 68, 68, 0.3);
             transform: translateY(-2px);
         }
 
@@ -583,11 +646,11 @@
         .skills-section {
             padding: 30px;
             background: rgba(0, 0, 0, 0.2);
-            border-top: 1px solid rgba(0, 255, 136, 0.2);
+            border-top: 1px solid var(--rarity-border);
         }
 
         .skills-title {
-            color: #00ccff;
+            color: var(--rarity-primary);
             font-size: 1.6rem;
             font-weight: 700;
             text-align: center;
@@ -596,7 +659,7 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            text-shadow: 0 2px 12px rgba(0, 204, 255, 0.5);
+            text-shadow: 0 2px 12px var(--rarity-glow);
         }
 
         .skills-grid {
@@ -621,19 +684,19 @@
         }
 
         .skill-card-base {
-            border-color: #667eea;
+            border-color: #3b82f6;
         }
 
         .skill-card-core {
-            border-color: #00ff88;
+            border-color: #10b981;
         }
 
         .skill-card-ultimate {
-            border-color: #ff5252;
+            border-color: #ef4444;
         }
 
         .skill-card-passive {
-            border-color: #ffd700;
+            border-color: #eab308;
         }
 
         /* Header du skill */
@@ -646,36 +709,19 @@
         }
 
         .skill-card-base .skill-header {
-            background: rgba(102, 126, 234, 0.15);
+            background: rgba(59, 130, 246, 0.15);
         }
 
         .skill-card-core .skill-header {
-            background: rgba(0, 255, 136, 0.15);
+            background: rgba(16, 185, 129, 0.15);
         }
 
         .skill-card-ultimate .skill-header {
-            background: rgba(255, 82, 82, 0.15);
-        }
-
-        .cooldown-badge {
-            background: rgba(6, 182, 212, 0.2);
-            border: 1px solid rgba(6, 182, 212, 0.5);
-            color: #06b6d4;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .cooldown-badge i {
-            font-size: 0.9rem;
+            background: rgba(239, 68, 68, 0.15);
         }
 
         .skill-card-passive .skill-header {
-            background: rgba(255, 215, 0, 0.15);
+            background: rgba(234, 179, 8, 0.15);
         }
 
         .skill-title-wrapper {
@@ -693,22 +739,22 @@
         }
 
         .skill-badge-base {
-            background: #667eea;
+            background: #3b82f6;
             color: #fff;
         }
 
         .skill-badge-core {
-            background: #00ff88;
-            color: #0a0e27;
+            background: #10b981;
+            color: #fff;
         }
 
         .skill-badge-ultimate {
-            background: #ff5252;
+            background: #ef4444;
             color: #fff;
         }
 
         .skill-badge-passive {
-            background: #ffd700;
+            background: #eab308;
             color: #0a0e27;
         }
 
@@ -718,19 +764,19 @@
         }
 
         .skill-card-base .skill-name {
-            color: #667eea;
+            color: #3b82f6;
         }
 
         .skill-card-core .skill-name {
-            color: #00ff88;
+            color: #10b981;
         }
 
         .skill-card-ultimate .skill-name {
-            color: #ff5252;
+            color: #ef4444;
         }
 
         .skill-card-passive .skill-name {
-            color: #ffd700;
+            color: #eab308;
         }
 
         /* Cooldown and Divinity badges */
@@ -752,6 +798,16 @@
             align-items: center;
             gap: 5px;
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .cooldown-badge {
+            background: rgba(6, 182, 212, 0.2);
+            border: 1px solid rgba(6, 182, 212, 0.5);
+            color: #06b6d4;
+        }
+
+        .cooldown-badge i {
+            font-size: 0.9rem;
         }
 
         .divinity-badge.divinity-initial {
@@ -784,32 +840,28 @@
         /* Accordion styles */
         .accordion-item {
             background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(0, 255, 136, 0.2);
+            border: 2px solid var(--rarity-border);
             border-radius: 12px;
             margin-bottom: 1rem;
         }
 
         .accordion-button {
-            background: rgba(6, 182, 212, 0.15);
-            color: #06b6d4;
+            background: var(--rarity-bg);
+            color: var(--rarity-primary);
             font-weight: 700;
             border-radius: 12px;
             padding: 1rem 1.5rem;
         }
 
         .accordion-button:not(.collapsed) {
-            background: rgba(6, 182, 212, 0.25);
-            color: #06b6d4;
+            background: var(--rarity-bg);
+            color: var(--rarity-primary);
             box-shadow: none;
         }
 
         .accordion-button:focus {
-            box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.2);
-            border-color: #06b6d4;
-        }
-
-        .accordion-button::after {
-            filter: brightness(0) saturate(100%) invert(64%) sepia(84%) saturate(1543%) hue-rotate(156deg) brightness(93%) contrast(98%);
+            box-shadow: 0 0 0 4px var(--rarity-glow);
+            border-color: var(--rarity-primary);
         }
 
         .accordion-body {
@@ -822,12 +874,12 @@
         /* Bonuses Section */
         .bonuses-section {
             padding: 30px;
-            background: rgba(255, 215, 0, 0.05);
-            border-top: 2px solid rgba(255, 215, 0, 0.3);
+            background: var(--rarity-bg);
+            border-top: 2px solid var(--rarity-border);
         }
 
         .bonuses-title {
-            color: #ffd700;
+            color: var(--rarity-primary);
             font-size: 1.5rem;
             font-weight: 700;
             text-align: center;
@@ -836,7 +888,7 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            text-shadow: 0 2px 12px rgba(255, 215, 0, 0.5);
+            text-shadow: 0 2px 12px var(--rarity-glow);
         }
 
         .bonuses-grid {
@@ -849,18 +901,18 @@
             background: rgba(255, 255, 255, 0.03);
             padding: 24px;
             border-radius: 14px;
-            border: 2px solid rgba(255, 215, 0, 0.3);
+            border: 2px solid var(--rarity-border);
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
 
         .bonus-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 8px 24px var(--rarity-glow);
         }
 
         .bonus-card-title {
-            color: #ffd700;
+            color: var(--rarity-primary);
             font-size: 1.15rem;
             font-weight: 700;
             margin-bottom: 16px;
@@ -893,7 +945,7 @@
             content: '⭐';
             position: absolute;
             left: 0;
-            color: #ffd700;
+            color: var(--rarity-primary);
             font-weight: 700;
             font-size: 1.2rem;
         }
@@ -1117,7 +1169,7 @@
 
                         {% if hero.leaderEntity %}
                             <div class="info-box info-box-leader">
-                                <div class="info-box-title">👑 Leader Skill</div>
+                                <div class="info-box-title">👑  Leader Aura</div>
                                 <div class="leader-content">
                                     {% if hero.leaderEntity.imageUrl %}
                                         <div class="leader-image">
@@ -1144,7 +1196,7 @@
                                     {% if hero.imageUrl %}
                                         <img src="{{ hero.imageUrl }}" alt="{{ hero.Name }}" style="border-radius: 50%;">
                                     {% else %}
-                                        <i class="fas fa-gem" style="font-size: 1.5rem; color: #00ff88;"></i>
+                                        <i class="fas fa-gem" style="font-size: 1.5rem; color: var(--rarity-primary);"></i>
                                     {% endif %}
                                 </div>
                                 <div class="imprint-content">
@@ -1168,7 +1220,7 @@
                                             </div>
                                         {% else %}
                                             <div class="imprint-image">
-                                                <i class="fas fa-star" style="font-size: 1.5rem; color: #00ff88;"></i>
+                                                <i class="fas fa-star" style="font-size: 1.5rem; color: var(--rarity-primary);"></i>
                                             </div>
                                         {% endif %}
                                         <div class="imprint-content">
@@ -1207,7 +1259,7 @@
                                     <!-- Liste des noms des sets -->
                                     <div style="text-align: center;">
                                         {% for set in hero.recommendedSets %}
-                                            <span style="display: inline-block; background: rgba(0, 255, 136, 0.2); color: #00ff88; padding: 5px 12px; border-radius: 8px; margin: 3px; font-size: 0.85rem; font-weight: 600;">
+                                            <span style="display: inline-block; background: var(--rarity-bg); color: var(--rarity-primary); padding: 5px 12px; border-radius: 8px; margin: 3px; font-size: 0.85rem; font-weight: 600;">
                                                 {{ set.name }}
                                             </span>
                                         {% endfor %}

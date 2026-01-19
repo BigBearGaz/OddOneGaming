@@ -125,12 +125,86 @@
 
         .hero-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
         }
 
-        .hero-card.selected {
-            border-color: #00ff88;
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+        /* RARITY COLORS FOR HERO CARDS */
+        
+        /* Legendary - Or/Jaune */
+        .hero-card.rarity-legendary,
+        .hero-card.rarity-légendaire {
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+
+        .hero-card.rarity-legendary:hover,
+        .hero-card.rarity-légendaire:hover {
+            border-color: #ffd700;
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .hero-card.rarity-legendary.selected,
+        .hero-card.rarity-légendaire.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 35px rgba(255, 215, 0, 0.8);
+        }
+
+        /* Epic - Violet */
+        .hero-card.rarity-epic {
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
+        .hero-card.rarity-epic:hover {
+            border-color: #a855f7;
+            box-shadow: 0 8px 30px rgba(168, 85, 247, 0.5);
+        }
+
+        .hero-card.rarity-epic.selected {
+            border-color: #a855f7;
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.8);
+        }
+
+        /* Rare - Bleu */
+        .hero-card.rarity-rare {
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .hero-card.rarity-rare:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .hero-card.rarity-rare.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 35px rgba(59, 130, 246, 0.8);
+        }
+
+        /* Uncommon - Vert */
+        .hero-card.rarity-uncommon {
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .hero-card.rarity-uncommon:hover {
+            border-color: #10b981;
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
+        }
+
+        .hero-card.rarity-uncommon.selected {
+            border-color: #10b981;
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.8);
+        }
+
+        /* Common - Gris */
+        .hero-card.rarity-common {
+            border-color: rgba(156, 163, 175, 0.4);
+        }
+
+        .hero-card.rarity-common:hover {
+            border-color: #9ca3af;
+            box-shadow: 0 8px 30px rgba(156, 163, 175, 0.5);
+        }
+
+        .hero-card.rarity-common.selected {
+            border-color: #9ca3af;
+            box-shadow: 0 0 35px rgba(156, 163, 175, 0.8);
         }
 
         .hero-card input[type="checkbox"] {
@@ -159,6 +233,51 @@
             font-size: 1rem;
         }
 
+        /* RARITY BADGE */
+        .hero-rarity-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+        }
+
+        .rarity-badge-legendary,
+        .rarity-badge-légendaire {
+            background: rgba(255, 215, 0, 0.9);
+            color: #0a0e27;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .rarity-badge-epic {
+            background: rgba(168, 85, 247, 0.9);
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(168, 85, 247, 0.5);
+        }
+
+        .rarity-badge-rare {
+            background: rgba(59, 130, 246, 0.9);
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .rarity-badge-uncommon {
+            background: rgba(16, 185, 129, 0.9);
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .rarity-badge-common {
+            background: rgba(156, 163, 175, 0.9);
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(156, 163, 175, 0.5);
+        }
+
         .hero-card .selected-badge {
             position: absolute;
             top: 10px;
@@ -174,6 +293,7 @@
             font-weight: 900;
             font-size: 1.2rem;
             box-shadow: 0 4px 15px rgba(0, 255, 136, 0.6);
+            z-index: 3;
         }
 
         .hero-card.selected .selected-badge {
@@ -261,10 +381,17 @@
 
                 <div class="hero-selection" id="hero-grid">
                     {% for hero in allHeroes %}
-                        <label class="hero-card" data-hero-id="{{ hero.id }}">
+                        <label class="hero-card {% if hero.rarityEntity %}rarity-{{ hero.rarityEntity.name|lower }}{% endif %}" data-hero-id="{{ hero.id }}">
                             <input type="checkbox" 
                                    name="dungeon_team_suggestion[heroes][]" 
                                    value="{{ hero.id }}">
+                            
+                            {% if hero.rarityEntity %}
+                                <span class="hero-rarity-badge rarity-badge-{{ hero.rarityEntity.name|lower }}">
+                                    {{ hero.rarityEntity.name|slice(0, 1) }}
+                                </span>
+                            {% endif %}
+                            
                             <img src="{{ hero.imageUrl }}" alt="{{ hero.name }}" loading="lazy">
                             <div class="hero-name">{{ hero.name }}</div>
                             <div class="selected-badge">✓</div>
