@@ -263,4 +263,19 @@ class HeroesRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+        public function slugExists(string $slug, ?int $ignoreId = null): bool
+    {
+        $qb = $this->createQueryBuilder('h')
+            ->select('COUNT(h.id)')
+            ->andWhere('h.slug = :slug')
+            ->setParameter('slug', $slug);
+
+        if ($ignoreId !== null) {
+            $qb->andWhere('h.id != :id')
+               ->setParameter('id', $ignoreId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() > 0;
+    }
+
 }
