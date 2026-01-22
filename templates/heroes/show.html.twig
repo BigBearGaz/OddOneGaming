@@ -1283,7 +1283,7 @@
                     <!-- Action Buttons -->
                     {% if is_granted('ROLE_ADMIN') %}
                         <div class="action-buttons">
-                            <a href="{{ path('app_heroes_edit', {'id': hero.id}) }}" class="btn-edit">
+<a href="{{ path('app_heroes_edit', {'slug': hero.slug}) }}" class="btn-edit">
                                 <i class="fas fa-edit"></i> Edit Hero
                             </a>
                             {% include 'heroes/_delete_form.html.twig' %}

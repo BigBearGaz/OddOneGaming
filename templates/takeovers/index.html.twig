@@ -6,21 +6,15 @@
     {{ parent() }}
     {{ encore_entry_link_tags('app') }}
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            overflow-x: hidden;
-        }
+        body { overflow-x: hidden; }
 
         /* Takeover Section */
         .takeover-section {
             position: relative;
             min-height: 100vh;
-            background: 
+            background:
                 linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%),
                 url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
             padding: 180px 0 80px 0;
@@ -29,11 +23,8 @@
         .takeover-section::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
                 radial-gradient(circle at 20% 50%, rgba(0, 255, 100, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.08) 0%, transparent 50%);
             pointer-events: none;
@@ -48,10 +39,7 @@
         }
 
         /* Header */
-        .page-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
+        .page-header { text-align: center; margin-bottom: 50px; }
 
         .page-title {
             font-size: 3.5rem;
@@ -63,12 +51,14 @@
             margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: -1px;
+            line-height: 1.05;
         }
 
         .page-subtitle {
             color: rgba(255, 255, 255, 0.7);
             font-size: 1.3rem;
             margin-bottom: 30px;
+            line-height: 1.4;
         }
 
         .add-service-btn {
@@ -96,7 +86,7 @@
         .services-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
+            gap: 30px; /* gap gère l'espacement grid proprement [web:172] */
             margin-bottom: 60px;
         }
 
@@ -124,6 +114,7 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 20px;
+            gap: 12px;
         }
 
         .service-category {
@@ -133,6 +124,7 @@
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 600;
+            line-height: 1.2;
         }
 
         .service-price {
@@ -143,6 +135,7 @@
             font-size: 1.3rem;
             font-weight: 900;
             box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+            white-space: nowrap;
         }
 
         .service-name {
@@ -167,9 +160,7 @@
             gap: 10px;
         }
 
-        .service-actions-full {
-            grid-template-columns: 1fr;
-        }
+        .service-actions-full { grid-template-columns: 1fr; }
 
         .btn-action {
             padding: 12px;
@@ -234,92 +225,45 @@
             margin-bottom: 30px;
         }
 
-        /* Stats Section */
-        .stats-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 60px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            padding: 35px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(0, 255, 136, 0.4);
-            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.2);
-        }
-
-        .stat-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        .stat-card:nth-child(1) .stat-icon {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-card:nth-child(2) .stat-icon {
-            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-card:nth-child(3) .stat-icon {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: #00ff88;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Responsive */
+        /* Mobile */
         @media (max-width: 768px) {
-            .container-custom {
-                padding: 0 20px;
-            }
+            .container-custom { padding: 0 16px; }
 
-            .page-title {
-                font-size: 2.5rem;
-            }
+            /* moins de padding top (menu + safe area) */
+            .takeover-section { padding: 130px 0 60px 0; }
+
+            /* titres fluides */
+            .page-title { font-size: clamp(2rem, 7vw, 2.6rem); } /* clamp = responsive sans multiplier les breakpoints [web:183] */
+            .page-subtitle { font-size: 1.05rem; margin-bottom: 20px; }
+
+            .add-service-btn { width: 100%; padding: 14px 18px; }
 
             .services-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr; /* évite les cartes “trop larges” */
+                gap: 16px;
             }
 
-            .stats-section {
-                grid-template-columns: 1fr;
-            }
+            .service-card { padding: 18px; }
 
-            .service-actions {
-                grid-template-columns: 1fr;
-            }
+            .service-header { align-items: center; }
+
+            .service-category { font-size: 0.8rem; padding: 7px 12px; }
+            .service-price { font-size: 1.1rem; padding: 8px 14px; }
+
+            .service-name { font-size: 1.2rem; margin-bottom: 10px; }
+            .service-details { font-size: 0.92rem; margin-bottom: 18px; }
+
+            .service-actions { grid-template-columns: 1fr; }
+
+            .empty-state { padding: 35px 18px; }
+            .empty-icon { font-size: 3.5rem; }
+        }
+
+        /* Très petit écran */
+        @media (max-width: 380px) {
+            .service-header { flex-direction: column; align-items: stretch; }
+            .service-price { text-align: center; }
+            .service-category { text-align: center; }
         }
     </style>
 {% endblock %}
@@ -327,7 +271,6 @@
 {% block body %}
     <div class="takeover-section">
         <div class="container-custom">
-            <!-- Header -->
             <div class="page-header">
                 <h1 class="page-title">Takeover Services</h1>
                 <p class="page-subtitle">Professional Account Boosting & Coaching</p>
@@ -338,11 +281,9 @@
                 {% endif %}
             </div>
 
-            <!-- Services Grid -->
             <div class="services-grid">
                 {% for takeover in takeovers %}
                     <div class="service-card">
-                        <!-- Header with Category and Price -->
                         <div class="service-header">
                             {% if takeover.category %}
                                 <span class="service-category">{{ takeover.category }}</span>
@@ -350,17 +291,14 @@
                             <span class="service-price">£{{ takeover.price }}</span>
                         </div>
 
-                        <!-- Service Name -->
                         <h3 class="service-name">{{ takeover.name }}</h3>
 
-                        <!-- Details -->
                         {% if takeover.details %}
-                        <div class="service-details">
-                            {{ takeover.details|length > 100 ? takeover.details|slice(0, 100) ~ '...' : takeover.details }}
-                        </div>
+                            <div class="service-details">
+                                {{ takeover.details|length > 100 ? takeover.details|slice(0, 100) ~ '...' : takeover.details }}
+                            </div>
                         {% endif %}
 
-                        <!-- Actions -->
                         <div class="service-actions {% if not is_granted('ROLE_ADMIN') %}service-actions-full{% endif %}">
                             <a href="{{ path('app_takeovers_show', {'id': takeover.id}) }}" class="btn-action btn-view">
                                 👁️ View
@@ -385,7 +323,6 @@
                     </div>
                 {% endfor %}
             </div>
-
         </div>
     </div>
 {% endblock %}

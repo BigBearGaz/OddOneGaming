@@ -16,18 +16,21 @@ use App\Repository\DisableRepository;
 use App\Repository\LeaderRepository;
 use App\Service\ExcelExportService;
 use App\Service\ExcelImportService;
+use App\Service\SlugService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Requirement\Requirement;
 
 #[Route('/heroes')]
 final class HeroesController extends AbstractController
 {
     #[Route('/', name: 'app_heroes_index', methods: ['GET'])]
     public function index(
-        Request $request, 
+        Request $request,
         HeroesRepository $heroesRepository,
         FactionRepository $factionRepository,
         TypeRepository $typeRepository,
@@ -38,9 +41,7 @@ final class HeroesController extends AbstractController
         DebuffsRepository $debuffsRepository,
         DisableRepository $disableRepository,
         LeaderRepository $leaderRepository
-    ): Response
-    {
-        // Récupère les paramètres de filtre
+    ): Response {
         $factionId = $request->query->get('faction');
         $typeId = $request->query->get('type');
         $affinityId = $request->query->get('affinity');
@@ -51,7 +52,6 @@ final class HeroesController extends AbstractController
         $debuffId = $request->query->get('debuff');
         $disableId = $request->query->get('disable');
 
-        // Récupère les héros filtrés
         if ($factionId || $typeId || $affinityId || $allegianceId || $rarityId || $leaderId || $buffId || $debuffId || $disableId) {
             $heroes = $heroesRepository->findByFilters(
                 factionId: $factionId,
@@ -68,7 +68,6 @@ final class HeroesController extends AbstractController
             $heroes = $heroesRepository->findAllWithRelations();
         }
 
-        // Récupère toutes les entités pour les filtres
         $factions = $factionRepository->findBy([], ['name' => 'ASC']);
         $types = $typeRepository->findBy([], ['name' => 'ASC']);
         $affinities = $affinityRepository->findBy([], ['name' => 'ASC']);
@@ -100,25 +99,22 @@ final class HeroesController extends AbstractController
                 'buff' => $buffId,
                 'debuff' => $debuffId,
                 'disable' => $disableId,
-            ]
+            ],
         ]);
     }
 
-    // NOUVELLE ROUTE - Page des effets
     #[Route('/effects', name: 'app_heroes_effects', methods: ['GET'])]
     public function effects(): Response
     {
         return $this->render('heroes/effect_heroes.html.twig');
     }
 
-    // EXPORT EXCEL
     #[Route('/export', name: 'app_heroes_export', methods: ['GET'])]
     public function export(ExcelExportService $excelExportService): Response
     {
         return $excelExportService->exportHeroes();
     }
 
-    // IMPORT EXCEL
     #[Route('/import', name: 'app_heroes_import', methods: ['GET', 'POST'])]
     public function import(Request $request, ExcelImportService $excelImportService): Response
     {
@@ -130,14 +126,12 @@ final class HeroesController extends AbstractController
                 return $this->redirectToRoute('app_heroes_import');
             }
 
-            // Vérifie l'extension
             $extension = $file->getClientOriginalExtension();
             if (!in_array($extension, ['xlsx', 'xls'])) {
                 $this->addFlash('error', 'Format de fichier invalide. Utilisez .xlsx ou .xls');
                 return $this->redirectToRoute('app_heroes_import');
             }
 
-            // Import avec suppression
             $result = $excelImportService->importHeroes($file->getPathname(), true);
 
             if ($result['success']) {
@@ -157,29 +151,29 @@ final class HeroesController extends AbstractController
     }
 
     #[Route('/new', name: 'app_heroes_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SlugService $slugService): Response
     {
         $hero = new Heroes();
         $form = $this->createForm(HeroesType::class, $hero);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // 🔥 Associer le héros aux skillUpgrades
             foreach ($hero->getSkillUpgrades() as $skillUpgrade) {
                 $skillUpgrade->setHero($hero);
             }
-
-            // 🔥 Associer le héros aux awakenings
             foreach ($hero->getAwakenings() as $awakening) {
                 $awakening->setHero($hero);
             }
+
+            // slug propre + suffix -2/-3 seulement si besoin
+            $hero->setSlug($slugService->uniqueHeroSlug($hero->getName(), null));
 
             $entityManager->persist($hero);
             $entityManager->flush();
 
             $this->addFlash('success', 'Héros créé avec succès !');
 
-            return $this->redirectToRoute('app_heroes_show', ['id' => $hero->getId()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_heroes_show', ['slug' => $hero->getSlug()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('heroes/new.html.twig', [
@@ -188,36 +182,41 @@ final class HeroesController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_heroes_show', methods: ['GET'])]
-    public function show(Heroes $hero): Response
-    {
+    #[Route('/{slug}', name: 'app_heroes_show', methods: ['GET'], requirements: ['slug' => Requirement::ASCII_SLUG])]
+    public function show(
+        #[MapEntity(mapping: ['slug' => 'slug'])] Heroes $hero
+    ): Response {
         return $this->render('heroes/show.html.twig', [
             'hero' => $hero,
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'app_heroes_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Heroes $hero, EntityManagerInterface $entityManager): Response
-    {
+    #[Route('/{slug}/edit', name: 'app_heroes_edit', methods: ['GET', 'POST'], requirements: ['slug' => Requirement::ASCII_SLUG])]
+    public function edit(
+        Request $request,
+        #[MapEntity(mapping: ['slug' => 'slug'])] Heroes $hero,
+        EntityManagerInterface $entityManager,
+        SlugService $slugService
+    ): Response {
         $form = $this->createForm(HeroesType::class, $hero);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // 🔥 Associer le héros aux skillUpgrades
             foreach ($hero->getSkillUpgrades() as $skillUpgrade) {
                 $skillUpgrade->setHero($hero);
             }
-
-            // 🔥 Associer le héros aux awakenings
             foreach ($hero->getAwakenings() as $awakening) {
                 $awakening->setHero($hero);
             }
+
+            // recalcul slug si le nom a changé (ou toujours, comme ici)
+            $hero->setSlug($slugService->uniqueHeroSlug($hero->getName(), $hero->getId()));
 
             $entityManager->flush();
 
             $this->addFlash('success', 'Héros modifié avec succès !');
 
-            return $this->redirectToRoute('app_heroes_show', ['id' => $hero->getId()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_heroes_show', ['slug' => $hero->getSlug()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('heroes/edit.html.twig', [
@@ -226,13 +225,15 @@ final class HeroesController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_heroes_delete', methods: ['POST'])]
-    public function delete(Request $request, Heroes $hero, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$hero->getId(), $request->getPayload()->getString('_token'))) {
+    #[Route('/{slug}', name: 'app_heroes_delete', methods: ['POST'], requirements: ['slug' => Requirement::ASCII_SLUG])]
+    public function delete(
+        Request $request,
+        #[MapEntity(mapping: ['slug' => 'slug'])] Heroes $hero,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if ($this->isCsrfTokenValid('delete' . $hero->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($hero);
             $entityManager->flush();
-
             $this->addFlash('success', 'Héros supprimé avec succès !');
         }
 
