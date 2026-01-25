@@ -193,13 +193,6 @@
                        placeholder="••••••••">
             </div>
 
-            <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" id="_remember_me" name="_remember_me">
-                <label class="form-check-label" for="_remember_me">
-                    Remember me
-                </label>
-            </div>
-
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
             <button type="submit" class="btn-login">

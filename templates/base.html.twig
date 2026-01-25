@@ -184,11 +184,15 @@
                             {% endif %}
                             
                             <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-success" href="{{ path('app_dungeons_new') }}">
-                                    ➕ Add New Boss
-                                </a>
-                            </li>
+                           {% if is_granted('ROLE_ADMIN') %}
+    <li><hr class="dropdown-divider"></li>
+    <li>
+        <a class="dropdown-item text-success" href="{{ path('app_dungeons_new') }}">
+            ➕ Add New Boss
+        </a>
+    </li>
+{% endif %}
+
                             
                         </ul>
                     </li>
