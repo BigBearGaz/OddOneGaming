@@ -837,6 +837,107 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
+        /* ✅ STYLES POUR LES EFFETS (BUFFS/DEBUFFS/DISABLE) */
+        .skill-effect {
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: help;
+            transition: all 0.2s ease;
+            display: inline-block;
+            border: 1px solid;
+        }
+
+        /* 🔵 BUFFS - BLEU */
+        .skill-effect.effect-buff {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .skill-effect.effect-buff:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+
+        /* 🔴 DEBUFFS - ROUGE */
+        .skill-effect.effect-debuff {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .skill-effect.effect-debuff:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+
+        /* 🟣 DISABLES - VIOLET */
+        .skill-effect.effect-disable {
+            color: #a855f7;
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
+        .skill-effect.effect-disable:hover {
+            background: rgba(168, 85, 247, 0.25);
+            border-color: #a855f7;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+        }
+
+        .skill-tooltip {
+            position: fixed;
+            width: 280px;
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.98) 0%, rgba(26, 31, 58, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            pointer-events: none;
+            display: none;
+            border: 2px solid;
+        }
+
+        .skill-tooltip-header {
+            padding: 10px 15px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .skill-tooltip-header.buff {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .skill-tooltip-header.debuff {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .skill-tooltip-header.disable {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        .skill-tooltip-body {
+            padding: 12px 15px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.5;
+        }
+
+        .skill-tooltip.buff { border-color: #3b82f6; }
+        .skill-tooltip.debuff { border-color: #ef4444; }
+        .skill-tooltip.disable { border-color: #a855f7; }
+
         /* Accordion styles */
         .accordion-item {
             background: rgba(255, 255, 255, 0.05);
@@ -1169,7 +1270,7 @@
 
                         {% if hero.leaderEntity %}
                             <div class="info-box info-box-leader">
-                                <div class="info-box-title">👑  Leader Aura</div>
+                                <div class="info-box-title">👑 Leader Aura</div>
                                 <div class="leader-content">
                                     {% if hero.leaderEntity.imageUrl %}
                                         <div class="leader-image">
@@ -1210,7 +1311,7 @@
                     <!-- Recommended Imprints (relation ManyToMany) -->
                     {% if hero.imprints|length > 0 %}
                         <div class="imprints-section" style="margin-top: 24px;">
-                            <h3 class="section-title">⭐ Recommended Imprints</h3>
+                            <h3 class="section-title">💎 Recommended Imprints</h3>
                             <div class="imprints-grid">
                                 {% for imprint in hero.imprints %}
                                     <div class="imprint-box">
@@ -1239,11 +1340,11 @@
                     {% if hero.armors|length > 0 %}
                         <div class="equipment-section">
                             <h3 class="section-title">🛡️ Recommended Equipment</h3>
-
+                            
                             <!-- Sets Display -->
                             {% if hero.recommendedSets|length > 0 %}
                                 <div class="sets-triangle-container">
-                                    <div class="sets-triangle-title">Recommended Sets</div>
+                                    <div class="sets-triangle-title">⚡ Recommended Sets</div>
                                     
                                     <!-- Affichage en grille flexible -->
                                     <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 15px;">
@@ -1255,7 +1356,7 @@
                                             </div>
                                         {% endfor %}
                                     </div>
-
+                                    
                                     <!-- Liste des noms des sets -->
                                     <div style="text-align: center;">
                                         {% for set in hero.recommendedSets %}
@@ -1283,7 +1384,7 @@
                     <!-- Action Buttons -->
                     {% if is_granted('ROLE_ADMIN') %}
                         <div class="action-buttons">
-<a href="{{ path('app_heroes_edit', {'slug': hero.slug}) }}" class="btn-edit">
+                            <a href="{{ path('app_heroes_edit', {slug: hero.slug}) }}" class="btn-edit">
                                 <i class="fas fa-edit"></i> Edit Hero
                             </a>
                             {% include 'heroes/_delete_form.html.twig' %}
@@ -1295,7 +1396,6 @@
             <!-- Skills Section -->
             <div class="skills-section">
                 <h2 class="skills-title">⚡ Skills & Abilities</h2>
-                
                 <div class="skills-grid">
                     <!-- Base Skill -->
                     {% if hero.base %}
@@ -1305,7 +1405,6 @@
                                     <span class="skill-badge skill-badge-base">S1</span>
                                     <span class="skill-name">Base Skill</span>
                                 </div>
-                                
                                 {% set baseSkill = hero.getSkillUpgradeByType('base') %}
                                 {% if baseSkill and baseSkill.cooldown %}
                                     <div class="skill-meta-badges">
@@ -1315,9 +1414,8 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            
                             <div class="skill-body">
-                                <div class="skill-description">{{ hero.base }}</div>
+                                <div class="skill-description">{{ hero.base|parse_effects|raw }}</div>
                             </div>
                         </div>
                     {% endif %}
@@ -1330,7 +1428,6 @@
                                     <span class="skill-badge skill-badge-core">S2</span>
                                     <span class="skill-name">Core Skill</span>
                                 </div>
-                                
                                 {% set coreSkill = hero.getSkillUpgradeByType('core') %}
                                 {% if coreSkill and coreSkill.cooldown %}
                                     <div class="skill-meta-badges">
@@ -1340,9 +1437,8 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            
                             <div class="skill-body">
-                                <div class="skill-description">{{ hero.core }}</div>
+                                <div class="skill-description">{{ hero.core|parse_effects|raw }}</div>
                             </div>
                         </div>
                     {% endif %}
@@ -1355,7 +1451,6 @@
                                     <span class="skill-badge skill-badge-ultimate">S3</span>
                                     <span class="skill-name">Ultimate</span>
                                 </div>
-                                
                                 <div class="skill-meta-badges">
                                     {% set ultimateSkill = hero.getSkillUpgradeByType('ultimate') %}
                                     {% if ultimateSkill and ultimateSkill.cooldown %}
@@ -1363,22 +1458,20 @@
                                             <i class="fas fa-clock"></i> {{ ultimateSkill.cooldown }} turns
                                         </div>
                                     {% endif %}
-                                    
                                     {% if hero.InitialDivinity %}
                                         <div class="divinity-badge divinity-initial">
-                                            ⚡ Initial: {{ hero.InitialDivinity }}
+                                            Initial: {{ hero.InitialDivinity }}
                                         </div>
                                     {% endif %}
                                     {% if hero.DivinityCost %}
                                         <div class="divinity-badge divinity-cost">
-                                            💫 Cost: {{ hero.DivinityCost }}
+                                            Cost: {{ hero.DivinityCost }}
                                         </div>
                                     {% endif %}
                                 </div>
                             </div>
-                            
                             <div class="skill-body">
-                                <div class="skill-description">{{ hero.ultimate }}</div>
+                                <div class="skill-description">{{ hero.ultimate|parse_effects|raw }}</div>
                             </div>
                         </div>
                     {% endif %}
@@ -1392,9 +1485,8 @@
                                     <span class="skill-name">Passive Skill</span>
                                 </div>
                             </div>
-                            
                             <div class="skill-body">
-                                <div class="skill-description">{{ hero.passive }}</div>
+                                <div class="skill-description">{{ hero.passive|parse_effects|raw }}</div>
                             </div>
                         </div>
                     {% endif %}
@@ -1404,16 +1496,13 @@
             <!-- SKILL LEVEL UPGRADES -->
             {% if hero.skillUpgrades|length > 0 %}
                 <div class="bonuses-section" style="background: rgba(6, 182, 212, 0.05); border-top: 2px solid rgba(6, 182, 212, 0.3); padding: 30px;">
-                    <h2 class="bonuses-title" style="color: #06b6d4;">
-                        📊 Skill Level Upgrades
-                    </h2>
-                    
+                    <h2 class="bonuses-title" style="color: #06b6d4;">🔥 Skill Level Upgrades</h2>
                     <div class="accordion" id="skillUpgradesAccordion">
                         {% for skillUpgrade in hero.skillUpgrades %}
                             <div class="accordion-item mb-3" style="background: rgba(6, 182, 212, 0.1); border: 2px solid rgba(6, 182, 212, 0.3);">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#skillUpgrade{{ loop.index }}" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4; font-weight: 700;">
-                                        ⚡ {{ skillUpgrade.skillType|upper }}
+                                        {{ skillUpgrade.skillType|upper }}
                                     </button>
                                 </h2>
                                 <div id="skillUpgrade{{ loop.index }}" class="accordion-collapse collapse">
@@ -1425,35 +1514,30 @@
                                                     <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level1 }}</div>
                                                 </div>
                                             {% endif %}
-                                            
                                             {% if skillUpgrade.level2 %}
                                                 <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
                                                     <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 2</span>
                                                     <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level2 }}</div>
                                                 </div>
                                             {% endif %}
-                                            
                                             {% if skillUpgrade.level3 %}
                                                 <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
                                                     <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 3</span>
                                                     <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level3 }}</div>
                                                 </div>
                                             {% endif %}
-                                            
                                             {% if skillUpgrade.level4 %}
                                                 <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
                                                     <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 4</span>
                                                     <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level4 }}</div>
                                                 </div>
                                             {% endif %}
-                                            
                                             {% if skillUpgrade.level5 %}
                                                 <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
                                                     <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 5</span>
                                                     <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level5 }}</div>
                                                 </div>
                                             {% endif %}
-                                            
                                             {% if skillUpgrade.level6 %}
                                                 <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
                                                     <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 6</span>
@@ -1472,18 +1556,13 @@
             <!-- SKILL AWAKENINGS -->
             {% if hero.awakenings|length > 0 %}
                 <div class="bonuses-section" style="background: rgba(255, 215, 0, 0.05); border-top: 2px solid rgba(255, 215, 0, 0.3);">
-                    <h2 class="bonuses-title" style="color: #ffd700;">
-                        ⭐ Skill Awakenings
-                    </h2>
-                    
+                    <h2 class="bonuses-title" style="color: #ffd700;">🌟 Skill Awakenings</h2>
                     <div class="accordion" id="awakeningsAccordion">
                         {% for awakening in hero.awakenings %}
                             <div class="accordion-item mb-3" style="background: rgba(255, 215, 0, 0.1); border: 2px solid rgba(255, 215, 0, 0.3);">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#awakening{{ loop.index }}" style="background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 700;">
-                                        <span style="background: rgba(255, 215, 0, 0.5); padding: 5px 12px; border-radius: 8px; margin-right: 12px; color: #0a0e27; font-weight: 700;">
-                                            Awakening {{ awakening.awakeningLevel }}
-                                        </span>
+                                        <span style="background: rgba(255, 215, 0, 0.5); padding: 5px 12px; border-radius: 8px; margin-right: 12px; color: #0a0e27; font-weight: 700;">Awakening {{ awakening.awakeningLevel }}</span>
                                         {{ awakening.skillType }}
                                     </button>
                                 </h2>
@@ -1521,7 +1600,7 @@
                         <!-- Ascension Bonuses -->
                         {% if hero.ascensionBonuses %}
                             <div class="bonus-card">
-                                <div class="bonus-card-title">🔺 Ascension Bonuses</div>
+                                <div class="bonus-card-title">🏆 Ascension Bonuses</div>
                                 <ul class="bonus-list">
                                     {% set ascensionLines = hero.ascensionBonuses|split('\n') %}
                                     {% for line in ascensionLines %}
@@ -1553,4 +1632,77 @@
 {% block javascripts %}
     {{ parent() }}
     {{ encore_entry_script_tags('app') }}
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Créer la tooltip pour les effets (SEULEMENT TEXTE)
+        const tooltip = document.createElement('div');
+        tooltip.className = 'skill-tooltip';
+        tooltip.innerHTML = `
+            <div class="skill-tooltip-header"></div>
+            <div class="skill-tooltip-body"></div>
+        `;
+        document.body.appendChild(tooltip);
+
+        const header = tooltip.querySelector('.skill-tooltip-header');
+        const body = tooltip.querySelector('.skill-tooltip-body');
+
+        // Gérer les événements sur tous les effets
+        document.addEventListener('mouseenter', function(e) {
+            if (e.target.classList.contains('skill-effect')) {
+                const effectName = e.target.dataset.effect;
+                const description = e.target.dataset.description;
+                const type = e.target.classList.contains('effect-buff') ? 'buff' :
+                            e.target.classList.contains('effect-debuff') ? 'debuff' : 'disable';
+
+                // Mise à jour contenu
+                header.textContent = effectName;
+                header.className = `skill-tooltip-header ${type}`;
+                body.textContent = description;
+                tooltip.className = `skill-tooltip ${type}`;
+
+                // Afficher
+                tooltip.style.display = 'block';
+                positionTooltip(e);
+            }
+        }, true);
+
+        document.addEventListener('mouseleave', function(e) {
+            if (e.target.classList.contains('skill-effect')) {
+                tooltip.style.display = 'none';
+            }
+        }, true);
+
+        document.addEventListener('mousemove', function(e) {
+            if (e.target.classList.contains('skill-effect')) {
+                positionTooltip(e);
+            }
+        }, true);
+
+        function positionTooltip(event) {
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let left = event.clientX + 15;
+            let top = event.clientY - tooltipRect.height - 2;
+
+            // Ajustement si déborde droite
+            if (left + tooltipRect.width > viewportWidth - 10) {
+                left = event.clientX - tooltipRect.width - 15;
+            }
+            // Ajustement si déborde en haut
+            if (top < 10) top = 10;
+            // Ajustement si déborde en bas
+            if (top + tooltipRect.height > viewportHeight - 10) {
+                top = viewportHeight - tooltipRect.height - 10;
+            }
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+    });
+    </script>
 {% endblock %}
+
+

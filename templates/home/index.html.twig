@@ -12,7 +12,10 @@
             box-sizing: border-box;
         }
 
-        body { overflow: hidden; }
+        body { 
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
 
         .hero {
             position: relative;
@@ -23,6 +26,8 @@
             background:
                 linear-gradient(135deg, rgba(10,14,39,0.85) 0%, rgba(26,31,58,0.85) 100%),
                 url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
+            padding: 20px;
+            padding-top: 120px; /* ✅ Plus d'espace par défaut */
         }
 
         .hero::before {
@@ -44,14 +49,18 @@
             position: relative;
             z-index: 2;
             max-width: 1200px;
+            width: 100%;
             padding: 60px 40px;
             text-align: center;
         }
 
-        .brand { margin-bottom: 40px; }
+        .brand { 
+            margin-bottom: 40px;
+            padding-top: 20px; /* ✅ Espace supplémentaire en haut */
+        }
 
         .brand h1 {
-            font-size: 4.5rem;
+            font-size: clamp(1.8rem, 7vw, 4.5rem); /* ✅ Réduit le min pour mobile */
             font-weight: 900;
             background: linear-gradient(135deg,#00ff88 0%,#00ccff 100%);
             -webkit-background-clip: text;
@@ -60,8 +69,11 @@
             letter-spacing: 0;
             text-transform: uppercase;
             animation: glow 3s ease-in-out infinite;
-            white-space: nowrap;
-            margin-top: 30px;
+            margin-top: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            line-height: 1.2;
         }
 
         @keyframes glow {
@@ -70,32 +82,34 @@
         }
 
         .brand-subtitle {
-            font-size: 1.5rem;
+            font-size: clamp(0.9rem, 3vw, 1.5rem);
             color: #00ff88;
             font-weight: 600;
-            letter-spacing: 4px;
+            letter-spacing: clamp(2px, 1vw, 4px);
             text-transform: uppercase;
+            margin-top: 10px;
         }
 
         .content-card {
             background: rgba(255,255,255,.03);
             backdrop-filter: blur(20px);
             border-radius: 24px;
-            padding: 50px 60px;
+            padding: clamp(30px, 5vw, 50px) clamp(25px, 5vw, 60px);
             border: 1px solid rgba(0,255,136,.2);
             box-shadow: 0 20px 60px rgba(0,0,0,.4);
             margin-top: 30px;
         }
 
         .welcome-title {
-            font-size: 2.5rem;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
             color: #fff;
             font-weight: 700;
             margin-bottom: 25px;
+            line-height: 1.2;
         }
 
         .welcome-text {
-            font-size: 1.25rem;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
             color: rgba(255,255,255,.8);
             line-height: 1.8;
             max-width: 700px;
@@ -114,31 +128,206 @@
             background: rgba(255,255,255,.02);
             border-radius: 16px;
             border: 1px solid rgba(0,255,136,.1);
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
-        .feature-icon { font-size: 2.5rem; margin-bottom: 15px; }
+        .feature-item:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0,255,136,.3);
+        }
+
+        .feature-icon { 
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            margin-bottom: 15px;
+        }
 
         .feature-title {
-            font-size: 1.3rem;
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
             color: #00ff88;
             font-weight: 600;
             margin-bottom: 10px;
         }
 
         .feature-description {
-            font-size: 1rem;
+            font-size: clamp(0.9rem, 2vw, 1rem);
             color: rgba(255,255,255,.7);
             line-height: 1.6;
         }
 
-        @media (max-width:768px) {
-            .hero-container { padding: 40px 20px; }
-            .brand h1 { font-size: 2.5rem; margin-top: 20px; }
-            .brand-subtitle { font-size: 1rem; letter-spacing: 2px; }
-            .content-card { padding: 35px 25px; }
-            .welcome-title { font-size: 1.8rem; }
-            .welcome-text { font-size: 1.1rem; }
-            .features { grid-template-columns: 1fr; }
+        /* Tablettes */
+        @media (max-width: 1024px) {
+            .hero {
+                background-attachment: scroll;
+                padding-top: 140px; /* ✅ Augmenté */
+            }
+
+            .hero-container {
+                padding: 50px 30px;
+            }
+
+            .brand {
+                padding-top: 15px;
+            }
+
+            .features {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 25px;
+                margin-top: 50px;
+            }
+        }
+
+        /* Mobile large */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 15px;
+                padding-top: 160px; /* ✅ Beaucoup plus d'espace */
+                padding-bottom: 40px;
+            }
+
+            .hero-container { 
+                padding: 20px 20px;
+                max-width: 100%;
+            }
+
+            .brand { 
+                margin-bottom: 30px;
+                padding-top: 10px;
+            }
+
+            .brand h1 { 
+                line-height: 1.15;
+            }
+
+            .content-card { 
+                border-radius: 20px;
+                margin-top: 25px;
+            }
+
+            .welcome-title {
+                margin-bottom: 20px;
+            }
+
+            .features { 
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin-top: 40px;
+                margin-bottom: 40px; /* ✅ Espace en bas */
+            }
+
+            .feature-item {
+                padding: 25px 20px;
+            }
+        }
+
+        /* Mobile petit */
+        @media (max-width: 480px) {
+            .hero {
+                padding: 10px;
+                padding-top: 150px; /* ✅ Espace suffisant */
+                padding-bottom: 40px;
+            }
+
+            .hero-container {
+                padding: 15px 15px;
+            }
+
+            .brand {
+                margin-bottom: 25px;
+                padding-top: 5px;
+            }
+
+            .content-card {
+                padding: 25px 20px;
+                border-radius: 16px;
+                margin-top: 20px;
+            }
+
+            .welcome-title {
+                margin-bottom: 15px;
+            }
+
+            .welcome-text {
+                line-height: 1.6;
+            }
+
+            .features {
+                margin-top: 30px;
+                gap: 15px;
+                margin-bottom: 30px;
+            }
+
+            .feature-item {
+                padding: 20px 15px;
+            }
+
+            .feature-icon {
+                margin-bottom: 10px;
+            }
+
+            .feature-title {
+                margin-bottom: 8px;
+            }
+        }
+
+        /* Très petits écrans */
+        @media (max-width: 360px) {
+            .hero {
+                padding-top: 140px; /* ✅ Ajusté */
+            }
+
+            .hero-container {
+                padding: 10px 10px;
+            }
+
+            .brand {
+                padding-top: 0;
+            }
+
+            .content-card {
+                padding: 20px 15px;
+            }
+
+            .features {
+                gap: 12px;
+            }
+
+            .feature-item {
+                padding: 18px 12px;
+            }
+        }
+
+        /* Orientation paysage sur mobile */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .hero {
+                min-height: auto;
+                padding: 10px;
+                padding-top: 120px;
+                padding-bottom: 30px;
+            }
+
+            .hero-container {
+                padding: 20px 20px;
+            }
+
+            .brand {
+                margin-bottom: 20px;
+                padding-top: 5px;
+            }
+
+            .content-card {
+                margin-top: 15px;
+            }
+
+            .features {
+                margin-top: 25px;
+                margin-bottom: 25px;
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
     </style>
 {% endblock %}

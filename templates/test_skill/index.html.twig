@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Skills</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            color: white;
+            padding: 50px;
+            font-family: Arial, sans-serif;
+        }
+
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        h1 {
+            color: #00ff88;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+
+        h2 {
+            color: #00ccff;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .skill-description {
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        /* Styles pour les effets */
+        .skill-effect {
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: help;
+            transition: all 0.2s ease;
+            display: inline-block;
+            border: 2px solid;
+            margin: 0 2px;
+        }
+
+        .skill-effect.effect-buff {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+
+        .skill-effect.effect-buff:hover {
+            background: rgba(16, 185, 129, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+        }
+
+        .skill-effect.effect-debuff {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+        }
+
+        .skill-effect.effect-debuff:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+        }
+
+        .skill-effect.effect-disable {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+        }
+
+        .skill-effect.effect-disable:hover {
+            background: rgba(245, 158, 11, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+        }
+
+        .skill-tooltip {
+            position: fixed;
+            width: 300px;
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.98) 0%, rgba(26, 31, 58, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            pointer-events: none;
+            display: none;
+            border: 2px solid;
+        }
+
+        .skill-tooltip-header {
+            padding: 12px 15px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .skill-tooltip-header.buff {
+            background: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+
+        .skill-tooltip-header.debuff {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .skill-tooltip-header.disable {
+            background: rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+        }
+
+        .skill-tooltip-body {
+            padding: 15px;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .skill-tooltip.buff { border-color: #10b981; }
+        .skill-tooltip.debuff { border-color: #ef4444; }
+        .skill-tooltip.disable { border-color: #f59e0b; }
+
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            border: 1px solid #333;
+        }
+
+        .console {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            min-height: 100px;
+        }
+
+        .console-line {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test Skills Parser</h1>
+
+        <div class="test-section">
+            <h2>1️⃣ Texte original (BDD) :</h2>
+            <div style="color: #999;">
+                {{ testText }}
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>2️⃣ Texte parsé avec le filtre :</h2>
+            <div class="skill-description">
+                {{ testText|parse_effects|raw }}
+            </div>
+            <p style="color: #666; font-size: 0.85rem; margin-top: 15px;">
+                ☝️ Les effets doivent être colorés. Passe ta souris dessus !
+            </p>
+        </div>
+
+        <div class="test-section">
+            <h2>3️⃣ HTML généré (debug) :</h2>
+            <pre>{{ testText|parse_effects|escape }}</pre>
+        </div>
+
+        <div class="test-section">
+            <h2>4️⃣ Console JavaScript :</h2>
+            <div class="console" id="console"></div>
+        </div>
+    </div>
+
+    <script>
+        // Console custom pour debug
+        const consoleDiv = document.getElementById('console');
+        function log(message) {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            line.textContent = '> ' + message;
+            consoleDiv.appendChild(line);
+            console.log(message);
+        }
+
+        log('Script chargé !');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            log('DOM chargé !');
+            
+            // Créer la tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'skill-tooltip';
+            tooltip.innerHTML = `
+                <div class="skill-tooltip-header"></div>
+                <div class="skill-tooltip-body"></div>
+            `;
+            document.body.appendChild(tooltip);
+            log('Tooltip créée dans le DOM');
+
+            const header = tooltip.querySelector('.skill-tooltip-header');
+            const body = tooltip.querySelector('.skill-tooltip-body');
+
+            // Compter les effets
+            const effects = document.querySelectorAll('.skill-effect');
+            log('Nombre d\'effets trouvés : ' + effects.length);
+            
+            effects.forEach((el, i) => {
+                log('Effet ' + (i+1) + ' : "' + el.textContent + '" - Classes: ' + el.className);
+                log('  data-effect: ' + el.dataset.effect);
+                log('  data-description: ' + el.dataset.description);
+            });
+
+            // Événements
+            document.addEventListener('mouseenter', function(e) {
+                if (e.target.classList.contains('skill-effect')) {
+                    log('SURVOL sur : ' + e.target.textContent);
+                    
+                    const effectName = e.target.dataset.effect;
+                    const description = e.target.dataset.description;
+                    const type = e.target.classList.contains('effect-buff') ? 'buff' :
+                                e.target.classList.contains('effect-debuff') ? 'debuff' : 'disable';
+
+                    header.textContent = effectName;
+                    header.className = `skill-tooltip-header ${type}`;
+                    body.textContent = description;
+                    tooltip.className = `skill-tooltip ${type}`;
+
+                    tooltip.style.display = 'block';
+                    positionTooltip(e);
+                }
+            }, true);
+
+            document.addEventListener('mouseleave', function(e) {
+                if (e.target.classList.contains('skill-effect')) {
+                    tooltip.style.display = 'none';
+                }
+            }, true);
+
+            document.addEventListener('mousemove', function(e) {
+                if (e.target.classList.contains('skill-effect')) {
+                    positionTooltip(e);
+                }
+            });
+
+            function positionTooltip(event) {
+                const tooltipRect = tooltip.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                let left = event.clientX + 15;
+                let top = event.clientY - tooltipRect.height / 2;
+
+                if (left + tooltipRect.width > viewportWidth - 10) {
+                    left = event.clientX - tooltipRect.width - 15;
+                }
+
+                if (top < 10) {
+                    top = 10;
+                }
+
+                if (top + tooltipRect.height > viewportHeight - 10) {
+                    top = viewportHeight - tooltipRect.height - 10;
+                }
+
+                tooltip.style.left = left + 'px';
+                tooltip.style.top = top + 'px';
+            }
+
+            log('✅ Tout est initialisé !');
+        });
+    </script>
+</body>
+</html>
