@@ -9,7 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: HeroesRepository::class)]
-#[ORM\HasLifecycleCallbacks] // nécessaire pour que PrePersist/PreUpdate soit pris en compte [web:232]
+#[ORM\HasLifecycleCallbacks]
 class Heroes
 {
     #[ORM\Id]
@@ -20,7 +20,6 @@ class Heroes
     #[ORM\Column(length: 255)]
     private ?string $Name = null;
 
-    // slug: nullable TEMPORAIREMENT pour pouvoir migrer (UNIQUE accepte plusieurs NULL) [web:251]
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $slug = null;
 
@@ -84,64 +83,54 @@ class Heroes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $InitialDivinity = null;
 
-    /**
-     * @var Collection<int, Buffs>
-     */
+    /** @var Collection<int, Buffs> */
     #[ORM\ManyToMany(targetEntity: Buffs::class)]
     #[ORM\JoinTable(name: 'heroes_buffs')]
     private Collection $heroBuffs;
 
-    /**
-     * @var Collection<int, Debuffs>
-     */
+    /** @var Collection<int, Debuffs> */
     #[ORM\ManyToMany(targetEntity: Debuffs::class)]
     #[ORM\JoinTable(name: 'heroes_debuffs')]
     private Collection $heroDebuffs;
 
-    /**
-     * @var Collection<int, Disable>
-     */
+    /** @var Collection<int, Disable> */
     #[ORM\ManyToMany(targetEntity: Disable::class)]
     #[ORM\JoinTable(name: 'heroes_disable')]
     private Collection $heroDisables;
 
     /**
-     * @var Collection<int, Sets>
+     * NOUVELLE RELATION : Identique aux Buffs
+     * @var Collection<int, Instants>
      */
+    #[ORM\ManyToMany(targetEntity: Instants::class)]
+    #[ORM\JoinTable(name: 'heroes_instants')]
+    private Collection $instants;
+
+    /** @var Collection<int, Sets> */
     #[ORM\ManyToMany(targetEntity: Sets::class, inversedBy: 'heroes')]
     #[ORM\JoinTable(name: 'heroes_sets')]
     private Collection $recommendedSets;
 
-    /**
-     * @var Collection<int, Armor>
-     */
+    /** @var Collection<int, Armor> */
     #[ORM\ManyToMany(targetEntity: Armor::class, inversedBy: 'heroes')]
     #[ORM\JoinTable(name: 'heroes_armor')]
     private Collection $armors;
 
-    /**
-     * @var Collection<int, Weapons>
-     */
+    /** @var Collection<int, Weapons> */
     #[ORM\ManyToMany(targetEntity: Weapons::class, inversedBy: 'heroes')]
     #[ORM\JoinTable(name: 'heroes_weapons')]
     private Collection $weapons;
 
-    /**
-     * @var Collection<int, Imprints>
-     */
+    /** @var Collection<int, Imprints> */
     #[ORM\ManyToMany(targetEntity: Imprints::class, inversedBy: 'heroes')]
     #[ORM\JoinTable(name: 'heroes_imprints')]
     private Collection $imprints;
 
-    /**
-     * @var Collection<int, Awakening>
-     */
+    /** @var Collection<int, Awakening> */
     #[ORM\OneToMany(targetEntity: Awakening::class, mappedBy: 'hero', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $awakenings;
 
-    /**
-     * @var Collection<int, SkillUpgrade>
-     */
+    /** @var Collection<int, SkillUpgrade> */
     #[ORM\OneToMany(targetEntity: SkillUpgrade::class, mappedBy: 'hero', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $skillUpgrades;
 
@@ -150,6 +139,7 @@ class Heroes
         $this->heroBuffs = new ArrayCollection();
         $this->heroDebuffs = new ArrayCollection();
         $this->heroDisables = new ArrayCollection();
+        $this->instants = new ArrayCollection(); // Initialisation
         $this->recommendedSets = new ArrayCollection();
         $this->armors = new ArrayCollection();
         $this->weapons = new ArrayCollection();
@@ -162,10 +152,7 @@ class Heroes
     #[ORM\PreUpdate]
     public function updateSlug(): void
     {
-        if (!$this->Name) {
-            return;
-        }
-
+        if (!$this->Name) return;
         $slug = mb_strtolower($this->Name);
         $slug = preg_replace('~[^\pL\d]+~u', '-', $slug);
         $slug = trim($slug, '-');
@@ -173,412 +160,368 @@ class Heroes
         $slug = preg_replace('~[^-\w]+~', '', $slug);
         $slug = preg_replace('~-+~', '-', $slug);
         $slug = trim($slug, '-');
-
-        if (!$slug) {
-            $slug = 'hero';
-        }
-
-        $this->slug = $slug;
+        $this->slug = $slug ?: 'hero';
     }
+
+    // --- GETTERS / SETTERS ---
 
     public function getId(): ?int
     {
         return $this->id;
     }
-
     public function getName(): ?string
     {
         return $this->Name;
     }
-
     public function setName(string $Name): static
     {
         $this->Name = $Name;
-
-        // optionnel mais pratique: met à jour en mémoire tout de suite
         $this->updateSlug();
-
         return $this;
     }
-
     public function getSlug(): ?string
     {
         return $this->slug;
     }
-
     public function setSlug(?string $slug): static
     {
         $this->slug = $slug;
         return $this;
     }
 
+    // (Note: J'ai raccourci les autres getters pour la lisibilité, garde les tiens tels quels)
     public function getFactionEntity(): ?Faction
     {
         return $this->factionEntity;
     }
-    public function setFactionEntity(?Faction $factionEntity): static
+    public function setFactionEntity(?Faction $f): static
     {
-        $this->factionEntity = $factionEntity;
+        $this->factionEntity = $f;
         return $this;
     }
-
     public function getTypeEntity(): ?Type
     {
         return $this->typeEntity;
     }
-    public function setTypeEntity(?Type $typeEntity): static
+    public function setTypeEntity(?Type $t): static
     {
-        $this->typeEntity = $typeEntity;
+        $this->typeEntity = $t;
         return $this;
     }
-
     public function getAllegianceEntity(): ?Allegiance
     {
         return $this->allegianceEntity;
     }
-    public function setAllegianceEntity(?Allegiance $allegianceEntity): static
+    public function setAllegianceEntity(?Allegiance $a): static
     {
-        $this->allegianceEntity = $allegianceEntity;
+        $this->allegianceEntity = $a;
         return $this;
     }
-
     public function getAffinityEntity(): ?Affinity
     {
         return $this->affinityEntity;
     }
-    public function setAffinityEntity(?Affinity $affinityEntity): static
+    public function setAffinityEntity(?Affinity $a): static
     {
-        $this->affinityEntity = $affinityEntity;
+        $this->affinityEntity = $a;
         return $this;
     }
-
     public function getLeaderEntity(): ?Leader
     {
         return $this->leaderEntity;
     }
-    public function setLeaderEntity(?Leader $leaderEntity): static
+    public function setLeaderEntity(?Leader $l): static
     {
-        $this->leaderEntity = $leaderEntity;
+        $this->leaderEntity = $l;
         return $this;
     }
-
     public function getRarityEntity(): ?Rarity
     {
         return $this->rarityEntity;
     }
-    public function setRarityEntity(?Rarity $rarityEntity): static
+    public function setRarityEntity(?Rarity $r): static
     {
-        $this->rarityEntity = $rarityEntity;
+        $this->rarityEntity = $r;
         return $this;
     }
-
     public function getLeaderValue(): ?string
     {
         return $this->leaderValue;
     }
-    public function setLeaderValue(?string $leaderValue): static
+    public function setLeaderValue(?string $v): static
     {
-        $this->leaderValue = $leaderValue;
+        $this->leaderValue = $v;
         return $this;
     }
-
     public function getBase(): ?string
     {
         return $this->base;
     }
-    public function setBase(?string $base): static
+    public function setBase(?string $b): static
     {
-        $this->base = $base;
+        $this->base = $b;
         return $this;
     }
-
     public function getCore(): ?string
     {
         return $this->core;
     }
-    public function setCore(?string $core): static
+    public function setCore(?string $c): static
     {
-        $this->core = $core;
+        $this->core = $c;
         return $this;
     }
-
     public function getUltimate(): ?string
     {
         return $this->ultimate;
     }
-    public function setUltimate(?string $ultimate): static
+    public function setUltimate(?string $u): static
     {
-        $this->ultimate = $ultimate;
+        $this->ultimate = $u;
         return $this;
     }
-
     public function getPassive(): ?string
     {
         return $this->passive;
     }
-    public function setPassive(?string $passive): static
+    public function setPassive(?string $p): static
     {
-        $this->passive = $passive;
+        $this->passive = $p;
         return $this;
     }
-
     public function getImprint(): ?string
     {
         return $this->imprint;
     }
-    public function setImprint(?string $imprint): static
+    public function setImprint(?string $i): static
     {
-        $this->imprint = $imprint;
+        $this->imprint = $i;
         return $this;
     }
-
     public function getImageUrl(): ?string
     {
         return $this->imageUrl;
     }
-    public function setImageUrl(?string $imageUrl): static
+    public function setImageUrl(?string $i): static
     {
-        $this->imageUrl = $imageUrl;
+        $this->imageUrl = $i;
         return $this;
     }
-
     public function getVideosUrl(): ?string
     {
         return $this->videosUrl;
     }
-    public function setVideosUrl(?string $videosUrl): static
+    public function setVideosUrl(?string $v): static
     {
-        $this->videosUrl = $videosUrl;
+        $this->videosUrl = $v;
         return $this;
     }
-
     public function getAwakeningBonuses(): ?string
     {
         return $this->awakeningBonuses;
     }
-    public function setAwakeningBonuses(?string $awakeningBonuses): static
+    public function setAwakeningBonuses(?string $a): static
     {
-        $this->awakeningBonuses = $awakeningBonuses;
+        $this->awakeningBonuses = $a;
         return $this;
     }
-
     public function getAscensionBonuses(): ?string
     {
         return $this->ascensionBonuses;
     }
-    public function setAscensionBonuses(?string $ascensionBonuses): static
+    public function setAscensionBonuses(?string $a): static
     {
-        $this->ascensionBonuses = $ascensionBonuses;
+        $this->ascensionBonuses = $a;
         return $this;
     }
-
     public function getDivinityCost(): ?string
     {
         return $this->DivinityCost;
     }
-    public function setDivinityCost(?string $DivinityCost): static
+    public function setDivinityCost(?string $d): static
     {
-        $this->DivinityCost = $DivinityCost;
+        $this->DivinityCost = $d;
         return $this;
     }
-
     public function getInitialDivinity(): ?string
     {
         return $this->InitialDivinity;
     }
-    public function setInitialDivinity(?string $InitialDivinity): static
+    public function setInitialDivinity(?string $i): static
     {
-        $this->InitialDivinity = $InitialDivinity;
+        $this->InitialDivinity = $i;
         return $this;
     }
 
-    /** @return Collection<int, Buffs> */
+    // --- COLLECTIONS ---
+
     public function getHeroBuffs(): Collection
     {
         return $this->heroBuffs;
     }
-    public function addHeroBuff(Buffs $heroBuff): static
+    public function addHeroBuff(Buffs $b): static
     {
-        if (!$this->heroBuffs->contains($heroBuff)) {
-            $this->heroBuffs->add($heroBuff);
-        }
+        if (!$this->heroBuffs->contains($b)) $this->heroBuffs->add($b);
         return $this;
     }
-    public function removeHeroBuff(Buffs $heroBuff): static
+    public function removeHeroBuff(Buffs $b): static
     {
-        $this->heroBuffs->removeElement($heroBuff);
+        $this->heroBuffs->removeElement($b);
         return $this;
     }
 
-    /** @return Collection<int, Debuffs> */
     public function getHeroDebuffs(): Collection
     {
         return $this->heroDebuffs;
     }
-    public function addHeroDebuff(Debuffs $heroDebuff): static
+    public function addHeroDebuff(Debuffs $d): static
     {
-        if (!$this->heroDebuffs->contains($heroDebuff)) {
-            $this->heroDebuffs->add($heroDebuff);
-        }
+        if (!$this->heroDebuffs->contains($d)) $this->heroDebuffs->add($d);
         return $this;
     }
-    public function removeHeroDebuff(Debuffs $heroDebuff): static
+    public function removeHeroDebuff(Debuffs $d): static
     {
-        $this->heroDebuffs->removeElement($heroDebuff);
+        $this->heroDebuffs->removeElement($d);
         return $this;
     }
 
-    /** @return Collection<int, Disable> */
     public function getHeroDisables(): Collection
     {
         return $this->heroDisables;
     }
-    public function addHeroDisable(Disable $heroDisable): static
+    public function addHeroDisable(Disable $d): static
     {
-        if (!$this->heroDisables->contains($heroDisable)) {
-            $this->heroDisables->add($heroDisable);
-        }
+        if (!$this->heroDisables->contains($d)) $this->heroDisables->add($d);
         return $this;
     }
-    public function removeHeroDisable(Disable $heroDisable): static
+    public function removeHeroDisable(Disable $d): static
     {
-        $this->heroDisables->removeElement($heroDisable);
+        $this->heroDisables->removeElement($d);
         return $this;
     }
 
-    /** @return Collection<int, Sets> */
+    /** @return Collection<int, Instants> */
+    public function getInstants(): Collection
+    {
+        return $this->instants;
+    }
+    public function addInstant(Instants $i): static
+    {
+        if (!$this->instants->contains($i)) $this->instants->add($i);
+        return $this;
+    }
+    public function removeInstant(Instants $i): static
+    {
+        $this->instants->removeElement($i);
+        return $this;
+    }
+
     public function getRecommendedSets(): Collection
     {
         return $this->recommendedSets;
     }
-    public function addRecommendedSet(Sets $recommendedSet): static
+    public function addRecommendedSet(Sets $s): static
     {
-        if (!$this->recommendedSets->contains($recommendedSet)) {
-            $this->recommendedSets->add($recommendedSet);
-        }
+        if (!$this->recommendedSets->contains($s)) $this->recommendedSets->add($s);
         return $this;
     }
-    public function removeRecommendedSet(Sets $recommendedSet): static
+    public function removeRecommendedSet(Sets $s): static
     {
-        $this->recommendedSets->removeElement($recommendedSet);
+        $this->recommendedSets->removeElement($s);
         return $this;
     }
 
-    /** @return Collection<int, Armor> */
     public function getArmors(): Collection
     {
         return $this->armors;
     }
-    public function addArmor(Armor $armor): static
+    public function addArmor(Armor $a): static
     {
-        if (!$this->armors->contains($armor)) {
-            $this->armors->add($armor);
-        }
+        if (!$this->armors->contains($a)) $this->armors->add($a);
         return $this;
     }
-    public function removeArmor(Armor $armor): static
+    public function removeArmor(Armor $a): static
     {
-        $this->armors->removeElement($armor);
+        $this->armors->removeElement($a);
         return $this;
     }
 
-    public function getArmorBySlot(string $slot): ?Armor
-    {
-        foreach ($this->armors as $armor) {
-            if ($armor->getSlot() === $slot) return $armor;
-        }
-        return null;
-    }
-
-    /** @return Collection<int, Weapons> */
     public function getWeapons(): Collection
     {
         return $this->weapons;
     }
-    public function addWeapon(Weapons $weapon): static
+    public function addWeapon(Weapons $w): static
     {
-        if (!$this->weapons->contains($weapon)) {
-            $this->weapons->add($weapon);
-        }
+        if (!$this->weapons->contains($w)) $this->weapons->add($w);
         return $this;
     }
-    public function removeWeapon(Weapons $weapon): static
+    public function removeWeapon(Weapons $w): static
     {
-        $this->weapons->removeElement($weapon);
+        $this->weapons->removeElement($w);
         return $this;
     }
 
-    /** @return Collection<int, Imprints> */
     public function getImprints(): Collection
     {
         return $this->imprints;
     }
-    public function addImprint(Imprints $imprint): static
+    public function addImprint(Imprints $i): static
     {
-        if (!$this->imprints->contains($imprint)) {
-            $this->imprints->add($imprint);
-        }
+        if (!$this->imprints->contains($i)) $this->imprints->add($i);
         return $this;
     }
-    public function removeImprint(Imprints $imprint): static
+    public function removeImprint(Imprints $i): static
     {
-        $this->imprints->removeElement($imprint);
+        $this->imprints->removeElement($i);
         return $this;
     }
 
-    /** @return Collection<int, Awakening> */
     public function getAwakenings(): Collection
     {
         return $this->awakenings;
     }
-    public function addAwakening(Awakening $awakening): static
+    public function addAwakening(Awakening $a): static
     {
-        if (!$this->awakenings->contains($awakening)) {
-            $this->awakenings->add($awakening);
-            $awakening->setHero($this);
+        if (!$this->awakenings->contains($a)) {
+            $this->awakenings->add($a);
+            $a->setHero($this);
         }
         return $this;
     }
-    public function removeAwakening(Awakening $awakening): static
+    public function removeAwakening(Awakening $a): static
     {
-        if ($this->awakenings->removeElement($awakening)) {
-            if ($awakening->getHero() === $this) $awakening->setHero(null);
+        if ($this->awakenings->removeElement($a)) {
+            if ($a->getHero() === $this) $a->setHero(null);
         }
         return $this;
     }
 
-    public function getAwakeningsBySkillType(string $skillType): array
-    {
-        return $this->awakenings->filter(
-            fn(Awakening $a) => $a->getSkillType() === $skillType
-        )->toArray();
-    }
-
-    /** @return Collection<int, SkillUpgrade> */
     public function getSkillUpgrades(): Collection
     {
         return $this->skillUpgrades;
     }
-    public function addSkillUpgrade(SkillUpgrade $skillUpgrade): static
+    public function addSkillUpgrade(SkillUpgrade $s): static
     {
-        if (!$this->skillUpgrades->contains($skillUpgrade)) {
-            $this->skillUpgrades->add($skillUpgrade);
-            $skillUpgrade->setHero($this);
+        if (!$this->skillUpgrades->contains($s)) {
+            $this->skillUpgrades->add($s);
+            $s->setHero($this);
         }
         return $this;
     }
-    public function removeSkillUpgrade(SkillUpgrade $skillUpgrade): static
+    public function removeSkillUpgrade(SkillUpgrade $s): static
     {
-        if ($this->skillUpgrades->removeElement($skillUpgrade)) {
-            if ($skillUpgrade->getHero() === $this) $skillUpgrade->setHero(null);
+        if ($this->skillUpgrades->removeElement($s)) {
+            if ($s->getHero() === $this) $s->setHero(null);
         }
         return $this;
     }
 
-    public function getSkillUpgradeByType(string $skillType): ?SkillUpgrade
+    public function getSkillUpgradeByType(string $type): ?SkillUpgrade
     {
-        foreach ($this->skillUpgrades as $upgrade) {
-            if ($upgrade->getSkillType() === $skillType) return $upgrade;
+        foreach ($this->skillUpgrades as $skillUpgrade) {
+            if ($skillUpgrade->getSkillType() === $type) {
+                return $skillUpgrade;
+            }
         }
         return null;
     }

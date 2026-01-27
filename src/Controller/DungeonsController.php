@@ -37,29 +37,23 @@ class DungeonsController extends AbstractController
 
         // 🔍 DÉBOGAGE
         if ($request->isMethod('POST')) {
-            dump('=== POST DÉTECTÉ ===');
-            dump('Form submitted:', $form->isSubmitted());
-            dump('Form valid:', $form->isValid());
+
             
             if ($form->isSubmitted() && !$form->isValid()) {
-                dump('=== ERREURS DU FORMULAIRE ===');
+               
                 foreach ($form->getErrors(true) as $error) {
-                    dump($error->getMessage());
                 }
             }
             
-            dump('Request data:', $request->request->all());
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
             
-            dump('=== FORMULAIRE VALIDE - TRAITEMENT ===');
             
             $requestData = $request->request->all();
             
             // ✅ 1. TRAITER LES PASSIVES DE BASE (hors phases)
             if (isset($requestData['dungeons']['passives'])) {
-                dump('Passives de base trouvées:', count($requestData['dungeons']['passives']));
                 foreach ($requestData['dungeons']['passives'] as $passiveData) {
                     if (!empty($passiveData['name'])) {
                         $passive = new DungeonPassive();
@@ -76,7 +70,7 @@ class DungeonsController extends AbstractController
             
             // ✅ 2. TRAITER LES PHASES et leurs PASSIVES
             if (isset($requestData['dungeons']['phases'])) {
-                dump('Phases trouvées:', count($requestData['dungeons']['phases']));
+               
                 foreach ($requestData['dungeons']['phases'] as $phaseData) {
                     if (!empty($phaseData['name'])) {
                         $phase = new DungeonPhase();
@@ -129,15 +123,12 @@ class DungeonsController extends AbstractController
                 $entityManager->persist($dungeon);
                 $entityManager->flush();
                 
-                dump('=== SUCCESS ===');
-                dump('Donjon créé avec ID:', $dungeon->getId());
-
+              
                 $this->addFlash('success', 'Donjon créé avec succès !');
                 return $this->redirectToRoute('app_dungeons_index');
                 
             } catch (\Exception $e) {
-                dump('=== ERREUR SQL ===');
-                dump($e->getMessage());
+               
                 $this->addFlash('error', 'Erreur: ' . $e->getMessage());
             }
         }

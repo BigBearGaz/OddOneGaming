@@ -6,6 +6,9 @@ use App\Entity\Heroes;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Heroes>
+ */
 class HeroesRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -14,7 +17,7 @@ class HeroesRepository extends ServiceEntityRepository
     }
 
     /**
-     * Filtre les héros selon les critères
+     * ✅ Filtre les héros selon les critères (incluant les Instants)
      */
     public function findByFilters(
         ?int $factionId = null,
@@ -25,57 +28,60 @@ class HeroesRepository extends ServiceEntityRepository
         ?bool $isLeader = null,
         ?array $buffsIds = null,
         ?array $debuffsIds = null,
-        ?array $disableIds = null
+        ?array $disableIds = null,
+        ?array $instantIds = null // Ajouté
     ): array {
         $qb = $this->createQueryBuilder('h');
 
-        // Jointures pour les relations ManyToOne
+        // Jointures de base pour éviter le N+1 lors de l'affichage
+        $qb->leftJoin('h.factionEntity', 'f')->addSelect('f')
+           ->leftJoin('h.typeEntity', 't')->addSelect('t')
+           ->leftJoin('h.rarityEntity', 'r')->addSelect('r');
+
+        // Filtres ManyToOne
         if ($factionId) {
-            $qb->andWhere('h.factionEntity = :faction')
-               ->setParameter('faction', $factionId);
+            $qb->andWhere('h.factionEntity = :faction')->setParameter('faction', $factionId);
         }
-
         if ($typeId) {
-            $qb->andWhere('h.typeEntity = :type')
-               ->setParameter('type', $typeId);
+            $qb->andWhere('h.typeEntity = :type')->setParameter('type', $typeId);
         }
-
         if ($affinityId) {
-            $qb->andWhere('h.affinityEntity = :affinity')
-               ->setParameter('affinity', $affinityId);
+            $qb->andWhere('h.affinityEntity = :affinity')->setParameter('affinity', $affinityId);
         }
-
         if ($allegianceId) {
-            $qb->andWhere('h.allegianceEntity = :allegiance')
-               ->setParameter('allegiance', $allegianceId);
+            $qb->andWhere('h.allegianceEntity = :allegiance')->setParameter('allegiance', $allegianceId);
         }
-
         if ($rarityId) {
-            $qb->andWhere('h.rarityEntity = :rarity')
-               ->setParameter('rarity', $rarityId);
+            $qb->andWhere('h.rarityEntity = :rarity')->setParameter('rarity', $rarityId);
         }
-
         if ($isLeader === true) {
             $qb->andWhere('h.leaderEntity IS NOT NULL');
         }
 
-        // Filtres pour les relations ManyToMany (buffs, debuffs, disable)
-        if ($buffsIds && !empty($buffsIds)) {
+        // Filtres ManyToMany
+        if (!empty($buffsIds)) {
             $qb->innerJoin('h.heroBuffs', 'buff')
                ->andWhere('buff.id IN (:buffsIds)')
                ->setParameter('buffsIds', $buffsIds);
         }
 
-        if ($debuffsIds && !empty($debuffsIds)) {
+        if (!empty($debuffsIds)) {
             $qb->innerJoin('h.heroDebuffs', 'debuff')
                ->andWhere('debuff.id IN (:debuffsIds)')
                ->setParameter('debuffsIds', $debuffsIds);
         }
 
-        if ($disableIds && !empty($disableIds)) {
+        if (!empty($disableIds)) {
             $qb->innerJoin('h.heroDisables', 'disable')
                ->andWhere('disable.id IN (:disableIds)')
                ->setParameter('disableIds', $disableIds);
+        }
+
+        // --- Filtre pour les Instants ---
+        if (!empty($instantIds)) {
+            $qb->innerJoin('h.instants', 'instant')
+               ->andWhere('instant.id IN (:instantIds)')
+               ->setParameter('instantIds', $instantIds);
         }
 
         return $qb->orderBy('h.Name', 'ASC')
@@ -84,7 +90,7 @@ class HeroesRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère tous les héros avec leurs relations chargées (évite le N+1)
+     * ✅ Récupère tous les héros avec leurs relations chargées (évite le N+1)
      */
     public function findAllWithRelations(): array
     {
@@ -97,124 +103,6 @@ class HeroesRepository extends ServiceEntityRepository
             ->leftJoin('h.leaderEntity', 'l')
             ->addSelect('f', 't', 'al', 'af', 'r', 'l')
             ->orderBy('h.Name', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Récupère les héros par faction
-     */
-    public function findByFaction($factionId): array
-    {
-        return $this->createQueryBuilder('h')
-            ->andWhere('h.factionEntity = :faction')
-            ->setParameter('faction', $factionId)
-            ->orderBy('h.Name', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Récupère les héros par type
-     */
-    public function findByType($typeId): array
-    {
-        return $this->createQueryBuilder('h')
-            ->andWhere('h.typeEntity = :type')
-            ->setParameter('type', $typeId)
-            ->orderBy('h.Name', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Récupère les héros par rareté
-     */
-    public function findByRarity($rarityId): array
-    {
-        return $this->createQueryBuilder('h')
-            ->andWhere('h.rarityEntity = :rarity')
-            ->setParameter('rarity', $rarityId)
-            ->orderBy('h.Name', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Récupère les héros ayant un buff spécifique
-     */
-    public function findByBuff($buffId): array
-    {
-        return $this->createQueryBuilder('h')
-            ->innerJoin('h.heroBuffs', 'buff')
-            ->andWhere('buff.id = :buffId')
-            ->setParameter('buffId', $buffId)
-            ->orderBy('h.Name', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Récupère les héros ayant un debuff spécifique
-     */
-    public function findByDebuff($debuffId): array
-    {
-        return $this->createQueryBuilder('h')
-            ->innerJoin('h.heroDebuffs', 'debuff')
-            ->andWhere('debuff.id = :debuffId')
-            ->setParameter('debuffId', $debuffId)
-            ->orderBy('h.Name', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Récupère les héros ayant un disable spécifique
-     */
-    public function findByDisable($disableId): array
-    {
-        return $this->createQueryBuilder('h')
-            ->innerJoin('h.heroDisables', 'disable')
-            ->andWhere('disable.id = :disableId')
-            ->setParameter('disableId', $disableId)
-            ->orderBy('h.Name', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Recherche de héros par nom
-     */
-    public function searchByName(string $searchTerm): array
-    {
-        return $this->createQueryBuilder('h')
-            ->andWhere('h.Name LIKE :search')
-            ->setParameter('search', '%' . $searchTerm . '%')
-            ->orderBy('h.Name', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Compte les héros par faction
-     */
-    public function countByFaction(): array
-    {
-        return $this->createQueryBuilder('h')
-            ->select('IDENTITY(h.factionEntity) as faction_id, COUNT(h.id) as total')
-            ->groupBy('h.factionEntity')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Compte les héros par rareté
-     */
-    public function countByRarity(): array
-    {
-        return $this->createQueryBuilder('h')
-            ->select('IDENTITY(h.rarityEntity) as rarity_id, COUNT(h.id) as total')
-            ->groupBy('h.rarityEntity')
             ->getQuery()
             ->getResult();
     }
@@ -240,30 +128,90 @@ class HeroesRepository extends ServiceEntityRepository
             ->leftJoin('h.heroBuffs', 'hb')->addSelect('hb')
             ->leftJoin('h.heroDebuffs', 'hd')->addSelect('hd')
             ->leftJoin('h.heroDisables', 'hdi')->addSelect('hdi')
+            ->leftJoin('h.instants', 'ins')->addSelect('ins') // Ajouté pour le Show
             ->where('h.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
     }
 
+    // --- Méthodes de recherche spécifiques ---
+
+    public function findByFaction($factionId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.factionEntity = :faction')
+            ->setParameter('faction', $factionId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByType($typeId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.typeEntity = :type')
+            ->setParameter('type', $typeId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByRarity($rarityId): array
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.rarityEntity = :rarity')
+            ->setParameter('rarity', $rarityId)
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function searchByName(string $searchTerm): array
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.Name LIKE :search')
+            ->setParameter('search', '%' . $searchTerm . '%')
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // --- Statistiques / Comptage ---
+
+    public function countByFaction(): array
+    {
+        return $this->createQueryBuilder('h')
+            ->select('IDENTITY(h.factionEntity) as faction_id, COUNT(h.id) as total')
+            ->groupBy('h.factionEntity')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByRarity(): array
+    {
+        return $this->createQueryBuilder('h')
+            ->select('IDENTITY(h.rarityEntity) as rarity_id, COUNT(h.id) as total')
+            ->groupBy('h.rarityEntity')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // --- Persistence ---
+
     public function save(Heroes $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+        if ($flush) { $this->getEntityManager()->flush(); }
     }
 
     public function remove(Heroes $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+        if ($flush) { $this->getEntityManager()->flush(); }
     }
-        public function slugExists(string $slug, ?int $ignoreId = null): bool
+
+    public function slugExists(string $slug, ?int $ignoreId = null): bool
     {
         $qb = $this->createQueryBuilder('h')
             ->select('COUNT(h.id)')
@@ -271,11 +219,9 @@ class HeroesRepository extends ServiceEntityRepository
             ->setParameter('slug', $slug);
 
         if ($ignoreId !== null) {
-            $qb->andWhere('h.id != :id')
-               ->setParameter('id', $ignoreId);
+            $qb->andWhere('h.id != :id')->setParameter('id', $ignoreId);
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult() > 0;
     }
-
 }
