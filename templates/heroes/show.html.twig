@@ -890,53 +890,154 @@
             box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
         }
 
+        /* ===== TOOLTIP (DESKTOP) ===== */
         .skill-tooltip {
             position: fixed;
-            width: 280px;
+            width: 300px;
             background: linear-gradient(135deg, rgba(10, 14, 39, 0.98) 0%, rgba(26, 31, 58, 0.98) 100%);
             backdrop-filter: blur(20px);
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9);
             z-index: 10000;
             pointer-events: none;
             display: none;
             border: 2px solid;
+            overflow: hidden;
         }
 
         .skill-tooltip-header {
-            padding: 10px 15px;
+            padding: 12px 16px;
             font-weight: 700;
             font-size: 0.95rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .skill-tooltip-header.buff {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
         }
 
         .skill-tooltip-header.debuff {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
         }
 
         .skill-tooltip-header.disable {
-            background: rgba(168, 85, 247, 0.2);
-            color: #a855f7;
+            background: rgba(168, 85, 247, 0.25);
+            color: #d8b4fe;
         }
 
         .skill-tooltip-body {
-            padding: 12px 15px;
+            padding: 14px 16px;
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.85);
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         .skill-tooltip.buff { border-color: #3b82f6; }
         .skill-tooltip.debuff { border-color: #ef4444; }
         .skill-tooltip.disable { border-color: #a855f7; }
+
+        /* ===== MODAL (MOBILE) ===== */
+        .skill-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            align-items: flex-end;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .skill-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .skill-modal {
+            width: 100%;
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.98) 0%, rgba(26, 31, 58, 0.98) 100%);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .skill-modal-header {
+            padding: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .skill-modal-header.buff {
+            background: rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
+        }
+
+        .skill-modal-header.debuff {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+        }
+
+        .skill-modal-header.disable {
+            background: rgba(168, 85, 247, 0.25);
+            color: #d8b4fe;
+        }
+
+        .skill-modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .skill-modal-close:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.95);
+        }
+
+        .skill-modal-body {
+            padding: 20px;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.7;
+        }
 
         /* Accordion styles */
         .accordion-item {
@@ -1635,199 +1736,163 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Créer la tooltip pour les effets (SEULEMENT TEXTE)
-    const tooltip = document.createElement('div');
-    tooltip.className = 'skill-tooltip';
-    tooltip.innerHTML = `
-        <div class="skill-tooltip-header"></div>
-        <div class="skill-tooltip-body"></div>
-    `;
-    document.body.appendChild(tooltip);
-
-    const header = tooltip.querySelector('.skill-tooltip-header');
-    const body = tooltip.querySelector('.skill-tooltip-body');
-
-    // Gérer les événements sur tous les effets (fonctionne mobile/desktop)
-    document.addEventListener('mouseenter', function(e) {
-        if (e.target.classList.contains('skill-effect')) {
-            const effectName = e.target.dataset.effect;
-            const description = e.target.dataset.description;
-            const type = e.target.classList.contains('effect-buff') ? 'buff' :
-                        e.target.classList.contains('effect-debuff') ? 'debuff' : 'disable';
-
-            // Mise à jour contenu
-            header.textContent = effectName;
-            header.className = `skill-tooltip-header ${type}`;
-            body.textContent = description;
-            tooltip.className = `skill-tooltip ${type}`;
-
-            // Afficher
-            tooltip.style.display = 'block';
-            positionTooltip(e);
-        }
-    }, true);
-
-    document.addEventListener('mouseleave', function(e) {
-        if (e.target.classList.contains('skill-effect')) {
-            tooltip.style.display = 'none';
-        }
-    }, true);
-
-    document.addEventListener('mousemove', function(e) {
-        if (document.querySelector('.skill-effect:hover')) {
-            positionTooltip(e);
-        }
-    }, true);
-
-    // Positionnement adaptatif mobile/desktop
-    function positionTooltip(event) {
-        const tooltipRect = tooltip.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        let left = event.clientX + 15;
-        let top = event.clientY - tooltipRect.height - 2;
-
-        // Centre si trop à droite
-        if (left + tooltipRect.width > viewportWidth - 10) {
-            left = event.clientX - tooltipRect.width - 15;
-        }
-        // Bottom si trop haut
-        if (top < 10) {
-            top = event.clientY + 20;
-        }
-        // Top si trop bas
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Créer la modal pour mobile
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'skill-modal-overlay';
-    modalOverlay.innerHTML = `
-        <div class="skill-modal">
-            <div class="skill-modal-header">
-                <span id="modalTitle"></span>
-                <button class="skill-modal-close" onclick="this.closest('.skill-modal-overlay').classList.remove('active')">✕</button>
-            </div>
-            <div class="skill-modal-body" id="modalBody"></div>
-        </div>
-    `;
-    document.body.appendChild(modalOverlay);
-
-    // Créer le tooltip pour desktop
-    const tooltip = document.createElement('div');
-    tooltip.className = 'skill-tooltip';
-    tooltip.innerHTML = `
-        <div class="skill-tooltip-header"></div>
-        <div class="skill-tooltip-body"></div>
-    `;
-    document.body.appendChild(tooltip);
-
-    const tooltipHeader = tooltip.querySelector('.skill-tooltip-header');
-    const tooltipBody = tooltip.querySelector('.skill-tooltip-body');
-    
-    let activeEffect = null;
-
-    // Détecter si c'est un appareil tactile
+    // ===== CONFIGURATION =====
     const isTouchDevice = () => {
         return (('ontouchstart' in window) ||
                 (navigator.maxTouchPoints > 0) ||
                 (navigator.msMaxTouchPoints > 0));
     };
 
-    // Fonction pour afficher la modal (mobile)
-    function showModal(e, effectName, description, type) {
-        document.getElementById('modalTitle').textContent = effectName;
-        document.getElementById('modalBody').textContent = description;
-        
-        const header = document.querySelector('.skill-modal-header');
-        header.className = `skill-modal-header ${type}`;
-        
-        modalOverlay.classList.add('active');
-    }
+    const isTouch = isTouchDevice();
 
-    // Fonction pour afficher le tooltip (desktop)
-    function showTooltip(e, effectName, description, type) {
-        activeEffect = e.target;
-        tooltipHeader.textContent = effectName;
-        tooltipHeader.className = `skill-tooltip-header ${type}`;
-        tooltipBody.textContent = description;
-        tooltip.className = `skill-tooltip ${type}`;
+    // ===== ÉLÉMENTS DOM =====
+    const tooltip = document.createElement('div');
+    tooltip.className = 'skill-tooltip';
+    tooltip.innerHTML = `
+        <div class="skill-tooltip-header"></div>
+        <div class="skill-tooltip-body"></div>
+    `;
+    document.body.appendChild(tooltip);
+
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'skill-modal-overlay';
+    modalOverlay.innerHTML = `
+        <div class="skill-modal">
+            <div class="skill-modal-header">
+                <span id="modalTitle" style="flex: 1;"></span>
+                <button class="skill-modal-close" aria-label="Close">✕</button>
+            </div>
+            <div class="skill-modal-body" id="modalBody"></div>
+        </div>
+    `;
+    document.body.appendChild(modalOverlay);
+
+    const tooltipHeader = tooltip.querySelector('.skill-tooltip-header');
+    const tooltipBody = tooltip.querySelector('.skill-tooltip-body');
+    const modalHeader = modalOverlay.querySelector('.skill-modal-header');
+    const modalTitle = modalOverlay.querySelector('#modalTitle');
+    const modalBody = modalOverlay.querySelector('#modalBody');
+    const closeBtn = modalOverlay.querySelector('.skill-modal-close');
+
+    let activeEffect = null;
+    let tooltipTimeout = null;
+
+    // ===== UTILITAIRES =====
+    const getEffectType = (element) => {
+        if (element.classList.contains('effect-buff')) return 'buff';
+        if (element.classList.contains('effect-debuff')) return 'debuff';
+        if (element.classList.contains('effect-disable')) return 'disable';
+        return 'buff';
+    };
+
+    const getEffectData = (element) => {
+        return {
+            name: element.dataset.effect || 'Unknown',
+            description: element.dataset.description || 'No description',
+            type: getEffectType(element)
+        };
+    };
+
+    // ===== TOOLTIP (DESKTOP) =====
+    const showTooltip = (e, data) => {
+        tooltipHeader.textContent = data.name;
+        tooltipHeader.className = `skill-tooltip-header ${data.type}`;
+        tooltipBody.textContent = data.description;
+        tooltip.className = `skill-tooltip ${data.type}`;
         tooltip.style.display = 'block';
+        activeEffect = e.target;
         positionTooltip(e);
-    }
+    };
 
-    // Fonction pour cacher le tooltip
-    function hideTooltip() {
+    const hideTooltip = () => {
         tooltip.style.display = 'none';
         activeEffect = null;
-    }
+        if (tooltipTimeout) clearTimeout(tooltipTimeout);
+    };
 
-    // Gérer les événements sur les effets
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('skill-effect')) {
-            e.preventDefault();
-            const effectName = e.target.dataset.effect;
-            const description = e.target.dataset.description;
-            const type = e.target.classList.contains('effect-buff') ? 'buff' :
-                        e.target.classList.contains('effect-debuff') ? 'debuff' : 'disable';
+    const positionTooltip = (event) => {
+        const ww = window.innerWidth;
+        const wh = window.innerHeight;
+        const rect = tooltip.getBoundingClientRect();
+        const tw = 300;
+        const th = rect.height || 160;
+        
+        let x = event.clientX - tw / 2;
+        let y = event.clientY - th - 12;
+        
+        // Bordures du viewport
+        if (x < 10) x = 10;
+        if (x + tw > ww - 10) x = ww - tw - 10;
+        if (y < 10) y = event.clientY + 12;
+        
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+    };
 
-            if (isTouchDevice()) {
-                showModal(e, effectName, description, type);
-            }
-        }
-    }, true);
+    // ===== MODAL (MOBILE) =====
+    const showModal = (data) => {
+        modalTitle.textContent = data.name;
+        modalHeader.className = `skill-modal-header ${data.type}`;
+        modalBody.textContent = data.description;
+        modalOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
 
-    // Tooltip pour desktop (souris)
-    if (!isTouchDevice()) {
-        document.addEventListener('mouseenter', function(e) {
+    const closeModal = () => {
+        modalOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    // ===== EVENT LISTENERS =====
+    if (isTouch) {
+        // ===== MODE MOBILE: Modal au clic =====
+        document.addEventListener('click', (e) => {
             if (e.target.classList.contains('skill-effect')) {
-                const effectName = e.target.dataset.effect;
-                const description = e.target.dataset.description;
-                const type = e.target.classList.contains('effect-buff') ? 'buff' :
-                            e.target.classList.contains('effect-debuff') ? 'debuff' : 'disable';
-                showTooltip(e, effectName, description, type);
+                e.preventDefault();
+                const data = getEffectData(e.target);
+                showModal(data);
+            }
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+    } else {
+        // ===== MODE DESKTOP: Tooltip au hover =====
+        document.addEventListener('mouseenter', (e) => {
+            if (e.target.classList.contains('skill-effect')) {
+                const data = getEffectData(e.target);
+                
+                // Délai pour éviter le scintillement
+                if (tooltipTimeout) clearTimeout(tooltipTimeout);
+                tooltipTimeout = setTimeout(() => {
+                    showTooltip(e, data);
+                }, 100);
             }
         }, true);
 
-        document.addEventListener('mouseleave', function(e) {
+        document.addEventListener('mouseleave', (e) => {
             if (e.target.classList.contains('skill-effect')) {
+                if (tooltipTimeout) clearTimeout(tooltipTimeout);
                 hideTooltip();
             }
         }, true);
 
-        document.addEventListener('mousemove', function(e) {
+        document.addEventListener('mousemove', (e) => {
             if (activeEffect) {
                 positionTooltip(e);
             }
         }, true);
     }
 
-    // Fermer la modal au clic sur l'overlay
-    modalOverlay.addEventListener('click', function(e) {
-        if (e.target === modalOverlay) {
-            modalOverlay.classList.remove('active');
+    // ===== FERMETURE AVEC ÉCHAP =====
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideTooltip();
+            closeModal();
         }
     });
-
-    // Positionnement du tooltip (desktop)
-    function positionTooltip(event) {
-        const ww = window.innerWidth;
-        const wh = window.innerHeight;
-        const rect = tooltip.getBoundingClientRect();
-        const tw = rect.width || 280;
-        const th = rect.height || 140;
-        
-        let x = event.clientX - tw / 2;
-        let y = event.clientY - th - 15;
-        
-        if (x < 10) x = 10;
-        if (x + tw > ww - 10) x = ww - tw - 10;
-        if (y < 10) y = event.clientY + 15;
-        if (y + th > wh - 10) y = wh - th - 10;
-        
-        tooltip.style.left = x + 'px';
-        tooltip.style.top = y + 'px';
-    }
 });
 </script>
 {% endblock %}

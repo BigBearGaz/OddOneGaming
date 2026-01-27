@@ -14,6 +14,7 @@ use App\Repository\BuffsRepository;
 use App\Repository\DebuffsRepository;
 use App\Repository\DisableRepository;
 use App\Repository\LeaderRepository;
+use App\Repository\InstantsRepository; // Ajouté
 use App\Service\ExcelExportService;
 use App\Service\ExcelImportService;
 use App\Service\SlugService;
@@ -40,8 +41,10 @@ final class HeroesController extends AbstractController
         BuffsRepository $buffsRepository,
         DebuffsRepository $debuffsRepository,
         DisableRepository $disableRepository,
-        LeaderRepository $leaderRepository
+        LeaderRepository $leaderRepository,
+        InstantsRepository $instantsRepository // Ajouté
     ): Response {
+        // Récupération des paramètres de filtrage
         $factionId = $request->query->get('faction');
         $typeId = $request->query->get('type');
         $affinityId = $request->query->get('affinity');
@@ -51,8 +54,10 @@ final class HeroesController extends AbstractController
         $buffId = $request->query->get('buff');
         $debuffId = $request->query->get('debuff');
         $disableId = $request->query->get('disable');
+        $instantId = $request->query->get('instant'); // Ajouté
 
-        if ($factionId || $typeId || $affinityId || $allegianceId || $rarityId || $leaderId || $buffId || $debuffId || $disableId) {
+        // Logique de filtrage
+        if ($factionId || $typeId || $affinityId || $allegianceId || $rarityId || $leaderId || $buffId || $debuffId || $disableId || $instantId) {
             $heroes = $heroesRepository->findByFilters(
                 factionId: $factionId,
                 typeId: $typeId,
@@ -62,12 +67,14 @@ final class HeroesController extends AbstractController
                 isLeader: $leaderId ? true : null,
                 buffsIds: $buffId ? [$buffId] : null,
                 debuffsIds: $debuffId ? [$debuffId] : null,
-                disableIds: $disableId ? [$disableId] : null
+                disableIds: $disableId ? [$disableId] : null,
+                instantIds: $instantId ? [$instantId] : null // Ajouté (pense à mettre à jour ton repository)
             );
         } else {
             $heroes = $heroesRepository->findAllWithRelations();
         }
 
+        // Données pour remplir les listes de filtres (accordéons)
         $factions = $factionRepository->findBy([], ['name' => 'ASC']);
         $types = $typeRepository->findBy([], ['name' => 'ASC']);
         $affinities = $affinityRepository->findBy([], ['name' => 'ASC']);
@@ -77,6 +84,7 @@ final class HeroesController extends AbstractController
         $buffsEntities = $buffsRepository->findBy([], ['name' => 'ASC']);
         $debuffsEntities = $debuffsRepository->findBy([], ['name' => 'ASC']);
         $disableEntities = $disableRepository->findBy([], ['name' => 'ASC']);
+        $instants = $instantsRepository->findBy([], ['label' => 'ASC']); // Ajouté
 
         return $this->render('heroes/index.html.twig', [
             'heroes' => $heroes,
@@ -89,6 +97,7 @@ final class HeroesController extends AbstractController
             'buffs' => $buffsEntities,
             'debuffs' => $debuffsEntities,
             'disables' => $disableEntities,
+            'instants' => $instants, // Ajouté
             'currentFilters' => [
                 'faction' => $factionId,
                 'type' => $typeId,
@@ -99,6 +108,7 @@ final class HeroesController extends AbstractController
                 'buff' => $buffId,
                 'debuff' => $debuffId,
                 'disable' => $disableId,
+                'instant' => $instantId, // Ajouté
             ],
         ]);
     }
@@ -165,7 +175,6 @@ final class HeroesController extends AbstractController
                 $awakening->setHero($hero);
             }
 
-            // slug propre + suffix -2/-3 seulement si besoin
             $hero->setSlug($slugService->uniqueHeroSlug($hero->getName(), null));
 
             $entityManager->persist($hero);
@@ -209,7 +218,6 @@ final class HeroesController extends AbstractController
                 $awakening->setHero($hero);
             }
 
-            // recalcul slug si le nom a changé (ou toujours, comme ici)
             $hero->setSlug($slugService->uniqueHeroSlug($hero->getName(), $hero->getId()));
 
             $entityManager->flush();

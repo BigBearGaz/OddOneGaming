@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -27,12 +26,11 @@ class SecurityController extends AbstractController
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        // 🔍 DEBUG - Affiche les infos
-        dump('=== LOGIN DEBUG ===');
-        dump('Email essayé:', $lastUsername);
-        if ($error) {
-            dump('Erreur:', $error->getMessage());
-            dump('Type erreur:', get_class($error));
+        /* 🚀 PROTECTION PROD : 
+           Si tu veux debugger sans polluer la prod, utilise ceci :
+        */
+        if ($this->getParameter('kernel.environment') === 'dev') {
+            // Ces infos ne s'afficheront plus jamais sur oddonegaming.gg (ton serveur de prod)
         }
 
         return $this->render('security/login.html.twig', [

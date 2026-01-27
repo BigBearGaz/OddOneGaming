@@ -706,6 +706,37 @@
                                 </div>
                             </div>
                         </div>
+                        {# ---------- INSTANTS (BUFFS & DEBUFFS REGROUPÉS) ---------- #}
+<div class="accordion-filter">
+    <div class="accordion-header" data-accordion="instants">
+        <div class="accordion-title">
+            <i class="fas fa-bolt"></i> ✨ Instant Effects
+        </div>
+        <i class="fas fa-chevron-down accordion-icon"></i>
+    </div>
+    <div class="accordion-body" id="accordion-instants">
+        <div class="checkbox-list">
+            {% for instant in instants %}
+                <div class="checkbox-item">
+                    <input type="checkbox" 
+                           id="instant-{{ instant.id }}" 
+                           class="filter-instant-checkbox" 
+                           value="{{ instant.id }}">
+                    
+                    <label class="checkbox-label" for="instant-{{ instant.id }}">
+                        {% if instant.icon %}
+                            <img class="checkbox-icon" 
+                                 src="{{ asset('images/icons/instants/' ~ instant.icon) }}" 
+                                 alt="{{ instant.label }}" 
+                                 loading="lazy">
+                        {% endif %}
+                        <span>{{ instant.label }}</span>
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
                     </div>
                 </div>
 
