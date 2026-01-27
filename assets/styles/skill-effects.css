@@ -1,0 +1,118 @@
+/* Styles pour les effets dans les descriptions */
+.skill-effect {
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: help;
+    transition: all 0.2s ease;
+    display: inline-block;
+    border: 1px solid;
+}
+
+/* BUFFS - Vert */
+.skill-effect.effect-buff {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.skill-effect.effect-buff:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* DEBUFFS - Rouge */
+.skill-effect.effect-debuff {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.skill-effect.effect-debuff:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* DISABLE - Orange */
+.skill-effect.effect-disable {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.skill-effect.effect-disable:hover {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: #f59e0b;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+/* Tooltip flottante */
+.skill-tooltip {
+    position: fixed;
+    width: 280px;
+    background: linear-gradient(135deg, rgba(10, 14, 39, 0.98) 0%, rgba(26, 31, 58, 0.98) 100%);
+    backdrop-filter: blur(20px);
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    pointer-events: none;
+    overflow: hidden;
+    border: 2px solid;
+}
+
+.skill-tooltip-header {
+    padding: 10px 15px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.skill-tooltip-header.buff {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border-color: #10b981;
+}
+
+.skill-tooltip-header.debuff {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+.skill-tooltip-header.disable {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border-color: #f59e0b;
+}
+
+.skill-tooltip-body {
+    padding: 12px 15px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+}
+
+.skill-tooltip.buff {
+    border-color: #10b981;
+}
+
+.skill-tooltip.debuff {
+    border-color: #ef4444;
+}
+
+.skill-tooltip.disable {
+    border-color: #f59e0b;
+}
+
+/* Container pour les descriptions de skills */
+.skill-description,
+.hero-skill-text {
+    line-height: 1.8;
+}

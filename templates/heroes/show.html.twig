@@ -1630,79 +1630,206 @@
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    {{ encore_entry_script_tags('app') }}
+{{ parent() }}
+{{ encore_entry_script_tags('app') }}
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Créer la tooltip pour les effets (SEULEMENT TEXTE)
-        const tooltip = document.createElement('div');
-        tooltip.className = 'skill-tooltip';
-        tooltip.innerHTML = `
-            <div class="skill-tooltip-header"></div>
-            <div class="skill-tooltip-body"></div>
-        `;
-        document.body.appendChild(tooltip);
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Créer la tooltip pour les effets (SEULEMENT TEXTE)
+    const tooltip = document.createElement('div');
+    tooltip.className = 'skill-tooltip';
+    tooltip.innerHTML = `
+        <div class="skill-tooltip-header"></div>
+        <div class="skill-tooltip-body"></div>
+    `;
+    document.body.appendChild(tooltip);
 
-        const header = tooltip.querySelector('.skill-tooltip-header');
-        const body = tooltip.querySelector('.skill-tooltip-body');
+    const header = tooltip.querySelector('.skill-tooltip-header');
+    const body = tooltip.querySelector('.skill-tooltip-body');
 
-        // Gérer les événements sur tous les effets
+    // Gérer les événements sur tous les effets (fonctionne mobile/desktop)
+    document.addEventListener('mouseenter', function(e) {
+        if (e.target.classList.contains('skill-effect')) {
+            const effectName = e.target.dataset.effect;
+            const description = e.target.dataset.description;
+            const type = e.target.classList.contains('effect-buff') ? 'buff' :
+                        e.target.classList.contains('effect-debuff') ? 'debuff' : 'disable';
+
+            // Mise à jour contenu
+            header.textContent = effectName;
+            header.className = `skill-tooltip-header ${type}`;
+            body.textContent = description;
+            tooltip.className = `skill-tooltip ${type}`;
+
+            // Afficher
+            tooltip.style.display = 'block';
+            positionTooltip(e);
+        }
+    }, true);
+
+    document.addEventListener('mouseleave', function(e) {
+        if (e.target.classList.contains('skill-effect')) {
+            tooltip.style.display = 'none';
+        }
+    }, true);
+
+    document.addEventListener('mousemove', function(e) {
+        if (document.querySelector('.skill-effect:hover')) {
+            positionTooltip(e);
+        }
+    }, true);
+
+    // Positionnement adaptatif mobile/desktop
+    function positionTooltip(event) {
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let left = event.clientX + 15;
+        let top = event.clientY - tooltipRect.height - 2;
+
+        // Centre si trop à droite
+        if (left + tooltipRect.width > viewportWidth - 10) {
+            left = event.clientX - tooltipRect.width - 15;
+        }
+        // Bottom si trop haut
+        if (top < 10) {
+            top = event.clientY + 20;
+        }
+        // Top si trop bas
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Créer la modal pour mobile
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'skill-modal-overlay';
+    modalOverlay.innerHTML = `
+        <div class="skill-modal">
+            <div class="skill-modal-header">
+                <span id="modalTitle"></span>
+                <button class="skill-modal-close" onclick="this.closest('.skill-modal-overlay').classList.remove('active')">✕</button>
+            </div>
+            <div class="skill-modal-body" id="modalBody"></div>
+        </div>
+    `;
+    document.body.appendChild(modalOverlay);
+
+    // Créer le tooltip pour desktop
+    const tooltip = document.createElement('div');
+    tooltip.className = 'skill-tooltip';
+    tooltip.innerHTML = `
+        <div class="skill-tooltip-header"></div>
+        <div class="skill-tooltip-body"></div>
+    `;
+    document.body.appendChild(tooltip);
+
+    const tooltipHeader = tooltip.querySelector('.skill-tooltip-header');
+    const tooltipBody = tooltip.querySelector('.skill-tooltip-body');
+    
+    let activeEffect = null;
+
+    // Détecter si c'est un appareil tactile
+    const isTouchDevice = () => {
+        return (('ontouchstart' in window) ||
+                (navigator.maxTouchPoints > 0) ||
+                (navigator.msMaxTouchPoints > 0));
+    };
+
+    // Fonction pour afficher la modal (mobile)
+    function showModal(e, effectName, description, type) {
+        document.getElementById('modalTitle').textContent = effectName;
+        document.getElementById('modalBody').textContent = description;
+        
+        const header = document.querySelector('.skill-modal-header');
+        header.className = `skill-modal-header ${type}`;
+        
+        modalOverlay.classList.add('active');
+    }
+
+    // Fonction pour afficher le tooltip (desktop)
+    function showTooltip(e, effectName, description, type) {
+        activeEffect = e.target;
+        tooltipHeader.textContent = effectName;
+        tooltipHeader.className = `skill-tooltip-header ${type}`;
+        tooltipBody.textContent = description;
+        tooltip.className = `skill-tooltip ${type}`;
+        tooltip.style.display = 'block';
+        positionTooltip(e);
+    }
+
+    // Fonction pour cacher le tooltip
+    function hideTooltip() {
+        tooltip.style.display = 'none';
+        activeEffect = null;
+    }
+
+    // Gérer les événements sur les effets
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('skill-effect')) {
+            e.preventDefault();
+            const effectName = e.target.dataset.effect;
+            const description = e.target.dataset.description;
+            const type = e.target.classList.contains('effect-buff') ? 'buff' :
+                        e.target.classList.contains('effect-debuff') ? 'debuff' : 'disable';
+
+            if (isTouchDevice()) {
+                showModal(e, effectName, description, type);
+            }
+        }
+    }, true);
+
+    // Tooltip pour desktop (souris)
+    if (!isTouchDevice()) {
         document.addEventListener('mouseenter', function(e) {
             if (e.target.classList.contains('skill-effect')) {
                 const effectName = e.target.dataset.effect;
                 const description = e.target.dataset.description;
                 const type = e.target.classList.contains('effect-buff') ? 'buff' :
                             e.target.classList.contains('effect-debuff') ? 'debuff' : 'disable';
-
-                // Mise à jour contenu
-                header.textContent = effectName;
-                header.className = `skill-tooltip-header ${type}`;
-                body.textContent = description;
-                tooltip.className = `skill-tooltip ${type}`;
-
-                // Afficher
-                tooltip.style.display = 'block';
-                positionTooltip(e);
+                showTooltip(e, effectName, description, type);
             }
         }, true);
 
         document.addEventListener('mouseleave', function(e) {
             if (e.target.classList.contains('skill-effect')) {
-                tooltip.style.display = 'none';
+                hideTooltip();
             }
         }, true);
 
         document.addEventListener('mousemove', function(e) {
-            if (e.target.classList.contains('skill-effect')) {
+            if (activeEffect) {
                 positionTooltip(e);
             }
         }, true);
+    }
 
-        function positionTooltip(event) {
-            const tooltipRect = tooltip.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            let left = event.clientX + 15;
-            let top = event.clientY - tooltipRect.height - 2;
-
-            // Ajustement si déborde droite
-            if (left + tooltipRect.width > viewportWidth - 10) {
-                left = event.clientX - tooltipRect.width - 15;
-            }
-            // Ajustement si déborde en haut
-            if (top < 10) top = 10;
-            // Ajustement si déborde en bas
-            if (top + tooltipRect.height > viewportHeight - 10) {
-                top = viewportHeight - tooltipRect.height - 10;
-            }
-
-            tooltip.style.left = left + 'px';
-            tooltip.style.top = top + 'px';
+    // Fermer la modal au clic sur l'overlay
+    modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+            modalOverlay.classList.remove('active');
         }
     });
-    </script>
+
+    // Positionnement du tooltip (desktop)
+    function positionTooltip(event) {
+        const ww = window.innerWidth;
+        const wh = window.innerHeight;
+        const rect = tooltip.getBoundingClientRect();
+        const tw = rect.width || 280;
+        const th = rect.height || 140;
+        
+        let x = event.clientX - tw / 2;
+        let y = event.clientY - th - 15;
+        
+        if (x < 10) x = 10;
+        if (x + tw > ww - 10) x = ww - tw - 10;
+        if (y < 10) y = event.clientY + 15;
+        if (y + th > wh - 10) y = wh - th - 10;
+        
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+    }
+});
+</script>
 {% endblock %}
 
 
