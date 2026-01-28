@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Buffs Database - OddOne Gaming{% endblock %}
+
+{% block body %}
+{# Added pt-5 and mt-4 to ensure it's not hidden under the navbar #}
+<div class="container pt-5 mt-4">
+
+    {# HEADER #}
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-8 text-center text-md-start">
+            <h1 class="display-4 fw-bold text-success text-uppercase"
+                style="text-shadow: 0 0 15px rgba(0,255,0,0.4); letter-spacing: -1px;">
+                Buffs Library
+            </h1>
+        </div>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="col-md-4 text-center text-md-end">
+                {# Visible button with high Z-index #}
+                <a href="{{ path('app_buffs_new') }}"
+                   class="btn btn-success fw-bold px-4 py-2 shadow-lg border-2 text-uppercase position-relative"
+                   style="z-index: 10;">
+                    <i class="fas fa-plus-circle me-2"></i>Add New Buff
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {# SIMPLE GRID #}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for buff in buffs %}
+            <div class="col">
+                <div class="card h-100 bg-black effect-card transition-all shadow-lg overflow-hidden"
+                        style="border: 1px solid #222; background: #0d0d0d !important;">
+
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                {% if buff.iconUrl %}
+                                    <img src="{{ buff.iconUrl }}"
+                                            alt="{{ buff.name }}"
+                                            class="rounded border border-secondary border-opacity-25"
+                                            style="width: 55px; height: 55px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-center"
+                                            style="width: 55px; height: 55px;">
+                                        <i class="fas fa-bolt text-success opacity-50"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="ms-3">
+                                <h5 class="text-white fw-bold mb-1 text-uppercase tracking-tight" style="font-size: 1.1rem;">
+                                    {{ buff.name }}
+                                </h5>
+                                <span class="badge rounded-pill bg-dark text-success border border-success border-opacity-25 py-1 px-2 text-uppercase" style="font-size: 0.65rem;">
+                                    {{ buff.type }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {# Improved Description Readability #}
+                        <div class="mt-3 text-secondary small line-height-md">
+                            {{ buff.description }}
+                        </div>
+                    </div>
+
+                    {# ADMIN ZONE #}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <div class="card-footer bg-dark bg-opacity-50 border-0 p-2 d-flex justify-content-between align-items-center px-3">
+                            <div class="btn-group">
+                                <a href="{{ path('app_buffs_show', {'id': buff.id}) }}" class="btn btn-link btn-sm text-muted p-0 me-3 text-decoration-none">Details</a>
+                                <a href="{{ path('app_buffs_edit', {'id': buff.id}) }}" class="btn btn-outline-warning btn-sm px-3 shadow-sm text-uppercase fw-bold">
+                                    Edit
+                                </a>
+                            </div>
+
+                            <form method="post" action="{{ path('app_buffs_delete', {'id': buff.id}) }}" onsubmit="return confirm('Delete this buff permanently?');" style="display:inline-block">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ buff.id) }}">
+                                <button class="btn btn-outline-danger btn-sm border-0">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fs-5">No buffs available in the library.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* Spacing for Fixed Navbar */
+    body { padding-top: 50px; }
+
+    .line-height-md { line-height: 1.6; color: #a0a0a0 !important; }
+
+    .effect-card {
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .effect-card:hover {
+        transform: translateY(-5px);
+        border-color: #198754 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545 !important;
+        color: white !important;
+    }
+</style>
+{% endblock %}

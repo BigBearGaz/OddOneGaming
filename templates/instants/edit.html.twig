@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin - Edit {{ instant.name }}{% endblock %}
+
+{% block body %}
+{# 120px margin to ensure the back link is visible below the fixed navbar #}
+<div class="container pb-5" style="margin-top: 120px;">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            {# HEADER : Navigation & Context #}
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <a href="{{ path('app_instants_index') }}" class="back-link">
+                        <i class="fas fa-arrow-left me-2"></i> BACK TO DATABASE
+                    </a>
+                    <h2 class="text-white fw-bold mb-0 mt-3 tracking-tighter uppercase display-6">EDIT INSTANT</h2>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-dark text-info border border-info border-opacity-25 px-4 py-2">
+                        ADMIN PANEL
+                    </span>
+                </div>
+            </div>
+
+            {# MAIN FORM CARD #}
+            <div class="card bg-black shadow-2xl mb-4" 
+                 style="border: 1px solid #113333; background: #0d0d0d !important;">
+                
+                <div class="card-header border-bottom border-info border-opacity-10 p-4 bg-info bg-opacity-5">
+                    <div class="d-flex align-items-center">
+                        {% if instant.icon %}
+                            <img src="{{ instant.icon }}" class="rounded border border-info border-opacity-25 me-3" 
+                                 style="width: 56px; height: 56px; object-fit: cover;">
+                        {% endif %}
+                        <div>
+                            <h4 class="text-white mb-0 fw-bold">{{ instant.name }}</h4>
+                            <code class="text-info small opacity-75">System_ID: #{{ instant.id }}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="admin-form-container">
+                        {# Symfony form logic - will only show Name, Icon, Description based on your Type file #}
+                        {{ include('instants/_form.html.twig', {'button_label': 'SAVE CHANGES'}) }}
+                    </div>
+                </div>
+
+                {# FOOTER : DANGER ZONE #}
+                <div class="card-footer bg-black border-top border-danger border-opacity-10 p-4">
+                    <div class="d-md-flex align-items-center justify-content-between">
+                        <div class="mb-3 mb-md-0">
+                            <h6 class="text-danger fw-bold mb-1 small tracking-widest">DANGER ZONE</h6>
+                            <p class="text-secondary small mb-0 opacity-50">This action will permanently delete this instant effect.</p>
+                        </div>
+                        <div class="delete-wrapper">
+                            {{ include('instants/_delete_form.html.twig') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* TYPOGRAPHY & THEME */
+    .bg-black { background-color: #0d0d0d !important; }
+    .shadow-2xl { box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9); }
+    .tracking-tighter { letter-spacing: -0.05em; }
+    .tracking-widest { letter-spacing: 0.1em; }
+
+    /* CLEAN BACK LINK */
+    .back-link {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+    }
+    .back-link:hover {
+        color: #0dcaf0;
+        transform: translateX(-5px);
+    }
+
+    /* FORM STYLING */
+    .admin-form-container label {
+        color: #e0e0e0 !important;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        display: block;
+        text-transform: uppercase;
+    }
+
+    .admin-form-container input, 
+    .admin-form-container textarea {
+        background-color: #0a181a !important;
+        border: 1px solid #224444 !important;
+        color: #fff !important;
+        padding: 16px !important;
+        border-radius: 4px !important;
+        font-size: 1rem !important;
+        margin-bottom: 1.5rem;
+    }
+
+    .admin-form-container textarea {
+        min-height: 180px;
+    }
+
+    .admin-form-container input:focus, 
+    .admin-form-container textarea:focus {
+        border-color: #0dcaf0 !important;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(13, 202, 240, 0.1) !important;
+    }
+
+    /* SAVE BUTTON (CYAN) */
+    .admin-form-container button[type="submit"] {
+        background-color: #0dcaf0 !important;
+        color: #000 !important;
+        border: none !important;
+        padding: 18px !important;
+        font-weight: 900 !important;
+        letter-spacing: 2px !important;
+        text-transform: uppercase !important;
+        width: 100%;
+        transition: 0.2s;
+    }
+    .admin-form-container button:hover {
+        filter: brightness(1.2);
+        transform: translateY(-2px);
+    }
+
+    /* DELETE BUTTON */
+    .delete-wrapper form button {
+        background: rgba(220, 53, 69, 0.05) !important;
+        border: 1px solid #dc3545 !important;
+        color: #dc3545 !important;
+        font-weight: 700;
+        padding: 12px 30px;
+        border-radius: 4px;
+        transition: 0.3s;
+    }
+    .delete-wrapper form button:hover {
+        background: #dc3545 !important;
+        color: white !important;
+    }
+</style>
+{% endblock %}

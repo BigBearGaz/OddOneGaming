@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin - Create New Buff{% endblock %}
+
+{% block body %}
+{# 1. Increased margin-top to 120px to ensure the back link is fully visible #}
+{# 2. Widened the column to col-lg-10 so the description isn't narrow #}
+<div class="container pb-5" style="margin-top: 120px;">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+            
+            {# HEADER : Navigation & Context #}
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    {# Fixed the missing </a> tag here #}
+                    <a href="{{ path('app_buffs_index') }}" class="back-link">
+                        <i class="fas fa-arrow-left me-2"></i>BACK TO DATABASE
+                    </a>
+                    <h2 class="text-white fw-bold mb-0 mt-3 tracking-tighter uppercase display-6">NEW BUFF ENTRY</h2>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-dark text-success border border-success border-opacity-25 px-4 py-2">
+                        CREATION MODE
+                    </span>
+                </div>
+            </div>
+
+            {# MAIN FORM CARD #}
+            <div class="card bg-black shadow-2xl" 
+                 style="border: 1px solid #222; background: #0d0d0d !important;">
+                
+                <div class="card-header border-bottom border-secondary border-opacity-10 p-4 bg-dark bg-opacity-10">
+                    <h5 class="text-white mb-0 fw-bold">BUFF SPECIFICATIONS</h5>
+                    <p class="text-muted small mb-0">Define the properties of the new enhancement effect.</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="admin-form-container">
+                        {# The description field inside here will now be much wider #}
+                        {{ include('buffs/_form.html.twig', {'button_label': 'CREATE BUFF'}) }}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Wider Description Field */
+    .admin-form-container textarea {
+        min-height: 150px;
+        width: 100%;
+    }
+
+    /* Clean Back Link with hover animation */
+    .back-link {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .back-link:hover {
+        color: #ffffff;
+        transform: translateX(-5px);
+    }
+
+    /* Dark Theme Core */
+    .bg-black { background-color: #0d0d0d !important; }
+    .shadow-2xl { box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9); }
+    .tracking-tighter { letter-spacing: -0.05em; }
+
+    /* Form Readability */
+    .admin-form-container label {
+        color: #e0e0e0 !important;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .admin-form-container input, 
+    .admin-form-container textarea, 
+    .admin-form-container select {
+        background-color: #1a1a1a !important;
+        border: 1px solid #333 !important;
+        color: #fff !important;
+        padding: 16px !important;
+        border-radius: 4px !important;
+        font-size: 1rem !important;
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+
+    .admin-form-container input:focus, 
+    .admin-form-container textarea:focus {
+        border-color: #198754 !important;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1) !important;
+    }
+
+    /* Action Button */
+    .admin-form-container .btn-success,
+    .admin-form-container button[type="submit"] {
+        background-color: #198754 !important;
+        border: none !important;
+        padding: 18px !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        width: 100%;
+        transition: transform 0.2s, filter 0.2s;
+    }
+
+    .admin-form-container button:hover {
+        filter: brightness(1.2);
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

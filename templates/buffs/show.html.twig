@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Buffs{% endblock %}
+
+{% block body %}
+    <h1>Buffs</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ buff.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ buff.name }}</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>{{ buff.type }}</td>
+            </tr>
+            <tr>
+                <th>IconUrl</th>
+                <td>{{ buff.iconUrl }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ buff.description }}</td>
+            </tr>
+            <tr>
+                <th>CreatedAt</th>
+                <td>{{ buff.createdAt ? buff.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_buffs_index') }}">back to list</a>
+
+    <a href="{{ path('app_buffs_edit', {'id': buff.id}) }}">edit</a>
+
+    {{ include('buffs/_delete_form.html.twig') }}
+{% endblock %}

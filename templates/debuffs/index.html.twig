@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Debuffs Database - OddOne Gaming{% endblock %}
+
+{% block body %}
+{# Offset for fixed navbar #}
+<div class="container pt-5 mt-4">
+
+    {# HEADER #}
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-8 text-center text-md-start">
+            <h1 class="display-4 fw-bold text-danger text-uppercase tracking-tighter"
+                style="text-shadow: 0 0 20px rgba(220, 53, 69, 0.2);">
+                Debuffs Library
+            </h1>
+        </div>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="col-md-4 text-center text-md-end">
+                <a href="{{ path('app_debuffs_new') }}"
+                   class="btn btn-outline-danger fw-bold px-4 py-2 text-uppercase shadow-sm">
+                    <i class="fas fa-skull me-2"></i>Add New Debuff
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {# GRID VIEW #}
+    <div class="row g-4">
+        {% for debuff in debuffs %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 bg-black effect-card transition-all shadow-lg overflow-hidden"
+                     style="border: 1px solid #222; background: #0d0d0d !important;">
+                    
+                    <div class="card-body p-4">
+                        {# ICON & TITLE #}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                {% if debuff.iconUrl %}
+                                    <img src="{{ debuff.iconUrl }}"
+                                            alt="{{ debuff.name }}"
+                                            class="rounded border border-danger border-opacity-25"
+                                            style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-center"
+                                            style="width: 60px; height: 60px;">
+                                        <i class="fas fa-skull-crossbones text-danger opacity-50"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="ms-3">
+                                <h5 class="text-white fw-bold mb-1 text-uppercase ls-1">
+                                    {{ debuff.name }}
+                                </h5>
+                                <span class="badge bg-dark text-danger border border-danger border-opacity-25 fw-normal px-2 py-1 text-uppercase" style="font-size: 0.7rem;">
+                                    {{ debuff.type }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {# DESCRIPTION #}
+                        <div class="debuff-description text-gray-400">
+                            {{ debuff.description }}
+                        </div>
+                    </div>
+
+                    {# ADMIN ACTIONS #}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <div class="card-footer bg-dark bg-opacity-50 border-0 p-3 d-flex justify-content-between align-items-center">
+                            <a href="{{ path('app_debuffs_show', {'id': debuff.id}) }}" class="text-secondary text-decoration-none small hover-white transition-all">View Details</a>
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_debuffs_edit', {'id': debuff.id}) }}" class="btn btn-sm btn-warning px-3 fw-bold">
+                                    EDIT
+                                </a>
+                                <form method="post" action="{{ path('app_debuffs_delete', {'id': debuff.id}) }}" onsubmit="return confirm('Delete this debuff permanently?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ debuff.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger border-0">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fs-5">No debuffs found in database.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    body { padding-top: 50px; }
+    .bg-black { background-color: #0d0d0d !important; }
+    .text-gray-400 { color: #a0a0a0 !important; }
+    
+    .effect-card {
+        border: 1px solid #1a1a1a !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .effect-card:hover {
+        border-color: #dc3545 !important; /* Red highlight for debuffs */
+        transform: translateY(-5px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .debuff-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        letter-spacing: 0.01em;
+        font-weight: 300;
+        min-height: 60px;
+    }
+
+    .ls-1 { letter-spacing: 1px; }
+    .tracking-tighter { letter-spacing: -0.05em; }
+    .hover-white:hover { color: white !important; }
+    .transition-all { transition: all 0.2s ease-in-out; }
+</style>
+{% endblock %}

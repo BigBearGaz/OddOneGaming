@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}OddOne Gaming{% endblock %}</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -15,34 +18,27 @@
             min-height: 100vh;
         }
 
-        /* Overlay */
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4);
             z-index: -1;
         }
 
-        /* Navigation */
         nav.navbar {
             background: rgba(0, 0, 0, 0.7) !important;
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(0, 255, 0, 0.3);
         }
 
-        .navbar-brand img {
-            height: 80px;
-        }
+        .navbar-brand img { height: 80px; }
 
         .navbar-nav .nav-link {
             color: #00ff00 !important;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
 
         .navbar-nav .nav-link:hover {
@@ -50,78 +46,41 @@
             text-shadow: 0 0 10px #00ff00;
         }
 
-        /* Dropdown Menu Styling */
         .dropdown-menu {
             background: rgba(0, 0, 0, 0.9) !important;
             backdrop-filter: blur(15px);
             border: 1px solid rgba(0, 255, 0, 0.3);
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.2);
-            max-height: none !important;
-            overflow: visible !important;
-            min-width: 300px;
+            min-width: 250px;
         }
 
         .dropdown-item {
             color: #00ff00 !important;
             font-weight: 600;
-            padding: 12px 20px;
-            transition: all 0.3s ease;
+            padding: 8px 20px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
         }
 
         .dropdown-item:hover {
             background: rgba(0, 255, 0, 0.2) !important;
             color: #ffffff !important;
-            text-shadow: 0 0 10px #00ff00;
             transform: translateX(5px);
         }
 
-        .dropdown-item.disabled {
-            color: rgba(255, 255, 255, 0.4) !important;
-            cursor: not-allowed;
-        }
-
-        .dropdown-item.text-success {
-            color: #00ff00 !important;
-            font-weight: 700;
-        }
-
-        .dropdown-divider {
-            border-color: rgba(0, 255, 0, 0.2);
-        }
-
-        .dropdown-header {
-            color: rgba(0, 255, 0, 0.6);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
-        }
-
-        /* Dropdown Dungeons avec images */
-        .dropdown-item.dungeon-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 15px;
-        }
-
-        .dropdown-item.dungeon-item:hover {
-            padding-left: 20px;
-        }
-
-        .dungeon-thumb {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+        .dungeon-mini-icon {
+            width: 24px !important;
+            height: 24px !important;
             object-fit: cover;
-            border: 2px solid rgba(0, 255, 0, 0.4);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 255, 0, 0.5);
             flex-shrink: 0;
         }
 
-        .dungeon-item span {
-            flex: 1;
-            font-weight: 600;
-            font-size: 0.95rem;
+        .nav-admin-btn {
+            border: 1px solid #0dcaf0;
+            border-radius: 5px;
+            background: rgba(13, 202, 240, 0.1);
         }
 
         {% block stylesheets %}{% endblock %}
@@ -131,93 +90,75 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{{ path('app_home') }}">
-                <img src="{{ asset('images/OddOneGaming_Logo.png') }}" alt="OddOne Gaming Logo">
+                <img src="{{ asset('images/OddOneGaming_Logo.png') }}" alt="Logo">
             </a>
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_home') }}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_heroes_index') }}">Heroes</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_takeovers_index') }}">Takeover</a>
-                    </li>
-                    
-                    {# DROPDOWN DUNGEONS #}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="dungeonsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Dungeons
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dungeonsDropdown">
-                            <li>
-                                <a class="dropdown-item" href="{{ path('app_dungeons_index') }}">
-                                    <strong>📋 View All Bosses</strong>
-                                </a>
-                            </li>
-                            
-                            {% if global_dungeons is defined and global_dungeons|length > 0 %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li><h6 class="dropdown-header">Quick Access</h6></li>
-                                
-                                {% for dungeon in global_dungeons|slice(0, 6) %}
-                                    <li>
-                                        <a class="dropdown-item dungeon-item" href="{{ path('app_dungeons_show', {'id': dungeon.id}) }}">
-                                            <img src="{{ dungeon.imageUrl ? dungeon.imageUrl : 'https://ui-avatars.com/api/?name=' ~ dungeon.name|url_encode ~ '&size=80&background=00ff00&color=000000&bold=true' }}" 
-                                                 alt="{{ dungeon.name }}"
-                                                 class="dungeon-thumb">
-                                            <span>{{ dungeon.name }}</span>
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            {% else %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <span class="dropdown-item disabled">
-                                        <em>No dungeons yet</em>
-                                    </span>
-                                </li>
-                            {% endif %}
-                            
-                            <li><hr class="dropdown-divider"></li>
-                           {% if is_granted('ROLE_ADMIN') %}
-    <li><hr class="dropdown-divider"></li>
-    <li>
-        <a class="dropdown-item text-success" href="{{ path('app_dungeons_new') }}">
-            ➕ Add New Boss
-        </a>
-    </li>
-{% endif %}
 
-                            
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_home') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_heroes_index') }}">Heroes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_takeovers_index') }}">Takeover</a></li>
+
+                    {# MENU MECHANICS (PUBLIC) #}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="mechDrop" data-bs-toggle="dropdown">Mechanics</a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item" href="{{ path('app_buffs_index') }}"><i class="fas fa-arrow-up me-2 text-success"></i> Buffs</a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_debuffs_index') }}"><i class="fas fa-arrow-down me-2 text-danger"></i> Debuffs</a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_disable_index') }}"><i class="fas fa-hand-paper me-2 text-warning"></i> Disables</a></li>
                         </ul>
                     </li>
 
-                    {# TIER LISTS #}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_tier_list_index') }}">
-                            🏆 Tier Lists
-                        </a>
+                    {# MENU DUNGEONS #}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dungDrop" data-bs-toggle="dropdown">Dungeons</a>
+                        <ul class="dropdown-menu shadow">
+                            <li><a class="dropdown-item py-2" href="{{ path('app_dungeons_index') }}"><i class="fas fa-list-ul me-2 small text-success"></i> <strong>View All Bosses</strong></a></li>
+                            {% if global_dungeons is defined and global_dungeons|length > 0 %}
+                                <li><hr class="dropdown-divider my-1"></li>
+                                {% for dungeon in global_dungeons|slice(0, 6) %}
+                                    <li>
+                                        <a class="dropdown-item py-2" href="{{ path('app_dungeons_show', {'id': dungeon.id}) }}">
+                                            <img src="{{ dungeon.imageUrl ? dungeon.imageUrl : 'https://ui-avatars.com/api/?name=' ~ dungeon.name|url_encode ~ '&background=00ff00&color=000&size=40' }}" class="dungeon-mini-icon me-2">
+                                            <span class="small">{{ dungeon.name }}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            {% endif %}
+                        </ul>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_contact') }}">Contact</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_tier_list_index') }}">🏆 Tier Lists</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ path('app_contact') }}">Contact</a></li>
+
+                    {# ESPACE ADMIN COMPLET #}
                     {% if is_granted('ROLE_ADMIN') %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_logout') }}">
-                                🚪 Logout
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle nav-admin-btn text-info" href="#" id="adminDrop" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-shield me-1"></i> Admin
                             </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <li><h6 class="dropdown-header">Gestion Mécaniques</h6></li>
+                                <li><a class="dropdown-item" href="{{ path('app_buffs_index') }}"><i class="fas fa-arrow-up me-2 text-success"></i> Buffs</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_debuffs_index') }}"><i class="fas fa-arrow-down me-2 text-danger"></i> Debuffs</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_disable_index') }}"><i class="fas fa-hand-paper me-2 text-warning"></i> Disables</a></li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header">Contenu</h6></li>
+                                <li><a class="dropdown-item text-success" href="{{ path('app_dungeons_new') }}"><i class="fas fa-plus me-2"></i> Add New Boss</a></li>
+                                <li><a class="dropdown-item" href="{{ path('app_takeovers_index') }}"><i class="fas fa-edit me-2"></i> Manage Takeovers</a></li>
+                                
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger fw-bold" href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                            </ul>
                         </li>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_login') }}">
-                                🔐 Login
-                            </a>
+                        <li class="nav-item ms-lg-2">
+                            <a class="nav-link btn btn-sm btn-outline-success px-3" href="{{ path('app_login') }}" style="border-radius: 20px;">🔐 Login</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -225,7 +166,7 @@
         </div>
     </nav>
 
-    <main class="container-fluid p-0">
+    <main class="container-fluid p-0" style="margin-top: 100px;">
         {% block body %}{% endblock %}
     </main>
 

@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Disables Library - OddOne Gaming{% endblock %}
+
+{% block body %}
+{# Offset to prevent navbar overlap #}
+<div class="container pt-5 mt-4">
+
+    {# HEADER #}
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-8 text-center text-md-start">
+            <h1 class="display-4 fw-bold text-warning text-uppercase tracking-tighter"
+                style="text-shadow: 0 0 20px rgba(255, 193, 7, 0.2);">
+                Disables Database
+            </h1>
+        </div>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="col-md-4 text-center text-md-end">
+                <a href="{{ path('app_disable_new') }}"
+                   class="btn btn-outline-warning fw-bold px-4 py-2 text-uppercase shadow-sm">
+                    <i class="fas fa-lock me-2"></i>Add New Disable
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    {# GRID VIEW #}
+    <div class="row g-4">
+        {% for disable in disables %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 bg-black effect-card transition-all shadow-lg overflow-hidden"
+                     style="border: 1px solid #222; background: #0d0d0d !important;">
+                    
+                    <div class="card-body p-4">
+                        {# ICON & TITLE #}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                {% if disable.iconUrl %}
+                                    <img src="{{ disable.iconUrl }}"
+                                            alt="{{ disable.name }}"
+                                            class="rounded border border-warning border-opacity-25"
+                                            style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-center"
+                                            style="width: 60px; height: 60px;">
+                                        <i class="fas fa-hand-paper text-warning opacity-50"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="ms-3">
+                                <h5 class="text-white fw-bold mb-1 text-uppercase ls-1">
+                                    {{ disable.name }}
+                                </h5>
+                                <span class="badge bg-dark text-warning border border-warning border-opacity-25 fw-normal px-2 py-1 text-uppercase" style="font-size: 0.7rem;">
+                                    {{ disable.type }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {# DESCRIPTION - High Readability #}
+                        <div class="disable-description text-gray-400">
+                            {{ disable.description }}
+                        </div>
+                    </div>
+
+                    {# ADMIN ACTIONS #}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <div class="card-footer bg-dark bg-opacity-50 border-0 p-3 d-flex justify-content-between align-items-center">
+                            <a href="{{ path('app_disable_show', {'id': disable.id}) }}" class="text-secondary text-decoration-none small hover-white transition-all">Details</a>
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_disable_edit', {'id': disable.id}) }}" class="btn btn-sm btn-warning text-dark fw-bold px-3">
+                                    EDIT
+                                </a>
+                                <form method="post" action="{{ path('app_disable_delete', {'id': disable.id}) }}" onsubmit="return confirm('Delete this disable effect?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ disable.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger border-0">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fs-5">No disable effects found.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    body { padding-top: 50px; }
+    .bg-black { background-color: #0d0d0d !important; }
+    .text-gray-400 { color: #a0a0a0 !important; }
+    
+    .effect-card {
+        border: 1px solid #1a1a1a !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .effect-card:hover {
+        border-color: #ffc107 !important; /* Yellow highlight for disables */
+        transform: translateY(-5px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    .disable-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        letter-spacing: 0.01em;
+        font-weight: 300;
+        min-height: 60px;
+    }
+
+    .ls-1 { letter-spacing: 1px; }
+    .tracking-tighter { letter-spacing: -0.05em; }
+    .hover-white:hover { color: white !important; }
+</style>
+{% endblock %}

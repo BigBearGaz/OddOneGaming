@@ -1,0 +1,109 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin - New Instant{% endblock %}
+
+{% block body %}
+{# Keeping the 120px offset to ensure the "Back" link is visible under the nav #}
+<div class="container pb-5" style="margin-top: 120px;">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            {# SIMPLIFIED HEADER #}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="nav-link-wrapper">
+                    <a href="{{ path('app_instants_index') }}" class="back-link">
+                        <i class="fas fa-arrow-left me-2"></i>BACK TO LIST
+                    </a>
+                    <h2 class="text-white fw-bold mb-0 mt-2 tracking-tighter uppercase display-6">NEW INSTANT</h2>
+                </div>
+            </div>
+
+            {# MAIN CARD #}
+            <div class="card bg-black shadow-2xl" 
+                 style="border: 1px solid #113333; background: #0d0d0d !important;">
+                
+                <div class="card-body p-4 p-md-5">
+                    <div class="admin-form-container">
+                        {# The form will only show Name, Description, and Icon as defined in your InstantsType #}
+                        {{ include('instants/_form.html.twig', {'button_label': 'CREATE EFFECT'}) }}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Focus on essentials: Max width for description */
+    .admin-form-container textarea {
+        min-height: 200px;
+        width: 100%;
+        font-size: 1.1rem;
+    }
+
+    /* Clean back link style */
+    .back-link {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+    }
+
+    .back-link:hover {
+        color: #0dcaf0;
+        transform: translateX(-5px);
+    }
+
+    /* Dark & Cyan Theme */
+    .bg-black { background-color: #0d0d0d !important; }
+    .shadow-2xl { box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9); }
+    
+    .admin-form-container label {
+        color: #e0e0e0 !important;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: block;
+        text-transform: uppercase;
+    }
+
+    .admin-form-container input, 
+    .admin-form-container textarea {
+        background-color: #0a181a !important;
+        border: 1px solid #224444 !important;
+        color: #ffffff !important;
+        padding: 16px !important;
+        border-radius: 4px !important;
+        margin-bottom: 1.5rem;
+    }
+
+    .admin-form-container input:focus, 
+    .admin-form-container textarea:focus {
+        border-color: #0dcaf0 !important;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(13, 202, 240, 0.1) !important;
+    }
+
+    /* Massive action button */
+    .admin-form-container button[type="submit"] {
+        background-color: #0dcaf0 !important;
+        color: #000 !important;
+        border: none !important;
+        padding: 20px !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        width: 100%;
+        letter-spacing: 2px;
+        transition: 0.2s ease-in-out;
+    }
+
+    .admin-form-container button[type="submit"]:hover {
+        filter: brightness(1.1);
+        transform: scale(1.01);
+    }
+</style>
+{% endblock %}
