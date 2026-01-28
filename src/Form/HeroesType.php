@@ -165,16 +165,17 @@ class HeroesType extends AbstractType
                 'expanded' => true,
                 'required' => false,
             ])
-            // ✅ NOUVEAU : Ajout des effets Instantanés
-            ->add('instants', EntityType::class, [
-                'class' => Instants::class,
-                'choice_label' => 'label',
-                'label' => 'Instant Effects (Heal, Revive, TM...)',
-                'multiple' => true,
-                'expanded' => true,
-                'required' => false,
-            ])
-
+                     ->add('instants', EntityType::class, [
+    'class' => Instants::class,
+    'choice_label' => 'name', // Utilise 'name' car 'label' est vide en BDD
+    'multiple' => true,
+    'expanded' => true,
+    'required' => false,
+    'choice_attr' => function($choice) {
+        // Cela ajoute la description dans une infobulle au survol
+        return ['title' => $choice->getDescription()];
+    },
+])
             // ========================================
             // SETS RECOMMANDÉS
             // ========================================

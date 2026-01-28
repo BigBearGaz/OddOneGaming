@@ -723,11 +723,20 @@
                            class="filter-instant-checkbox" 
                            value="{{ instant.id }}">
                     
-                    <label class="checkbox-label" for="instant-{{ instant.id }}">
-                        {# L'image a été retirée ici #}
-                        <span>{{ instant.label }}</span>
+                    <label class="checkbox-label d-flex flex-column" for="instant-{{ instant.id }}">
+                        {# On utilise .name car .label est NULL en BDD #}
+                        <span class="fw-bold">{{ instant.name }}</span>
+                        
+                        {# On ajoute la description en petit pour aider l'utilisateur #}
+                        {% if instant.description %}
+                            <span class="text-muted small" style="font-size: 0.75rem; line-height: 1.1;">
+                                {{ instant.description }}
+                            </span>
+                        {% endif %}
                     </label>
                 </div>
+            {% else %}
+                <div class="p-2 text-muted small">No effects found.</div>
             {% endfor %}
         </div>
     </div>
@@ -756,6 +765,7 @@
                     {% set buffsList = [] %}
                     {% set debuffsList = [] %}
                     {% set disablesList = [] %}
+                    {% set instantsList = [] %} {# On initialise la variable ici #}
 
                     {% for buff in hero.heroBuffs %}
                         {% set buffsList = buffsList|merge([buff.id]) %}
@@ -766,19 +776,21 @@
                     {% for disable in hero.heroDisables %}
                         {% set disablesList = disablesList|merge([disable.id]) %}
                     {% endfor %}
+                    {% for instant in hero.instants %}{% set instantsList = instantsList|merge([instant.id]) %}{% endfor %}
 
-                    <div class="hero-card"
-                         data-name="{{ hero.Name|lower }}"
-                         data-faction="{{ hero.factionEntity ? hero.factionEntity.id : '' }}"
-                         data-type="{{ hero.typeEntity ? hero.typeEntity.id : '' }}"
-                         data-affinity="{{ hero.affinityEntity ? hero.affinityEntity.id : '' }}"
-                         data-allegiance="{{ hero.allegianceEntity ? hero.allegianceEntity.id : '' }}"
-                         data-rarity="{{ hero.rarityEntity ? hero.rarityEntity.id : '' }}"
-                         data-rarity-name="{{ hero.rarityEntity ? hero.rarityEntity.name|lower : '' }}"
-                         data-leader="{{ hero.leaderEntity ? hero.leaderEntity.id : '' }}"
-                         data-buffs="{{ buffsList|join(',') }}"
-                         data-debuffs="{{ debuffsList|join(',') }}"
-                         data-disable="{{ disablesList|join(',') }}">
+                <div class="hero-card"
+     data-name="{{ hero.Name|lower }}"
+     data-faction="{{ hero.factionEntity ? hero.factionEntity.id : '' }}"
+     data-type="{{ hero.typeEntity ? hero.typeEntity.id : '' }}"
+     data-affinity="{{ hero.affinityEntity ? hero.affinityEntity.id : '' }}"
+     data-allegiance="{{ hero.allegianceEntity ? hero.allegianceEntity.id : '' }}"
+     data-rarity="{{ hero.rarityEntity ? hero.rarityEntity.id : '' }}"
+     data-rarity-name="{{ hero.rarityEntity ? hero.rarityEntity.name|lower : '' }}"
+     data-leader="{{ hero.leaderEntity ? hero.leaderEntity.id : '' }}"
+     data-buffs="{{ buffsList|join(',') }}"
+     data-debuffs="{{ debuffsList|join(',') }}"
+     data-disable="{{ disablesList|join(',') }}"
+     data-instants="{{ instantsList|join(',') }}">
 
                         <div class="hero-image">
                             {% if hero.imageUrl %}
@@ -897,6 +909,7 @@
             const buffCheckboxes = document.querySelectorAll('.filter-buff-checkbox');
             const debuffCheckboxes = document.querySelectorAll('.filter-debuff-checkbox');
             const disableCheckboxes = document.querySelectorAll('.filter-disable-checkbox');
+            const instantCheckboxes = document.querySelectorAll('.filter-instant-checkbox');
 
             const heroCards = document.querySelectorAll('.hero-card');
             const resultsCounter = document.getElementById('results-counter');
@@ -914,7 +927,8 @@
                     leader: selectFilters.leader.value,
                     buffs: Array.from(buffCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
                     debuffs: Array.from(debuffCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
-                    disables: Array.from(disableCheckboxes).filter(cb => cb.checked).map(cb => cb.value)
+                    disables: Array.from(disableCheckboxes).filter(cb => cb.checked).map(cb => cb.value),
+                    instants: Array.from(instantCheckboxes).filter(cb => cb.checked).map(cb => cb.value)
                 };
 
                 let visibleCount = 0;
@@ -952,6 +966,13 @@
                         if (!hasAllDisables) shouldShow = false;
                     }
 
+                    // Logique pour les Instants
+                    if (shouldShow && selectedFilters.instants.length > 0) {
+                        const cardInstants = (card.dataset.instants || '').split(',').filter(Boolean);
+                        const hasAllInstants = selectedFilters.instants.every(inst => cardInstants.includes(inst));
+                        if (!hasAllInstants) shouldShow = false;
+                    }
+
                     if (shouldShow) {
                         card.classList.remove('hidden');
                         visibleCount++;
@@ -960,13 +981,18 @@
                     }
                 });
 
-                resultsCounter.innerHTML = `<i class="fas fa-chart-bar"></i> ${visibleCount} hero${visibleCount !== 1 ? 'es' : ''} found`;
-                if (visibleCount === 0) emptyState.classList.add('show');
-                else emptyState.classList.remove('show');
+                if (resultsCounter) {
+                    resultsCounter.innerHTML = `<i class="fas fa-chart-bar"></i> ${visibleCount} hero${visibleCount !== 1 ? 'es' : ''} found`;
+                }
+                
+                if (emptyState) {
+                    if (visibleCount === 0) emptyState.classList.add('show');
+                    else emptyState.classList.remove('show');
+                }
             }
 
             Object.values(selectFilters).forEach(filter => {
-                filter.addEventListener('change', filterHeroes);
+                filter?.addEventListener('change', filterHeroes);
             });
 
             if (nameInput) nameInput.addEventListener('input', filterHeroes);
@@ -974,14 +1000,16 @@
             buffCheckboxes.forEach(cb => cb.addEventListener('change', filterHeroes));
             debuffCheckboxes.forEach(cb => cb.addEventListener('change', filterHeroes));
             disableCheckboxes.forEach(cb => cb.addEventListener('change', filterHeroes));
+            instantCheckboxes.forEach(cb => cb.addEventListener('change', filterHeroes));
 
-            btnReset.addEventListener('click', function() {
-                Object.values(selectFilters).forEach(filter => { filter.value = ''; });
+            btnReset?.addEventListener('click', function() {
+                Object.values(selectFilters).forEach(filter => { if(filter) filter.value = ''; });
                 if (nameInput) nameInput.value = '';
 
                 buffCheckboxes.forEach(cb => cb.checked = false);
                 debuffCheckboxes.forEach(cb => cb.checked = false);
                 disableCheckboxes.forEach(cb => cb.checked = false);
+                instantCheckboxes.forEach(cb => cb.checked = false);
 
                 document.querySelectorAll('.accordion-header').forEach(header => header.classList.remove('active'));
                 document.querySelectorAll('.accordion-body').forEach(body => body.classList.remove('active'));
@@ -991,7 +1019,8 @@
                     const native = document.getElementById(cs.dataset.for);
                     const textEl = cs.querySelector('.custom-select-text');
                     const imgEl = cs.querySelector('.custom-select-img');
-                    const firstOptionLabel = cs.querySelector('.custom-select-option')?.textContent?.trim() || '';
+                    const firstOption = cs.querySelector('.custom-select-option');
+                    const firstOptionLabel = firstOption ? firstOption.textContent.trim() : '';
 
                     if (native) native.value = '';
                     if (textEl) textEl.textContent = firstOptionLabel;
@@ -1002,9 +1031,6 @@
                 });
 
                 heroCards.forEach(card => card.classList.remove('hidden'));
-                resultsCounter.innerHTML = `<i class="fas fa-chart-bar"></i> ${heroCards.length} hero${heroCards.length !== 1 ? 'es' : ''} found`;
-                emptyState.classList.remove('show');
-
                 filterHeroes();
             });
 

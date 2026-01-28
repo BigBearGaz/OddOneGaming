@@ -917,6 +917,25 @@
                             </div>
                             {{ form_row(form.heroDisables, {'label': false}) }}
                         </div>
+                        {# INSTANT EFFECTS #}
+<div class="card mb-4">
+    <div class="card-header bg-gradient-primary text-white">
+        <h4 class="mb-0">
+            <i class="fas fa-bolt"></i>
+            <span>Instant Effects</span>
+        </h4>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small">
+            <i class="fas fa-info-circle"></i> 
+            Sélectionnez les effets immédiats du héros (Heal, Revive, Turn Meter, etc.)
+        </p>
+        <div class="instants-selection-wrapper">
+            {{ form_widget(form.instants) }}
+            {{ form_errors(form.instants) }}
+        </div>
+    </div>
+</div>
                     </div>
                 </div>
 
@@ -1027,29 +1046,12 @@
                         {{ form_row(form.ascensionBonuses) }}
                     </div>
                 </div>
-{# INSTANT EFFECTS #}
-<div class="card mb-4">
-    <div class="card-header bg-gradient-primary text-white">
-        <h4 class="mb-0">
-            <i class="fas fa-bolt"></i>
-            <span>Instant Effects</span>
-        </h4>
-    </div>
-    <div class="card-body">
-        <p class="text-muted small">
-            <i class="fas fa-info-circle"></i> 
-        </p>
-        <div class="instants-selection-wrapper">
-            {{ form_widget(form.instants) }}
-            {{ form_errors(form.instants) }}
-        </div>
-    </div>
-</div>
+
                 {# ACTIONS #}
                 <div class="d-flex gap-3 justify-content-center mt-5">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i>
-                        <span>Save Hero</span>
+                        <span>Create Hero</span>
                     </button>
                     <a href="{{ path('app_heroes_index') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-times"></i>
