@@ -724,12 +724,7 @@
                            value="{{ instant.id }}">
                     
                     <label class="checkbox-label" for="instant-{{ instant.id }}">
-                        {% if instant.icon %}
-                            <img class="checkbox-icon" 
-                                 src="{{ asset('images/icons/instants/' ~ instant.icon) }}" 
-                                 alt="{{ instant.label }}" 
-                                 loading="lazy">
-                        {% endif %}
+                        {# L'image a été retirée ici #}
                         <span>{{ instant.label }}</span>
                     </label>
                 </div>
