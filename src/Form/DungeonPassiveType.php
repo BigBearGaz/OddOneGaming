@@ -19,25 +19,27 @@ class DungeonPassiveType extends AbstractType
                 'label' => 'Nom de la Passive',
                 'attr' => [
                     'placeholder' => 'Ex: Mythic Divinity, Venomous Breath',
-                    'class' => 'form-control'
-                ]
+                    'class' => 'form-control',
+                ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
                 'attr' => [
                     'placeholder' => 'Description complète de la passive...',
                     'rows' => 4,
-                    'class' => 'form-control'
-                ]
+                    'class' => 'form-control',
+                ],
             ])
             ->add('passiveOrder', IntegerType::class, [
                 'label' => 'Ordre',
+                'required' => false,
+                'empty_data' => '1',
                 'attr' => [
                     'min' => 1,
-                    'class' => 'form-control'
+                    'class' => 'form-control',
                 ],
-                'data' => 1
-            ]);
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

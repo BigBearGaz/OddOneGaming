@@ -66,14 +66,15 @@ class DungeonPhaseType extends AbstractType
             ])
 
             // ✅ IMPORTANT : passives dans le form
-            ->add('passives', CollectionType::class, [
-                'entry_type' => DungeonPassiveType::class,
-                'allow_add' => true,
-                'allow_delete' => true,
-                'by_reference' => false,
-                'prototype' => true,
-                'required' => false,
-            ])
+->add('passives', CollectionType::class, [
+    'entry_type' => DungeonPassiveType::class,
+    'mapped' => false,
+    'allow_add' => true,
+    'allow_delete' => true,
+    'by_reference' => false,
+    'prototype' => true,
+    'required' => false,
+])
         ;
     }
 
