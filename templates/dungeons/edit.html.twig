@@ -2,11 +2,11 @@
 
 {% block title %}New Dungeon{% endblock %}
 
-{# ============================= #}
-{#    CUSTOM FORM THEME          #}
-{# ============================= #}
 {% form_theme form _self %}
 
+{# -----------------------------
+   THEME OVERRIDES
+------------------------------ #}
 {% block form_row %}
     <div class="form-group mb-4">
         {{ form_label(form, null, {
@@ -36,18 +36,106 @@
     </div>
 {% endblock %}
 
+{# -----------------------------
+   MACROS (render phase + passives)
+------------------------------ #}
+{% macro renderPassive(passiveForm) %}
+    <div class="base-passive-item passive-item">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <strong>Passive</strong>
+            <button type="button" class="btn btn-danger btn-sm js-remove-passive">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
+
+        {# Adapte si ton DungeonPassiveType a d'autres champs #}
+        {% if passiveForm.name is defined %}{{ form_row(passiveForm.name) }}{% endif %}
+        {% if passiveForm.description is defined %}{{ form_row(passiveForm.description) }}{% endif %}
+        {% if passiveForm.orderNum is defined %}{{ form_row(passiveForm.orderNum) }}{% endif %}
+        {% if passiveForm.order is defined %}{{ form_row(passiveForm.order) }}{% endif %}
+    </div>
+{% endmacro %}
+
+{% macro renderPhase(phaseForm) %}
+    <div class="phase-item">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 js-phase-title">📍 Phase</h5>
+            <button type="button" class="btn btn-danger btn-sm js-remove-phase">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
+
+        {{ form_row(phaseForm.name) }}
+        {{ form_row(phaseForm.orderNum) }}
+
+        <hr class="my-4">
+
+        <div class="accordion" data-phase-accordion>
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#__PHASE_BODY__"
+                            aria-expanded="false">
+                        ⚔️ Spells / Overrides (ouvrir pour éditer)
+                    </button>
+                </h2>
+
+                <div id="__PHASE_BODY__" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+
+                        <h5 class="mb-3" style="color:#3b82f6;">Spell 1 (Override)</h5>
+                        {{ form_row(phaseForm.spell1NameOverride) }}
+                        {{ form_row(phaseForm.spell1DescriptionOverride) }}
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3" style="color:#10b981;">Spell 2 (Override)</h5>
+                        {{ form_row(phaseForm.spell2NameOverride) }}
+                        {{ form_row(phaseForm.spell2DescriptionOverride) }}
+                        {{ form_row(phaseForm.spell2CooldownOverride) }}
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3" style="color:#ef4444;">Spell 3 (Override)</h5>
+                        {{ form_row(phaseForm.spell3NameOverride) }}
+                        {{ form_row(phaseForm.spell3DescriptionOverride) }}
+                        {{ form_row(phaseForm.spell3CooldownOverride) }}
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0" style="color:#10b981;">🔮 Passives de la phase</h5>
+                            <button type="button" class="btn btn-success btn-sm js-add-passive">
+                                <i class="fas fa-plus"></i> Add passive
+                            </button>
+                        </div>
+
+                        <div class="phase-passives-container"
+                             data-index="{{ phaseForm.passives|length }}"
+                             data-prototype="{{ _self.renderPassive(phaseForm.passives.vars.prototype)|e('html_attr') }}">
+                            {% for passiveForm in phaseForm.passives %}
+                                {{ _self.renderPassive(passiveForm) }}
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ton CSS inchangé */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             overflow-x: hidden;
-            background: 
+            background:
                 linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%),
                 url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
             min-height: 100vh;
@@ -56,31 +144,16 @@
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
                 radial-gradient(circle at 20% 50%, rgba(0, 255, 100, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(0, 200, 255, 0.08) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
         }
 
-        .dungeon-form-section {
-            position: relative;
-            min-height: 100vh;
-            padding: 180px 0 80px 0;
-            z-index: 1;
-        }
-
-        .container-custom {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 40px;
-            position: relative;
-            z-index: 2;
-        }
+        .dungeon-form-section { position: relative; min-height: 100vh; padding: 180px 0 80px 0; z-index: 1; }
+        .container-custom { max-width: 1400px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 2; }
 
         .breadcrumb {
             background: rgba(255, 255, 255, 0.03);
@@ -91,24 +164,10 @@
             margin-bottom: 30px;
         }
 
-        .breadcrumb-item a {
-            color: #00ff88;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .breadcrumb-item a:hover {
-            color: #00ccff;
-        }
-
-        .breadcrumb-item.active {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .breadcrumb-item + .breadcrumb-item::before {
-            color: rgba(255, 255, 255, 0.5);
-        }
+        .breadcrumb-item a { color: #00ff88; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
+        .breadcrumb-item a:hover { color: #00ccff; }
+        .breadcrumb-item.active { color: rgba(255, 255, 255, 0.7); }
+        .breadcrumb-item + .breadcrumb-item::before { color: rgba(255, 255, 255, 0.5); }
 
         .card {
             background: rgba(255, 255, 255, 0.03);
@@ -116,26 +175,15 @@
             border-radius: 20px;
             border: 1px solid rgba(0, 255, 136, 0.2);
             margin-bottom: 30px;
-            overflow: hidden;
+            overflow: visible;
             transition: all 0.4s ease;
         }
 
-        .card:hover {
-            border-color: rgba(0, 255, 136, 0.4);
-            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.2);
-        }
+        .card:hover { border-color: rgba(0, 255, 136, 0.4); box-shadow: 0 20px 60px rgba(0, 255, 136, 0.2); }
 
-        .card-header {
-            border: none;
-            padding: 1.75rem 2rem;
-            position: relative;
-            overflow: hidden;
-        }
+        .card-header { border: none; padding: 1.75rem 2rem; position: relative; overflow: hidden; }
 
-        .card-header h2,
-        .card-header h3,
-        .card-header h4,
-        .card-header h5 {
+        .card-header h2, .card-header h3, .card-header h4, .card-header h5 {
             margin: 0;
             display: flex;
             align-items: center;
@@ -144,57 +192,21 @@
             color: #ffffff;
         }
 
-        .card-header h2 {
-            font-size: 1.75rem;
-        }
+        .card-header h2 { font-size: 1.75rem; }
+        .card-header h3 { font-size: 1.5rem; }
+        .card-header h4 { font-size: 1.25rem; }
+        .card-header h5 { font-size: 1.125rem; }
 
-        .card-header h3 {
-            font-size: 1.5rem;
-        }
+        .card-body { padding: 2.5rem; }
 
-        .card-header h4 {
-            font-size: 1.25rem;
-        }
-
-        .card-header h5 {
-            font-size: 1.125rem;
-        }
-
-        .card-body {
-            padding: 2.5rem;
-        }
-
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%) !important;
-        }
-
-        .bg-gradient-info {
-            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%) !important;
-        }
-
-        .bg-gradient-purple {
-            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%) !important;
-        }
-
-        .bg-gradient-warning {
-            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important;
-        }
-
-        .bg-gradient-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        }
-
-        .bg-gradient-dark {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
-        }
-
-        .bg-gradient-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-        }
-
-        .bg-gradient-cyan {
-            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
-        }
+        .bg-gradient-primary { background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%) !important; }
+        .bg-gradient-info { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%) !important; }
+        .bg-gradient-purple { background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%) !important; }
+        .bg-gradient-warning { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%) !important; }
+        .bg-gradient-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; }
+        .bg-gradient-dark { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important; }
+        .bg-gradient-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important; }
+        .bg-gradient-cyan { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important; }
 
         .form-label {
             font-weight: 700;
@@ -216,136 +228,17 @@
             transition: all 0.3s ease !important;
         }
 
-        .form-control:hover {
-            border-color: rgba(0, 255, 136, 0.3) !important;
-            background-color: rgba(255, 255, 255, 0.08) !important;
-        }
+        .form-control:hover { border-color: rgba(0, 255, 136, 0.3) !important; background-color: rgba(255, 255, 255, 0.08) !important; }
 
         .form-control:focus {
             border-color: #00ff88 !important;
             background-color: rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1),
-                        0 8px 25px rgba(0, 255, 136, 0.15) !important;
+            box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.1), 0 8px 25px rgba(0, 255, 136, 0.15) !important;
             outline: none;
         }
 
-        textarea.form-control {
-            min-height: 120px !important;
-            resize: vertical;
-        }
+        textarea.form-control { min-height: 120px !important; resize: vertical; }
 
-        /* Radio buttons for difficulty */
-        .difficulty-radio-group {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            padding: 0;
-            margin: 0;
-        }
-
-        .difficulty-radio-group .radio-item {
-            position: relative;
-            flex: 1;
-            min-width: 140px;
-        }
-
-        .difficulty-radio-group input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            width: 0;
-            height: 0;
-        }
-
-        .difficulty-radio-group label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem 1.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.7);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.9rem;
-            width: 100%;
-            margin: 0;
-        }
-
-        .difficulty-radio-group label:hover {
-            border-color: #00ff88;
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
-        }
-
-        .difficulty-radio-group input[type="radio"]:checked + label {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4);
-        }
-
-        /* Specific colors by difficulty */
-        .difficulty-radio-group input[value="Easy"]:checked + label {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-color: #10b981;
-            color: #ffffff;
-        }
-
-        .difficulty-radio-group input[value="Normal"]:checked + label {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            border-color: #3b82f6;
-            color: #ffffff;
-        }
-
-        .difficulty-radio-group input[value="Hard"]:checked + label {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            border-color: #f59e0b;
-            color: #ffffff;
-        }
-
-        .difficulty-radio-group input[value="Hell"]:checked + label {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            border-color: #ef4444;
-            color: #ffffff;
-        }
-
-        /* Icons for each difficulty */
-        .difficulty-radio-group input[value="Easy"] + label::before {
-            content: "😊 ";
-            margin-right: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .difficulty-radio-group input[value="Normal"] + label::before {
-            content: "⚡ ";
-            margin-right: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .difficulty-radio-group input[value="Hard"] + label::before {
-            content: "🔥 ";
-            margin-right: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        .difficulty-radio-group input[value="Hell"] + label::before {
-            content: "💀 ";
-            margin-right: 0.5rem;
-            font-size: 1.2rem;
-        }
-
-        /* Focus for accessibility */
-        .difficulty-radio-group input[type="radio"]:focus + label {
-            outline: 2px solid #00ff88;
-            outline-offset: 2px;
-        }
-
-        /* Phase Item */
         .phase-item {
             background: rgba(13, 110, 253, 0.05);
             backdrop-filter: blur(10px);
@@ -356,19 +249,9 @@
             transition: all 0.3s ease;
         }
 
-        .phase-item:hover {
-            border-color: rgba(13, 110, 253, 0.5) !important;
-            box-shadow: 0 10px 40px rgba(13, 110, 253, 0.2);
-            transform: translateY(-2px);
-        }
+        .phase-item:hover { border-color: rgba(13, 110, 253, 0.5) !important; box-shadow: 0 10px 40px rgba(13, 110, 253, 0.2); transform: translateY(-2px); }
+        .phase-item h5 { color: #3b82f6; font-weight: 700; margin-bottom: 1.5rem; }
 
-        .phase-item h5 {
-            color: #3b82f6;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Base Passive Item */
         .base-passive-item {
             background: rgba(16, 185, 129, 0.05);
             backdrop-filter: blur(10px);
@@ -378,76 +261,16 @@
             transition: all 0.3s ease;
         }
 
-        .base-passive-item:hover {
-            border-color: rgba(16, 185, 129, 0.5) !important;
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
-        }
+        .base-passive-item:hover { border-color: rgba(16, 185, 129, 0.5) !important; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2); }
+        .base-passive-item strong { color: #10b981; }
 
-        .base-passive-item strong {
-            color: #10b981;
-        }
+        .accordion { background: transparent; }
+        .accordion-item { background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px !important; overflow: hidden; margin-bottom: 0.5rem; }
+        .accordion-button { background: rgba(255, 255, 255, 0.03); color: rgba(255, 255, 255, 0.9); font-weight: 600; border: none; padding: 1rem 1.5rem; }
+        .accordion-button:not(.collapsed) { background: rgba(13, 110, 253, 0.15); color: #3b82f6; box-shadow: none; }
+        .accordion-button:focus { box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); border-color: transparent; }
+        .accordion-body { background: rgba(0, 0, 0, 0.3); padding: 1.5rem; }
 
-        /* Phase Passive Item */
-        .phase-passive-item {
-            background: rgba(168, 85, 247, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(168, 85, 247, 0.3) !important;
-            border-radius: 10px;
-            padding: 1.25rem;
-            transition: all 0.3s ease;
-        }
-
-        .phase-passive-item:hover {
-            border-color: rgba(168, 85, 247, 0.5) !important;
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.2);
-        }
-
-        .phase-passive-item strong {
-            color: #a855f7;
-        }
-
-        /* Accordion */
-        .accordion {
-            background: transparent;
-        }
-
-        .accordion-item {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px !important;
-            overflow: hidden;
-            margin-bottom: 0.5rem;
-        }
-
-        .accordion-button {
-            background: rgba(255, 255, 255, 0.03);
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 600;
-            border: none;
-            padding: 1rem 1.5rem;
-        }
-
-        .accordion-button:not(.collapsed) {
-            background: rgba(13, 110, 253, 0.15);
-            color: #3b82f6;
-            box-shadow: none;
-        }
-
-        .accordion-button:focus {
-            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
-            border-color: transparent;
-        }
-
-        .accordion-button::after {
-            filter: brightness(0) saturate(100%) invert(65%) sepia(99%) saturate(2686%) hue-rotate(169deg) brightness(102%) contrast(101%);
-        }
-
-        .accordion-body {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 1.5rem;
-        }
-
-        /* Buttons */
         .btn {
             padding: 1rem 2.5rem;
             border-radius: 50px;
@@ -461,112 +284,32 @@
             gap: 0.625rem;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
-            color: #0a0e27;
-            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
-        }
+        .btn-primary { background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%); color: #0a0e27; box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3); }
+        .btn-primary:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 40px rgba(0, 255, 136, 0.5); color: #0a0e27; }
 
-        .btn-primary:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.5);
-            color: #0a0e27;
-        }
+        .btn-secondary { background: rgba(255, 255, 255, 0.05); color: #ffffff; border: 2px solid rgba(255, 255, 255, 0.2); }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: #00ff88; color: #00ff88; transform: translateY(-2px); }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: #ffffff;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); padding: 0.75rem 1.5rem; font-size: 0.9rem; }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5); color: #ffffff; }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #00ff88;
-            color: #00ff88;
-            transform: translateY(-2px);
-        }
+        .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; padding: 0.75rem 1.5rem; font-size: 0.9rem; }
+        .btn-danger:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5); color: #ffffff; }
 
-        .btn-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
-            padding: 0.75rem 1.5rem;
-            font-size: 0.9rem;
-        }
+        .btn-light { background: rgba(255, 255, 255, 0.9); color: #0a0e27; font-weight: 700; }
+        .btn-light:hover { background: #ffffff; color: #0a0e27; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3); }
 
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
-            color: #ffffff;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: #ffffff;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.9rem;
-        }
-
-        .btn-danger:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
-            color: #ffffff;
-        }
-
-        .btn-light {
-            background: rgba(255, 255, 255, 0.9);
-            color: #0a0e27;
-            font-weight: 700;
-        }
-
-        .btn-light:hover {
-            background: #ffffff;
-            color: #0a0e27;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-sm {
-            padding: 0.5rem 1.25rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-lg {
-            padding: 1.25rem 3rem;
-            font-size: 1.125rem;
-        }
+        .btn-sm { padding: 0.5rem 1.25rem; font-size: 0.875rem; }
+        .btn-lg { padding: 1.25rem 3rem; font-size: 1.125rem; }
 
         @media (max-width: 768px) {
-            .container-custom {
-                padding: 0 20px;
-            }
-
-            .card-body {
-                padding: 1.5rem;
-            }
-
-            .card-header {
-                padding: 1.25rem 1.5rem;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-                margin-bottom: 0.5rem;
-            }
-
-            .phase-item,
-            .base-passive-item {
-                padding: 1.25rem;
-            }
-
-            .difficulty-radio-group {
-                flex-direction: column;
-            }
-
-            .difficulty-radio-group .radio-item {
-                width: 100%;
-            }
+            .container-custom { padding: 0 20px; }
+            .card-body { padding: 1.5rem; }
+            .card-header { padding: 1.25rem 1.5rem; }
+            .btn { width: 100%; justify-content: center; margin-bottom: 0.5rem; }
+            .phase-item, .base-passive-item { padding: 1.25rem; }
+            .difficulty-radio-group { flex-direction: column; }
+            .difficulty-radio-group .radio-item { width: 100%; }
         }
     </style>
 {% endblock %}
@@ -574,6 +317,7 @@
 {% block body %}
 <div class="dungeon-form-section">
     <div class="container-custom">
+
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
@@ -581,9 +325,7 @@
                         <i class="fas fa-home me-2"></i>Dungeons
                     </a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    New
-                </li>
+                <li class="breadcrumb-item active" aria-current="page">New</li>
             </ol>
         </nav>
 
@@ -595,10 +337,10 @@
                 </h2>
             </div>
 
-            <div class="card-body">
-                {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'dungeon-form'}}) }}
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'dungeon-form'}}) }}
 
-                {# GENERAL INFORMATION #}
+            <div class="card-body">
+
                 <div class="card">
                     <div class="card-header bg-gradient-info">
                         <h4>
@@ -614,7 +356,6 @@
                     </div>
                 </div>
 
-                {# BASE ABILITIES #}
                 <div class="card">
                     <div class="card-header bg-gradient-warning">
                         <h4>
@@ -622,22 +363,23 @@
                             <span>Base Abilities</span>
                         </h4>
                     </div>
+
                     <div class="card-body">
                         <h5 class="mb-3" style="color: #fbbf24;">Spells</h5>
-                        
+
                         <div class="mb-4 pb-3 border-bottom border-secondary">
                             <strong style="color: #3b82f6;">Spell 1 (Basic)</strong>
                             {{ form_row(form.spell1Name) }}
                             {{ form_row(form.spell1Description) }}
                         </div>
-                        
+
                         <div class="mb-4 pb-3 border-bottom border-secondary">
                             <strong style="color: #10b981;">Spell 2 (Core)</strong>
                             {{ form_row(form.spell2Name) }}
                             {{ form_row(form.spell2Description) }}
                             {{ form_row(form.spell2Cooldown) }}
                         </div>
-                        
+
                         <div class="mb-5 pb-3 border-bottom border-secondary">
                             <strong style="color: #ef4444;">Spell 3 (Ultimate)</strong>
                             {{ form_row(form.spell3Name) }}
@@ -653,8 +395,8 @@
                                 <i class="fas fa-plus"></i> Add
                             </button>
                         </div>
-                        <div id="base-passives-container" data-index="0">
-                        </div>
+
+                        <div id="base-passives-container"></div>
                     </div>
                 </div>
 
@@ -669,14 +411,18 @@
                             <i class="fas fa-plus"></i> Add Phase
                         </button>
                     </div>
-                    <div class="card-body">
-                        <div id="phases-container" data-index="0">
-                        </div>
+
+                    <div class="card-body"
+                         id="phases-container"
+                         data-index="{{ form.phases|length }}"
+                         data-prototype="{{ _self.renderPhase(form.phases.vars.prototype)|e('html_attr') }}">
+                        {% for phaseForm in form.phases %}
+                            {{ _self.renderPhase(phaseForm) }}
+                        {% endfor %}
                     </div>
                 </div>
 
-                {# ACTIONS #}
-                <div class="d-flex gap-3 justify-content-center mt-5">
+                <div class="d-flex gap-3 justify-content-center mt-5 pt-4 border-top border-secondary">
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i class="fas fa-save"></i>
                         <span>Create Dungeon</span>
@@ -687,8 +433,11 @@
                     </a>
                 </div>
 
-                {{ form_end(form) }}
             </div>
+
+            {# IMPORTANT: pas de double render #}
+            {{ form_widget(form._token) }}
+            {{ form_end(form, { render_rest: false }) }}
         </div>
     </div>
 </div>
@@ -697,176 +446,113 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        let phaseIndex = 0;
-        let basePassiveIndex = 0;
-        let phasePassiveIndexes = {};
+        const phasesContainer = document.getElementById('phases-container');
+        const addPhaseBtn = document.getElementById('add-phase');
 
-        // ========== BASE PASSIVES ==========
-        document.getElementById('add-base-passive').addEventListener('click', function() {
-            const container = document.getElementById('base-passives-container');
-            
-            const wrapper = document.createElement('div');
-            wrapper.classList.add('base-passive-item', 'mb-3');
-            
-            wrapper.innerHTML = `
-                <div class="d-flex justify-content-between mb-2">
-                    <strong>💫 Base Passive #${basePassiveIndex + 1}</strong>
-                    <button type="button" class="btn btn-danger btn-sm remove-base-passive">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Passive Name</label>
-                    <input type="text" name="dungeons[passives][${basePassiveIndex}][name]" class="form-control" placeholder="E.g.: Immortal, Regeneration">
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Description</label>
-                    <textarea name="dungeons[passives][${basePassiveIndex}][description]" class="form-control" rows="3" placeholder="Passive description..."></textarea>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Order</label>
-                    <input type="number" name="dungeons[passives][${basePassiveIndex}][passiveOrder]" class="form-control" value="${basePassiveIndex + 1}" min="1">
-                </div>
-            `;
-            
-            container.appendChild(wrapper);
-            
-            wrapper.querySelector('.remove-base-passive').addEventListener('click', function() {
-                wrapper.remove();
+        function bindRemovePhaseButtons(root = document) {
+            root.querySelectorAll('.js-remove-phase').forEach(btn => {
+                if (btn.dataset.bound === '1') return;
+                btn.dataset.bound = '1';
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    btn.closest('.phase-item')?.remove();
+                });
             });
-            
-            basePassiveIndex++;
-        });
-
-        // ========== PHASES ==========
-        document.getElementById('add-phase').addEventListener('click', function() {
-            const container = document.getElementById('phases-container');
-            
-            const wrapper = document.createElement('div');
-            wrapper.classList.add('phase-item');
-            wrapper.dataset.phaseIndex = phaseIndex;
-            
-            phasePassiveIndexes[phaseIndex] = 0;
-            
-            wrapper.innerHTML = `
-                <div class="d-flex justify-content-between mb-3">
-                    <h5 class="mb-0">📍 Phase #${phaseIndex + 1}</h5>
-                    <button type="button" class="btn btn-danger btn-sm remove-phase">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-                
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Phase Name</label>
-                        <input type="text" name="dungeons[phases][${phaseIndex}][name]" class="form-control" placeholder="E.g.: Exhausted, Enraged">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Order</label>
-                        <input type="number" name="dungeons[phases][${phaseIndex}][orderNum]" class="form-control" value="${phaseIndex + 1}" min="1">
-                    </div>
-                </div>
-
-                <div class="accordion mb-3" id="accordion-phase-${phaseIndex}">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-spells-${phaseIndex}">
-                                ⚔️ Modify Spells (optional)
-                            </button>
-                        </h2>
-                        <div id="collapse-spells-${phaseIndex}" class="accordion-collapse collapse">
-                            <div class="accordion-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Spell 1 - Name Override</label>
-                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell1NameOverride]" class="form-control mb-2" placeholder="Leave empty to use base spell">
-                                    <label class="form-label">Spell 1 - Description Override</label>
-                                    <textarea name="dungeons[phases][${phaseIndex}][spell1DescriptionOverride]" class="form-control" rows="2"></textarea>
-                                </div>
-                                <hr>
-                                <div class="mb-3">
-                                    <label class="form-label">Spell 2 - Name Override</label>
-                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell2NameOverride]" class="form-control mb-2" placeholder="Leave empty to use base spell">
-                                    <label class="form-label">Spell 2 - Description Override</label>
-                                    <textarea name="dungeons[phases][${phaseIndex}][spell2DescriptionOverride]" class="form-control mb-2" rows="2"></textarea>
-                                    <label class="form-label">Spell 2 - Cooldown Override</label>
-                                    <input type="number" name="dungeons[phases][${phaseIndex}][spell2CooldownOverride]" class="form-control" min="0">
-                                </div>
-                                <hr>
-                                <div class="mb-3">
-                                    <label class="form-label">Spell 3 - Name Override</label>
-                                    <input type="text" name="dungeons[phases][${phaseIndex}][spell3NameOverride]" class="form-control mb-2" placeholder="Leave empty to use base spell">
-                                    <label class="form-label">Spell 3 - Description Override</label>
-                                    <textarea name="dungeons[phases][${phaseIndex}][spell3DescriptionOverride]" class="form-control mb-2" rows="2"></textarea>
-                                    <label class="form-label">Spell 3 - Cooldown Override</label>
-                                    <input type="number" name="dungeons[phases][${phaseIndex}][spell3CooldownOverride]" class="form-control" min="0">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0" style="color: #a855f7;">🔮 Passives for this phase</h6>
-                        <button type="button" class="btn btn-success btn-sm add-phase-passive" data-phase-index="${phaseIndex}">
-                            <i class="fas fa-plus"></i> Add
-                        </button>
-                    </div>
-                    <div class="phase-passives-container" data-phase-index="${phaseIndex}">
-                    </div>
-                </div>
-            `;
-            
-            container.appendChild(wrapper);
-            
-            wrapper.querySelector('.remove-phase').addEventListener('click', function() {
-                wrapper.remove();
-            });
-            
-            wrapper.querySelector('.add-phase-passive').addEventListener('click', function() {
-                const currentPhaseIndex = parseInt(this.dataset.phaseIndex);
-                addPassiveToPhase(currentPhaseIndex);
-            });
-            
-            phaseIndex++;
-        });
-
-        function addPassiveToPhase(phaseIdx) {
-            const passiveIdx = phasePassiveIndexes[phaseIdx];
-            const phaseElement = document.querySelector(`.phase-item[data-phase-index="${phaseIdx}"]`);
-            const passivesContainer = phaseElement.querySelector('.phase-passives-container');
-            
-            const wrapper = document.createElement('div');
-            wrapper.classList.add('phase-passive-item', 'mb-3');
-            
-            wrapper.innerHTML = `
-                <div class="d-flex justify-content-between mb-2">
-                    <strong>💫 Passive #${passiveIdx + 1}</strong>
-                    <button type="button" class="btn btn-danger btn-sm remove-phase-passive">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Passive Name</label>
-                    <input type="text" name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][name]" class="form-control" placeholder="E.g.: Exhausted, Enraged">
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Description</label>
-                    <textarea name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][description]" class="form-control" rows="3" placeholder="Passive description..."></textarea>
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Order</label>
-                    <input type="number" name="dungeons[phases][${phaseIdx}][passives][${passiveIdx}][passiveOrder]" class="form-control" value="${passiveIdx + 1}" min="1">
-                </div>
-            `;
-            
-            passivesContainer.appendChild(wrapper);
-            
-            wrapper.querySelector('.remove-phase-passive').addEventListener('click', function() {
-                wrapper.remove();
-            });
-            
-            phasePassiveIndexes[phaseIdx]++;
         }
+
+        function bindPassives(root = document) {
+            // delete passive
+            root.querySelectorAll('.js-remove-passive').forEach(btn => {
+                if (btn.dataset.bound === '1') return;
+                btn.dataset.bound = '1';
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    btn.closest('.passive-item')?.remove();
+                });
+            });
+
+            // add passive (par phase)
+            root.querySelectorAll('.js-add-passive').forEach(btn => {
+                if (btn.dataset.bound === '1') return;
+                btn.dataset.bound = '1';
+
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    const phaseItem = btn.closest('.phase-item');
+                    if (!phaseItem) return;
+
+                    const passivesContainer = phaseItem.querySelector('.phase-passives-container');
+                    if (!passivesContainer) return;
+
+                    const prototype = passivesContainer.dataset.prototype;
+                    const index = parseInt(passivesContainer.dataset.index, 10);
+
+                    const html = prototype.replace(/__name__/g, index);
+
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = html;
+
+                    // wrapper.innerHTML contient déjà un .passive-item (macro)
+                    passivesContainer.appendChild(wrapper.firstElementChild);
+
+                    passivesContainer.dataset.index = index + 1;
+
+                    bindPassives(passivesContainer);
+                });
+            });
+        }
+
+        function normalizeNewPhaseIds(phaseEl, index) {
+            // remplace l'id placeholder __PHASE_BODY__ par un id unique
+            const collapse = phaseEl.querySelector('#__PHASE_BODY__');
+            const btn = phaseEl.querySelector('[data-bs-target="#__PHASE_BODY__"]');
+
+            if (collapse && btn) {
+                const id = 'phase-collapse-' + index;
+                collapse.id = id;
+                btn.setAttribute('data-bs-target', '#' + id);
+                btn.setAttribute('aria-controls', id);
+            }
+
+            const title = phaseEl.querySelector('.js-phase-title');
+            if (title) title.textContent = '📍 Phase #' + (index + 1);
+        }
+
+        function initExisting() {
+            if (!phasesContainer) return;
+
+            // Fix IDs pour les phases déjà rendues (sinon tous auraient __PHASE_BODY__)
+            phasesContainer.querySelectorAll('.phase-item').forEach((phaseEl, idx) => {
+                normalizeNewPhaseIds(phaseEl, idx);
+            });
+
+            bindRemovePhaseButtons(phasesContainer);
+            bindPassives(phasesContainer);
+        }
+
+        initExisting();
+
+        addPhaseBtn?.addEventListener('click', () => {
+            if (!phasesContainer) return;
+
+            const prototype = phasesContainer.dataset.prototype;
+            const index = parseInt(phasesContainer.dataset.index, 10);
+
+            const html = prototype.replace(/__name__/g, index);
+
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+
+            const newPhaseEl = temp.firstElementChild;
+            phasesContainer.appendChild(newPhaseEl);
+
+            normalizeNewPhaseIds(newPhaseEl, index);
+
+            phasesContainer.dataset.index = index + 1;
+
+            bindRemovePhaseButtons(newPhaseEl);
+            bindPassives(newPhaseEl);
+        });
     </script>
 {% endblock %}

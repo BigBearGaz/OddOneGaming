@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Dungeons;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -16,7 +17,6 @@ class DungeonsType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            // ========== INFOS DUNGEON ==========
             ->add('name', TextType::class, [
                 'label' => 'Nom du Donjon / Boss',
                 'attr' => ['placeholder' => 'Ex: Fafnir', 'class' => 'form-control']
@@ -45,8 +45,8 @@ class DungeonsType extends AbstractType
                 'placeholder' => false,
                 'attr' => ['class' => 'difficulty-radio-group']
             ])
-            
-            // ========== SPELL 1 (Basic) ==========
+
+            // spells…
             ->add('spell1Name', TextType::class, [
                 'label' => 'Spell 1 - Nom',
                 'required' => false,
@@ -57,8 +57,6 @@ class DungeonsType extends AbstractType
                 'required' => false,
                 'attr' => ['rows' => 3, 'class' => 'form-control']
             ])
-            
-            // ========== SPELL 2 (Core) ==========
             ->add('spell2Name', TextType::class, [
                 'label' => 'Spell 2 - Nom',
                 'required' => false,
@@ -74,8 +72,6 @@ class DungeonsType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'min' => 0, 'placeholder' => 'Ex: 3']
             ])
-            
-            // ========== SPELL 3 (Ultimate) ==========
             ->add('spell3Name', TextType::class, [
                 'label' => 'Spell 3 - Nom',
                 'required' => false,
@@ -90,16 +86,26 @@ class DungeonsType extends AbstractType
                 'label' => 'Cooldown',
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'min' => 0, 'placeholder' => 'Ex: 0']
-            ]);
-        
-        // Les passives et phases sont gérées en JavaScript
+            ])
+
+            // ✅ IMPORTANT : phases dans le form
+            ->add('phases', CollectionType::class, [
+                'entry_type' => DungeonPhaseType::class,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false,
+                'prototype' => true,
+                'required' => false,
+            ])
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Dungeons::class,
-            'allow_extra_fields' => true,  // ✅ AUTORISE LES CHAMPS SUPPLÉMENTAIRES (phases, passives)
+            // ⛔ retire allow_extra_fields, sinon tu ne vois pas quand ton JS envoie un truc cassé
+            'allow_extra_fields' => false,
         ]);
     }
 }
