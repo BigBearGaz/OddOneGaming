@@ -1,0 +1,182 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modify Relic | OddOneGaming{% endblock %}
+
+{% block stylesheets %}
+<style>
+    body { 
+        background-color: #0a0f18; 
+        color: #ffffff !important; 
+        font-family: 'Poppins', sans-serif;
+        padding-top: 160px !important;
+    }
+
+    .forge-container {
+        max-width: 700px;
+        margin: 0 auto;
+        background: #000000;
+        border: 2px solid #2ecc71;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 0 30px rgba(46, 204, 113, 0.15);
+    }
+
+    .main-title {
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 2.8rem;
+        font-weight: 900;
+        color: #ffffff;
+        text-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
+        margin-bottom: 5px;
+    }
+
+    .sub-title {
+        text-align: center;
+        color: #2ecc71;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 3px;
+        margin-bottom: 40px;
+        display: block;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        color: #888;
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        transition: 0.3s;
+    }
+    .btn-back:hover { color: #2ecc71; }
+
+    /* FORM STYLING (Shared with New) */
+    form label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 700;
+        color: #2ecc71;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+
+    form input, form select, form textarea {
+        width: 100%;
+        background: #111 !important;
+        border: 1px solid #333 !important;
+        border-radius: 12px !important;
+        padding: 14px 18px !important;
+        color: white !important;
+        margin-bottom: 25px !important;
+        outline: none !important;
+        transition: 0.3s;
+    }
+
+    form input:focus { border-color: #2ecc71 !important; }
+
+    /* RARITY SELECTOR (Must match New page) */
+    #weapons_rarity {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    #weapons_rarity div { flex: 1; }
+    #weapons_rarity input[type="radio"] { display: none; }
+    #weapons_rarity label {
+        display: block;
+        text-align: center;
+        padding: 15px 10px;
+        background: #111;
+        border: 2px solid #333;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.3s;
+        color: #888;
+        font-weight: 900;
+    }
+
+    #weapons_rarity input[value="Rare"]:checked + label {
+        border-color: #3b82f6; color: #3b82f6; background: rgba(59, 130, 246, 0.1);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+    #weapons_rarity input[value="Epic"]:checked + label {
+        border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.1);
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+    }
+    #weapons_rarity input[value="Legendary"]:checked + label {
+        border-color: #ffae00; color: #ffae00; background: rgba(255, 174, 0, 0.1);
+        box-shadow: 0 0 15px rgba(255, 174, 0, 0.3);
+    }
+
+    /* BUTTONS */
+    .btn-save {
+        background: #2ecc71 !important;
+        color: #000 !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        padding: 18px !important;
+        border: none !important;
+        border-radius: 14px !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        transition: 0.3s;
+        font-size: 1rem;
+    }
+
+    .btn-save:hover {
+        background: #27ae60 !important;
+        box-shadow: 0 0 25px rgba(46, 204, 113, 0.4);
+    }
+
+    /* DELETE SECTION */
+    .delete-area {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #222;
+        text-align: center;
+    }
+
+    /* Target the button inside delete_form */
+    .delete-area button {
+        background: transparent !important;
+        border: 1px solid #ff4444 !important;
+        color: #ff4444 !important;
+        padding: 10px 20px !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        font-weight: bold !important;
+        text-transform: uppercase !important;
+        font-size: 0.75rem !important;
+        transition: 0.3s !important;
+    }
+
+    .delete-area button:hover {
+        background: #ff4444 !important;
+        color: #fff !important;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <a href="{{ path('app_weapons_index') }}" class="btn-back">
+        ← Back to Arsenal
+    </a>
+
+    <div class="forge-container">
+        <h1 class="main-title">Modify Relic</h1>
+        <span class="sub-title">Reforging {{ weapon.name }}</span>
+
+        {{ include('weapons/_form.html.twig', {'button_label': 'Update Relic'}) }}
+
+        <div class="delete-area">
+            {{ include('weapons/_delete_form.html.twig') }}
+        </div>
+    </div>
+</div>
+{% endblock %}

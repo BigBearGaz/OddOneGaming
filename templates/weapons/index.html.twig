@@ -1,0 +1,241 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Godforge Arsenal | OddOneGaming{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* 1. ESPACEMENT GLOBAL POUR LA NAV */
+    body { 
+        background-color: #0a0f18; 
+        color: #ffffff !important; 
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        /* On pousse tout le contenu pour laisser la place à ta barre de menu */
+        padding-top: 180px !important; 
+    }
+
+    .container { 
+        max-width: 1250px; 
+        margin: 0 auto; 
+        padding: 0 20px;
+    }
+
+    /* 2. TITRES */
+    .main-title {
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #ffffff !important;
+        text-shadow: 0 0 20px rgba(46, 204, 113, 0.8);
+        margin-bottom: 5px;
+    }
+
+    .sub-title {
+        text-align: center;
+        color: #2ecc71 !important;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 50px;
+        font-weight: bold;
+    }
+
+    /* 3. FILTRES - NOIR PUR & BORDURE VERTE */
+    .filter-bar {
+        background: #000000; 
+        border: 2px solid #2ecc71;
+        padding: 25px;
+        border-radius: 20px;
+        margin-bottom: 50px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .filter-input {
+        background: #111;
+        border: 1px solid #555;
+        color: #ffffff !important;
+        padding: 12px 20px;
+        border-radius: 10px;
+        min-width: 220px;
+    }
+
+    /* 4. GRILLE ET CARTES */
+    .weapon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 35px;
+    }
+
+    .weapon-card {
+        background: #000000 !important; /* Fond noir pour le contraste */
+        border: 1px solid #333;
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .weapon-card:hover { 
+        transform: translateY(-10px); 
+        border-color: #2ecc71; 
+    }
+
+    /* 5. BADGES DE RARETÉ */
+    .rarity-badge {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+    .legendary { background: #ffae00 !important; color: #000 !important; box-shadow: 0 0 15px #ffae00; }
+    .epic { background: #a855f7 !important; color: #fff !important; box-shadow: 0 0 15px #a855f7; }
+    .rare { background: #3b82f6 !important; color: #fff !important; box-shadow: 0 0 15px #3b82f6; }
+
+    /* 6. TYPOGRAPHIE INTERNE */
+    .weapon-name { 
+        color: #ffffff !important; 
+        font-size: 1.8rem; 
+        font-weight: 800; 
+        margin: 15px 0 5px 0;
+        display: block;
+    }
+
+    .stat-box {
+        color: #38bdf8 !important;
+        font-weight: bold;
+        border: 1px solid #38bdf8;
+        padding: 6px 12px;
+        display: inline-block;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background: rgba(56, 189, 248, 0.1);
+    }
+
+    .weapon-desc { 
+        color: #ffffff !important; 
+        font-size: 0.95rem; 
+        line-height: 1.6;
+        opacity: 0.95;
+    }
+
+    .faction-label { 
+        color: #888 !important; 
+        font-weight: bold; 
+        font-size: 0.8rem; 
+        text-transform: uppercase; 
+    }
+
+    /* 7. BOUTONS ADMIN */
+    .btn-forge { 
+        background: #2ecc71; 
+        color: #000 !important; 
+        font-weight: 900; 
+        padding: 14px 30px; 
+        border-radius: 12px; 
+        text-decoration: none; 
+    }
+    
+    .card-actions { 
+        display: flex; 
+        border-top: 1px solid #222; 
+        margin-top: auto;
+    }
+
+    .card-btn { 
+        flex: 1; 
+        text-align: center; 
+        padding: 18px; 
+        text-decoration: none; 
+        font-weight: 800; 
+        color: #ffffff !important; 
+        background: #4f46e5; 
+        font-size: 0.85rem; 
+    }
+    .card-btn:hover { background: #4338ca; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1 class="main-title">Godforge Arsenal</h1>
+    
+    <div class="filter-bar">
+        <input type="text" id="nameFilter" placeholder="Search weapon..." class="filter-input" onkeyup="filterWeapons()">
+        
+        <select id="rarityFilter" class="filter-input" onchange="filterWeapons()">
+            <option value="">All Rarities</option>
+            <option value="Legendary">Legendary</option>
+            <option value="Epic">Epic</option>
+            <option value="Rare">Rare</option>
+        </select>
+
+        <select id="factionFilter" class="filter-input" onchange="filterWeapons()">
+            <option value="">All Factions</option>
+            {% set factions = [] %}
+            {% for weapon in weapons %}
+                {% if weapon.faction not in factions %}
+                    {% set factions = factions|merge([weapon.faction]) %}
+                    <option value="{{ weapon.faction }}">{{ weapon.faction }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_weapons_new') }}" class="btn-forge">FORGE ITEM</a>
+        {% endif %}
+    </div>
+
+    <div class="weapon-grid" id="weaponGrid">
+        {% for weapon in weapons %}
+            <div class="weapon-card" 
+                 data-name="{{ weapon.name|lower }}" 
+                 data-rarity="{{ weapon.rarity }}" 
+                 data-faction="{{ weapon.faction }}">
+                
+                <div class="image-container" style="height: 260px; background: #000;">
+                    <img src="{{ weapon.imageUrl }}" alt="{{ weapon.name }}" style="width: 100%; height: 100%; object-fit: contain; padding: 15px;">
+                </div>
+                
+                <div class="card-content" style="padding: 25px; flex-grow: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="rarity-badge {{ weapon.rarity|lower }}">{{ weapon.rarity }}</span>
+                        <span class="faction-label">{{ weapon.faction }}</span>
+                    </div>
+
+                    <span class="weapon-name">{{ weapon.name }}</span>
+                    <div class="stat-box">Main Stat: {{ weapon.mainStat }}</div>
+                    <p class="weapon-desc">{{ weapon.description }}</p>
+                </div>
+
+                {% if is_granted('ROLE_ADMIN') %}
+                <div class="card-actions">
+                    <a href="{{ path('app_weapons_edit', {'id': weapon.id}) }}" class="card-btn">EDIT</a>
+                </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function filterWeapons() {
+    let name = document.getElementById('nameFilter').value.toLowerCase();
+    let rarity = document.getElementById('rarityFilter').value;
+    let faction = document.getElementById('factionFilter').value;
+    let cards = document.getElementsByClassName('weapon-card');
+
+    for (let card of cards) {
+        let nMatch = card.getAttribute('data-name').includes(name);
+        let rMatch = rarity === "" || card.getAttribute('data-rarity') === rarity;
+        let fMatch = faction === "" || card.getAttribute('data-faction') === faction;
+        card.style.display = (nMatch && rMatch && fMatch) ? "flex" : "none";
+    }
+}
+</script>
+{% endblock %}

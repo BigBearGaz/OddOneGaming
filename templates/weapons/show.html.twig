@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Weapons{% endblock %}
+
+{% block body %}
+    <h1>Weapons</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ weapon.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ weapon.name }}</td>
+            </tr>
+            <tr>
+                <th>Rarity</th>
+                <td>{{ weapon.rarity }}</td>
+            </tr>
+            <tr>
+                <th>MainStat</th>
+                <td>{{ weapon.mainStat }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ weapon.description }}</td>
+            </tr>
+            <tr>
+                <th>Faction</th>
+                <td>{{ weapon.faction }}</td>
+            </tr>
+            <tr>
+                <th>ImageUrl</th>
+                <td>{{ weapon.imageUrl }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_weapons_index') }}">back to list</a>
+
+    <a href="{{ path('app_weapons_edit', {'id': weapon.id}) }}">edit</a>
+
+    {{ include('weapons/_delete_form.html.twig') }}
+{% endblock %}
