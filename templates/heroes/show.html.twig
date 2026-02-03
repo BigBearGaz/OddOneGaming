@@ -1739,23 +1739,19 @@
 
 {% block javascripts %}
   {{ parent() }}
-  {{ encore_entry_script_tags('app') }}
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-
-      // Évite double init si la page ré-exécute le script
+    document.addEventListener('DOMContentLoaded', () => {
+      // Evite double init si la page ré-exécute le script
       if (window.__skillTooltipInitialized) return;
       window.__skillTooltipInitialized = true;
 
-      const isTouchDevice = () =>
+      const isTouch =
         ('ontouchstart' in window) ||
         (navigator.maxTouchPoints > 0) ||
         (navigator.msMaxTouchPoints > 0);
 
-      const isTouch = isTouchDevice();
-
-      // ===== ÉLÉMENTS DOM (singleton) =====
+      // ---------- DOM singletons ----------
       let tooltip = document.querySelector('.skill-tooltip');
       if (!tooltip) {
         tooltip = document.createElement('div');
@@ -1790,77 +1786,89 @@
       const modalBody     = modalOverlay.querySelector('#modalBody');
       const closeBtn      = modalOverlay.querySelector('.skill-modal-close');
 
-      let activeEffect = null;
+      // ---------- State ----------
+      let activeEl = null;
       let tooltipTimeout = null;
 
+      // ---------- Helpers ----------
       const findInteractive = (target) => {
         if (!(target instanceof Element)) return null;
         return target.closest('.skill-effect, .weapon-item, .set-item-triangle');
       };
 
-      const getEffectType = (element) => {
-        if (!element) return 'buff';
-        if (element.classList.contains('weapon-item')) return 'weapon';
-        if (element.classList.contains('set-item-triangle')) return 'set';
-        if (element.classList.contains('effect-buff')) return 'buff';
-        if (element.classList.contains('effect-debuff')) return 'debuff';
-        if (element.classList.contains('effect-disable')) return 'disable';
+      const getType = (el) => {
+        if (!el) return 'buff';
+        if (el.classList.contains('weapon-item')) return 'weapon';
+        if (el.classList.contains('set-item-triangle')) return 'set';
+        if (el.classList.contains('effect-debuff')) return 'debuff';
+        if (el.classList.contains('effect-disable')) return 'disable';
         return 'buff';
       };
 
-      const getEffectData = (element) => {
-        if (!element) return { name: 'Unknown', description: 'No description', type: 'buff' };
+      const getData = (el) => {
+        if (!el) return { name: 'Unknown', description: 'No description', type: 'buff' };
 
-        const name = element.dataset.name || element.dataset.effect || 'Unknown';
-        let description = element.dataset.description || '';
+        const name = el.dataset.name || el.dataset.effect || 'Unknown';
 
-        const inner = element.querySelector('[data-tooltip-target="content"]');
+        let description = el.dataset.description || '';
+        const inner = el.querySelector('[data-tooltip-target="content"]');
         if (inner && inner.innerText && inner.innerText.trim()) {
           description = inner.innerText.trim();
         }
 
-        const type = getEffectType(element);
-        return { name, description: description || 'No description', type };
+        return {
+          name,
+          description: description || 'No description',
+          type: getType(el),
+        };
       };
 
-      const positionTooltip = (event) => {
+      // ---------- Tooltip positioning ----------
+      const positionTooltip = (e) => {
         const ww = window.innerWidth;
         const rect = tooltip.getBoundingClientRect();
         const tw = 300;
         const th = rect.height || 160;
 
-        let x = event.clientX - tw / 2;
-        let y = event.clientY - th - 12;
+        let x = e.clientX - tw / 2;
+        let y = e.clientY - th - 12;
 
         if (x < 10) x = 10;
         if (x + tw > ww - 10) x = ww - tw - 10;
-        if (y < 10) y = event.clientY + 12;
+        if (y < 10) y = e.clientY + 12;
 
         tooltip.style.left = x + 'px';
         tooltip.style.top  = y + 'px';
       };
 
-      const showTooltip = (el, e, data) => {
+      const showTooltip = (el, e) => {
+        const data = getData(el);
+
         tooltipHeader.textContent = data.name;
         tooltipHeader.className = `skill-tooltip-header ${data.type}`;
+
         tooltipBody.textContent = data.description;
         tooltip.className = `skill-tooltip ${data.type}`;
         tooltip.style.display = 'block';
 
-        activeEffect = el;
+        activeEl = el;
         positionTooltip(e);
       };
 
       const hideTooltip = () => {
         tooltip.style.display = 'none';
-        activeEffect = null;
+        activeEl = null;
         if (tooltipTimeout) clearTimeout(tooltipTimeout);
       };
 
-      const showModal = (data) => {
+      // ---------- Modal ----------
+      const showModal = (el) => {
+        const data = getData(el);
+
         modalTitle.textContent = data.name;
         modalHeader.className = `skill-modal-header ${data.type}`;
         modalBody.textContent = data.description;
+
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
       };
@@ -1870,40 +1878,39 @@
         document.body.style.overflow = '';
       };
 
+      // ---------- Events ----------
       if (isTouch) {
         document.addEventListener('click', (e) => {
           const el = findInteractive(e.target);
           if (!el) return;
 
           e.preventDefault();
-          showModal(getEffectData(el));
+          showModal(el);
         });
 
         if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
         modalOverlay.addEventListener('click', (e) => {
           if (e.target === modalOverlay) closeModal();
         });
-
       } else {
         document.addEventListener('mouseenter', (e) => {
           const el = findInteractive(e.target);
           if (!el) return;
 
-          const data = getEffectData(el);
           if (tooltipTimeout) clearTimeout(tooltipTimeout);
-          tooltipTimeout = setTimeout(() => showTooltip(el, e, data), 100);
+          tooltipTimeout = setTimeout(() => showTooltip(el, e), 80);
         }, true);
 
         document.addEventListener('mouseleave', (e) => {
           const el = findInteractive(e.target);
           if (!el) return;
 
-          if (tooltipTimeout) clearTimeout(tooltipTimeout);
           hideTooltip();
         }, true);
 
         document.addEventListener('mousemove', (e) => {
-          if (activeEffect) positionTooltip(e);
+          if (activeEl) positionTooltip(e);
         }, true);
       }
 
