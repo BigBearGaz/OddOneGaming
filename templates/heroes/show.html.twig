@@ -1746,10 +1746,8 @@
       if (window.__skillTooltipInitialized) return;
       window.__skillTooltipInitialized = true;
 
-      const isTouch =
-        ('ontouchstart' in window) ||
-        (navigator.maxTouchPoints > 0) ||
-        (navigator.msMaxTouchPoints > 0);
+      // Utilise les "interaction media features" : plus fiable que isTouch (hybrides, etc.)
+      const canHover = window.matchMedia?.('(any-hover: hover)')?.matches === true;
 
       // ---------- DOM singletons ----------
       let tooltip = document.querySelector('.skill-tooltip');
@@ -1793,6 +1791,7 @@
       // ---------- Helpers ----------
       const findInteractive = (target) => {
         if (!(target instanceof Element)) return null;
+        // closest() remonte l'élément + ses parents jusqu'à trouver un match, ou null
         return target.closest('.skill-effect, .weapon-item, .set-item-triangle');
       };
 
@@ -1859,6 +1858,7 @@
         tooltip.style.display = 'none';
         activeEl = null;
         if (tooltipTimeout) clearTimeout(tooltipTimeout);
+        tooltipTimeout = null;
       };
 
       // ---------- Modal ----------
@@ -1878,23 +1878,14 @@
         document.body.style.overflow = '';
       };
 
-      // ---------- Events ----------
-      if (isTouch) {
-        document.addEventListener('click', (e) => {
-          const el = findInteractive(e.target);
-          if (!el) return;
+      // ---------- Events (robuste, sans isTouch) ----------
+      // Pointer Events unifient souris / touch / stylet en un modèle commun
+      if (canHover) {
+        // pointerenter/leave ne bullent pas => capture = true pour délégation au niveau document
+        document.addEventListener('pointerenter', (e) => {
+          // Si tu veux tooltip uniquement souris : décommente
+          // if (e.pointerType && e.pointerType !== 'mouse') return;
 
-          e.preventDefault();
-          showModal(el);
-        });
-
-        if (closeBtn) closeBtn.addEventListener('click', closeModal);
-
-        modalOverlay.addEventListener('click', (e) => {
-          if (e.target === modalOverlay) closeModal();
-        });
-      } else {
-        document.addEventListener('mouseenter', (e) => {
           const el = findInteractive(e.target);
           if (!el) return;
 
@@ -1902,17 +1893,36 @@
           tooltipTimeout = setTimeout(() => showTooltip(el, e), 80);
         }, true);
 
-        document.addEventListener('mouseleave', (e) => {
+        document.addEventListener('pointerleave', (e) => {
+          // if (e.pointerType && e.pointerType !== 'mouse') return;
+
           const el = findInteractive(e.target);
           if (!el) return;
 
           hideTooltip();
         }, true);
 
-        document.addEventListener('mousemove', (e) => {
+        document.addEventListener('pointermove', (e) => {
           if (activeEl) positionTooltip(e);
         }, true);
       }
+
+      // Modal sur click seulement si pas de hover
+      document.addEventListener('click', (e) => {
+        if (canHover) return;
+
+        const el = findInteractive(e.target);
+        if (!el) return;
+
+        e.preventDefault();
+        showModal(el);
+      });
+
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) closeModal();
+      });
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -1923,6 +1933,7 @@
     });
   </script>
 {% endblock %}
+
 
 
 
