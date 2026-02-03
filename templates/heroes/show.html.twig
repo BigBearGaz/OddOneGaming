@@ -1742,10 +1742,14 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Evite double init si la page ré-exécute le script
       if (window.__skillTooltipInitialized) return;
       window.__skillTooltipInitialized = true;
 
-      const canHover = window.matchMedia ? window.matchMedia('(any-hover: hover)').matches : false;
+      const isTouch =
+        ('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0);
 
       // ---------- DOM singletons ----------
       let tooltip = document.querySelector('.skill-tooltip');
@@ -1782,9 +1786,6 @@
       const modalBody     = modalOverlay.querySelector('#modalBody');
       const closeBtn      = modalOverlay.querySelector('.skill-modal-close');
 
-      // Sécurité: le tooltip ne doit jamais capter la souris
-      tooltip.style.pointerEvents = 'none';
-
       // ---------- State ----------
       let activeEl = null;
       let tooltipTimeout = null;
@@ -1792,7 +1793,6 @@
       // ---------- Helpers ----------
       const findInteractive = (target) => {
         if (!(target instanceof Element)) return null;
-        // Normalise: buffs, armes, sets
         return target.closest('.skill-effect, .weapon-item, .set-item-triangle');
       };
 
@@ -1802,23 +1802,15 @@
         if (el.classList.contains('set-item-triangle')) return 'set';
         if (el.classList.contains('effect-debuff')) return 'debuff';
         if (el.classList.contains('effect-disable')) return 'disable';
-        // buff par défaut (skill-effect effect-buff ou autre)
         return 'buff';
       };
 
       const getData = (el) => {
         if (!el) return { name: 'Unknown', description: 'No description', type: 'buff' };
 
-        // 1) Nom: armes/sets => data-name; buffs => data-effect (ou data-name si tu ajoutes plus tard)
-        const name =
-          el.dataset.name ||
-          el.dataset.effect ||
-          'Unknown';
+        const name = el.dataset.name || el.dataset.effect || 'Unknown';
 
-        // 2) Description: armes/sets => data-description déjà HTML-attr safe; buffs => data-description ou inner content
         let description = el.dataset.description || '';
-
-        // Pour les buffs, tu as parfois un inner node dédié (tu l'utilisais déjà)
         const inner = el.querySelector('[data-tooltip-target="content"]');
         if (inner && inner.innerText && inner.innerText.trim()) {
           description = inner.innerText.trim();
@@ -1826,11 +1818,12 @@
 
         return {
           name,
-          description: (description && description.trim()) ? description.trim() : 'No description',
+          description: description || 'No description',
           type: getType(el),
         };
       };
 
+      // ---------- Tooltip positioning ----------
       const positionTooltip = (e) => {
         const ww = window.innerWidth;
         const rect = tooltip.getBoundingClientRect();
@@ -1866,9 +1859,9 @@
         tooltip.style.display = 'none';
         activeEl = null;
         if (tooltipTimeout) clearTimeout(tooltipTimeout);
-        tooltipTimeout = null;
       };
 
+      // ---------- Modal ----------
       const showModal = (el) => {
         const data = getData(el);
 
@@ -1886,23 +1879,32 @@
       };
 
       // ---------- Events ----------
-      if (canHover) {
-        document.addEventListener('mouseover', (e) => {
+      if (isTouch) {
+        document.addEventListener('click', (e) => {
           const el = findInteractive(e.target);
           if (!el) return;
 
-          if (activeEl === el) return;
+          e.preventDefault();
+          showModal(el);
+        });
+
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+        modalOverlay.addEventListener('click', (e) => {
+          if (e.target === modalOverlay) closeModal();
+        });
+      } else {
+        document.addEventListener('mouseenter', (e) => {
+          const el = findInteractive(e.target);
+          if (!el) return;
 
           if (tooltipTimeout) clearTimeout(tooltipTimeout);
           tooltipTimeout = setTimeout(() => showTooltip(el, e), 80);
         }, true);
 
-        document.addEventListener('mouseout', (e) => {
+        document.addEventListener('mouseleave', (e) => {
           const el = findInteractive(e.target);
           if (!el) return;
-
-          const to = e.relatedTarget;
-          if (to instanceof Node && el.contains(to)) return;
 
           hideTooltip();
         }, true);
@@ -1910,62 +1912,17 @@
         document.addEventListener('mousemove', (e) => {
           if (activeEl) positionTooltip(e);
         }, true);
-
-        // Bonus: accessibilité clavier (armes/sets ont tabindex=0 dans ton HTML)
-        document.addEventListener('focusin', (e) => {
-          const el = findInteractive(e.target);
-          if (!el) return;
-
-          // Simule une position tooltip si focus (au centre de l'élément)
-          const r = el.getBoundingClientRect();
-          const fakeEvent = { clientX: r.left + r.width / 2, clientY: r.top + 10 };
-          showTooltip(el, fakeEvent);
-        }, true);
-
-        document.addEventListener('focusout', (e) => {
-          const el = findInteractive(e.target);
-          if (!el) return;
-          hideTooltip();
-        }, true);
       }
 
-      // Mobile / no-hover => modal au click
-      document.addEventListener('click', (e) => {
-        if (canHover) return;
-
-        const el = findInteractive(e.target);
-        if (!el) return;
-
-        e.preventDefault();
-        showModal(el);
-      });
-
-      // Clavier: Enter/Espace ouvre modal si no-hover
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           hideTooltip();
           closeModal();
-          return;
         }
-
-        if (!canHover && (e.key === 'Enter' || e.key === ' ')) {
-          const el = findInteractive(e.target);
-          if (!el) return;
-          e.preventDefault();
-          showModal(el);
-        }
-      }, true);
-
-      if (closeBtn) closeBtn.addEventListener('click', closeModal);
-
-      modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) closeModal();
       });
     });
   </script>
 {% endblock %}
-
-
 
 
 
