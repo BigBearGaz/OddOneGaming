@@ -940,6 +940,13 @@
         .skill-tooltip.debuff { border-color: #ef4444; }
         .skill-tooltip.disable { border-color: #a855f7; }
 
+        /* Weapon / Set styles reuse the same modal visual language */
+        .skill-tooltip.weapon { border-color: rgba(59,130,246,0.6); }
+        .skill-tooltip.set { border-color: rgba(255,215,0,0.6); }
+
+        .skill-modal-header.weapon { background: rgba(59,130,246,0.18); color: #60a5fa; }
+        .skill-modal-header.set { background: rgba(255,215,0,0.08); color: #ffd700; }
+
         /* ===== MODAL (MOBILE) ===== */
         .skill-modal-overlay {
             position: fixed;
@@ -1350,7 +1357,7 @@
                             <div class="info-box info-box-weapons">
                                 <div class="info-box-title">⚔️ Recommended Weapons</div>
                                 {% for weapon in hero.weapons %}
-                                    <div class="weapon-item">
+                                    <div class="weapon-item" tabindex="0" data-name="{{ weapon.name|e('html_attr') }}" data-description="{{ weapon.description ? (weapon.description|striptags)|e('html_attr') : '' }}">
                                         {% if weapon.imageUrl %}
                                             <div class="weapon-image">
                                                 <img src="{{ weapon.imageUrl }}" alt="{{ weapon.name }}">
@@ -1450,7 +1457,7 @@
                                     <!-- Affichage en grille flexible -->
                                     <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 15px;">
                                         {% for set in hero.recommendedSets %}
-                                            <div class="set-item-triangle">
+                                            <div class="set-item-triangle" tabindex="0" data-name="{{ set.name|e('html_attr') }}" data-description="{{ set.effect ? (set.effect|striptags)|e('html_attr') : '' }}">
                                                 {% if set.imageUrl %}
                                                     <img src="{{ set.imageUrl }}" alt="{{ set.name }}">
                                                 {% endif %}
@@ -1778,7 +1785,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let tooltipTimeout = null;
 
     // ===== UTILITAIRES =====
+    // Find an interactive element (skill-effect, weapon-item, set-item-triangle)
+    const findInteractive = (target) => {
+        return target.closest('.skill-effect, .weapon-item, .set-item-triangle');
+    };
+
     const getEffectType = (element) => {
+        if (!element) return 'buff';
+        if (element.classList.contains('weapon-item')) return 'weapon';
+        if (element.classList.contains('set-item-triangle')) return 'set';
         if (element.classList.contains('effect-buff')) return 'buff';
         if (element.classList.contains('effect-debuff')) return 'debuff';
         if (element.classList.contains('effect-disable')) return 'disable';
@@ -1786,11 +1801,15 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const getEffectData = (element) => {
-        return {
-            name: element.dataset.effect || 'Unknown',
-            description: element.dataset.description || 'No description',
-            type: getEffectType(element)
-        };
+        if (!element) return { name: 'Unknown', description: 'No description', type: 'buff' };
+        const name = element.dataset.name || element.dataset.effect || 'Unknown';
+        let description = element.dataset.description || '';
+        // if there's an inner tooltip content, prefer that
+        const inner = element.querySelector('[data-tooltip-target="content"]');
+        if (inner && inner.innerText.trim()) description = inner.innerText.trim();
+        if (!description && element.dataset.description) description = element.dataset.description;
+        const type = getEffectType(element);
+        return { name: name, description: description || 'No description', type: type };
     };
 
     // ===== TOOLTIP (DESKTOP) =====
@@ -1845,11 +1864,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== EVENT LISTENERS =====
     if (isTouch) {
-        // ===== MODE MOBILE: Modal au clic =====
+        // ===== MODE MOBILE: Modal au clic (supports skill-effect, weapon, set) =====
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('skill-effect')) {
+            const el = findInteractive(e.target);
+            if (el) {
                 e.preventDefault();
-                const data = getEffectData(e.target);
+                const data = getEffectData(el);
                 showModal(data);
             }
         });
@@ -1859,11 +1879,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target === modalOverlay) closeModal();
         });
     } else {
-        // ===== MODE DESKTOP: Tooltip au hover =====
+        // ===== MODE DESKTOP: Tooltip au hover (supports skill-effect, weapon, set) =====
         document.addEventListener('mouseenter', (e) => {
-            if (e.target.classList.contains('skill-effect')) {
-                const data = getEffectData(e.target);
-                
+            const el = findInteractive(e.target);
+            if (el) {
+                const data = getEffectData(el);
+
                 // Délai pour éviter le scintillement
                 if (tooltipTimeout) clearTimeout(tooltipTimeout);
                 tooltipTimeout = setTimeout(() => {
@@ -1873,7 +1894,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }, true);
 
         document.addEventListener('mouseleave', (e) => {
-            if (e.target.classList.contains('skill-effect')) {
+            const el = findInteractive(e.target);
+            if (el) {
                 if (tooltipTimeout) clearTimeout(tooltipTimeout);
                 hideTooltip();
             }
