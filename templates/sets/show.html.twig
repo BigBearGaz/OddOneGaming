@@ -75,7 +75,7 @@
 
 {% block body %}
 <div class="container">
-    <a href="{{ path('app_sets_index') }}" class="btn-back">← Retour aux Sets</a>
+    <a href="{{ path('app_sets_index') }}" class="btn-back">← Back to Sets</a>
 
     <div class="show-container">
         <h1 style="color: #ffd700; margin-bottom: 10px;">{{ set.name }}</h1>
@@ -88,12 +88,12 @@
         {% endif %}
 
         {% if set.effect %}
-            <h3 style="color: #ffd700; margin-top: 20px;">Effet</h3>
+            <h3 style="color: #ffd700; margin-top: 20px;">Effect</h3>
             <p style="color: rgba(255,255,255,0.9); line-height: 1.6;">{{ set.effect }}</p>
         {% endif %}
 
         {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('app_sets_edit', {'id': set.id}) }}" class="btn-edit">Modifier</a>
+            <a href="{{ path('app_sets_edit', {'id': set.id}) }}" class="btn-edit">Edit</a>
         {% endif %}
     </div>
 </div>

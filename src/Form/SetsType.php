@@ -17,29 +17,29 @@ class SetsType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Nom du set (ex: Bear (2-Piece))',
+                'label' => 'Set name (e.g. Bear (2-Piece))',
             ])
             ->add('baseName', TextType::class, [
-                'label' => 'Nom de base (ex: Bear)',
+                'label' => 'Base name (e.g. Bear)',
                 'required' => false,
-                'attr' => ['placeholder' => 'Pour regrouper les bonus 2/4/6 pièces'],
+                'attr' => ['placeholder' => 'To group 2/4/6-piece bonuses'],
             ])
             ->add('pieceType', ChoiceType::class, [
-                'label' => 'Type de bonus',
+                'label' => 'Bonus type',
                 'choices' => [
-                    '2 pièces' => 2,
-                    '4 pièces' => 4,
-                    '6 pièces' => 6,
+                    '2 pieces' => 2,
+                    '4 pieces' => 4,
+                    '6 pieces' => 6,
                 ],
-                'placeholder' => 'Sélectionner',
+                'placeholder' => 'Select',
             ])
             ->add('effect', TextareaType::class, [
-                'label' => 'Effet / Description du bonus',
+                'label' => 'Effect / Bonus description',
                 'required' => false,
                 'attr' => ['rows' => 4],
             ])
             ->add('imageUrl', UrlType::class, [
-                'label' => 'URL de l\'image',
+                'label' => 'Image URL',
                 'required' => false,
             ])
         ;

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier {{ set.name }} | OddOneGaming{% endblock %}
+{% block title %}Edit {{ set.name }} | OddOneGaming{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -129,14 +129,14 @@
 {% block body %}
 <div class="container">
     <a href="{{ path('app_sets_index') }}" class="btn-back">
-        ← Retour aux Sets
+        ← Back to Sets
     </a>
 
     <div class="forge-container">
-        <h1 class="main-title">Modifier le Set</h1>
+        <h1 class="main-title">Edit Set</h1>
         <span class="sub-title">{{ set.name }}</span>
 
-        {{ include('sets/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+        {{ include('sets/_form.html.twig', {'button_label': 'Update'}) }}
 
         <div class="delete-area">
             {{ include('sets/_delete_form.html.twig') }}

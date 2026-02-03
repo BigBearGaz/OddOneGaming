@@ -340,7 +340,7 @@
         {# Header #}
         <div class="page-header">
             <h1 class="page-title">🛡️ Armor Sets & Equipment</h1>
-            <p class="page-subtitle">Découvrez tous les sets d'armure et leurs bonus</p>
+            <p class="page-subtitle">Discover all armor sets and their bonuses</p>
         </div>
 
         {# Equipment Stats Section - VERSION JEU #}
@@ -348,7 +348,7 @@
             <div class="equipment-stats-section">
                 <div class="equipment-stats-header">
                     <span style="font-size: 2.5rem;">⚙️</span>
-                    <h2 class="equipment-stats-title">Statistiques d'Équipement</h2>
+                    <h2 class="equipment-stats-title">Equipment Statistics</h2>
                 </div>
 
                 <div class="equipment-inventory">
@@ -408,10 +408,10 @@
             <div style="display: flex; align-items: center; gap: 15px;">
                 <span style="font-size: 2.5rem;">🛡️</span>
                 <h2 class="armor-sets-title">Armor Sets</h2>
-                <span class="sets-count">({{ armor_sets|length }} sets disponibles)</span>
+                <span class="sets-count">({{ armor_sets|length }} sets available)</span>
             </div>
             {% if is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('app_sets_new') }}" style="background: #ffd700; color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none;">+ Ajouter un Set</a>
+                <a href="{{ path('app_sets_new') }}" style="background: #ffd700; color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none;">+ Add Set</a>
             {% endif %}
         </div>
 
@@ -477,14 +477,14 @@
                                 {% for item in set.items %}
                                     <a href="{{ path('app_sets_edit', {'id': item.id}) }}" style="background: rgba(255,215,0,0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">Edit {{ item.pieceType }}-P</a>
                                 {% endfor %}
-                                <a href="{{ path('app_sets_new') }}" style="background: rgba(76,175,80,0.2); color: #4caf50; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">+ Bonus</a>
+                                <a href="{{ path('app_sets_new') }}" style="background: rgba(76,175,80,0.2); color: #4caf50; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">+ Add Bonus</a>
                             </div>
                         {% endif %}
                     </div>
                 </div>
             {% else %}
                 <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: rgba(255, 255, 255, 0.6);">
-                    <p style="font-size: 1.5rem;">Aucun set d'armure disponible</p>
+                    <p style="font-size: 1.5rem;">No armor sets available</p>
                 </div>
             {% endfor %}
         </div>

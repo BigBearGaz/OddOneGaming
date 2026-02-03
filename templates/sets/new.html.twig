@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Nouveau Set | OddOneGaming{% endblock %}
+{% block title %}New Set | OddOneGaming{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -107,14 +107,14 @@
 {% block body %}
 <div class="container">
     <a href="{{ path('app_sets_index') }}" class="btn-back">
-        ← Retour aux Sets
+        ← Back to Sets
     </a>
 
     <div class="forge-container">
-        <h1 class="main-title">🛡️ Nouveau Set</h1>
-        <span class="sub-title">Ajouter un bonus de set d'armure</span>
+        <h1 class="main-title">🛡️ New Set</h1>
+        <span class="sub-title">Add an armor set bonus</span>
 
-        {{ include('sets/_form.html.twig', {'button_label': 'Créer le Set'}) }}
+        {{ include('sets/_form.html.twig', {'button_label': 'Create Set'}) }}
     </div>
 </div>
 {% endblock %}
