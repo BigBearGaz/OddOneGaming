@@ -1744,7 +1744,10 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-      // ===== CONFIGURATION =====
+      // Évite double init si la page ré-exécute le script
+      if (window.__skillTooltipInitialized) return;
+      window.__skillTooltipInitialized = true;
+
       const isTouchDevice = () =>
         ('ontouchstart' in window) ||
         (navigator.maxTouchPoints > 0) ||
@@ -1752,27 +1755,33 @@
 
       const isTouch = isTouchDevice();
 
-      // ===== ÉLÉMENTS DOM =====
-      const tooltip = document.createElement('div');
-      tooltip.className = 'skill-tooltip';
-      tooltip.innerHTML = `
-        <div class="skill-tooltip-header"></div>
-        <div class="skill-tooltip-body"></div>
-      `;
-      document.body.appendChild(tooltip);
+      // ===== ÉLÉMENTS DOM (singleton) =====
+      let tooltip = document.querySelector('.skill-tooltip');
+      if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.className = 'skill-tooltip';
+        tooltip.innerHTML = `
+          <div class="skill-tooltip-header"></div>
+          <div class="skill-tooltip-body"></div>
+        `;
+        document.body.appendChild(tooltip);
+      }
 
-      const modalOverlay = document.createElement('div');
-      modalOverlay.className = 'skill-modal-overlay';
-      modalOverlay.innerHTML = `
-        <div class="skill-modal">
-          <div class="skill-modal-header">
-            <span id="modalTitle" style="flex: 1;"></span>
-            <button class="skill-modal-close" aria-label="Close">✕</button>
+      let modalOverlay = document.querySelector('.skill-modal-overlay');
+      if (!modalOverlay) {
+        modalOverlay = document.createElement('div');
+        modalOverlay.className = 'skill-modal-overlay';
+        modalOverlay.innerHTML = `
+          <div class="skill-modal">
+            <div class="skill-modal-header">
+              <span id="modalTitle" style="flex: 1;"></span>
+              <button class="skill-modal-close" aria-label="Close">✕</button>
+            </div>
+            <div class="skill-modal-body" id="modalBody"></div>
           </div>
-          <div class="skill-modal-body" id="modalBody"></div>
-        </div>
-      `;
-      document.body.appendChild(modalOverlay);
+        `;
+        document.body.appendChild(modalOverlay);
+      }
 
       const tooltipHeader = tooltip.querySelector('.skill-tooltip-header');
       const tooltipBody   = tooltip.querySelector('.skill-tooltip-body');
@@ -1784,7 +1793,6 @@
       let activeEffect = null;
       let tooltipTimeout = null;
 
-      // ===== UTILITAIRES =====
       const findInteractive = (target) => {
         if (!(target instanceof Element)) return null;
         return target.closest('.skill-effect, .weapon-item, .set-item-triangle');
@@ -1815,7 +1823,6 @@
         return { name, description: description || 'No description', type };
       };
 
-      // ===== TOOLTIP (DESKTOP) =====
       const positionTooltip = (event) => {
         const ww = window.innerWidth;
         const rect = tooltip.getBoundingClientRect();
@@ -1840,7 +1847,7 @@
         tooltip.className = `skill-tooltip ${data.type}`;
         tooltip.style.display = 'block';
 
-        activeEffect = el; // important: pas e.target
+        activeEffect = el;
         positionTooltip(e);
       };
 
@@ -1850,7 +1857,6 @@
         if (tooltipTimeout) clearTimeout(tooltipTimeout);
       };
 
-      // ===== MODAL (MOBILE) =====
       const showModal = (data) => {
         modalTitle.textContent = data.name;
         modalHeader.className = `skill-modal-header ${data.type}`;
@@ -1864,7 +1870,6 @@
         document.body.style.overflow = '';
       };
 
-      // ===== EVENT LISTENERS =====
       if (isTouch) {
         document.addEventListener('click', (e) => {
           const el = findInteractive(e.target);
@@ -1874,7 +1879,7 @@
           showModal(getEffectData(el));
         });
 
-        closeBtn.addEventListener('click', closeModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', (e) => {
           if (e.target === modalOverlay) closeModal();
         });
@@ -1911,6 +1916,7 @@
     });
   </script>
 {% endblock %}
+
 
 
 
