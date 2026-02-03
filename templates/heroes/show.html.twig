@@ -1738,59 +1738,59 @@
 {% endblock %}
 
 {% block javascripts %}
-{{ parent() }}
-{{ encore_entry_script_tags('app') }}
+  {{ parent() }}
+  {{ encore_entry_script_tags('app') }}
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ===== CONFIGURATION =====
-    const isTouchDevice = () => {
-        return (('ontouchstart' in window) ||
-                (navigator.maxTouchPoints > 0) ||
-                (navigator.msMaxTouchPoints > 0));
-    };
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
 
-    const isTouch = isTouchDevice();
+      // ===== CONFIGURATION =====
+      const isTouchDevice = () =>
+        ('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0);
 
-    // ===== ÉLÉMENTS DOM =====
-    const tooltip = document.createElement('div');
-    tooltip.className = 'skill-tooltip';
-    tooltip.innerHTML = `
+      const isTouch = isTouchDevice();
+
+      // ===== ÉLÉMENTS DOM =====
+      const tooltip = document.createElement('div');
+      tooltip.className = 'skill-tooltip';
+      tooltip.innerHTML = `
         <div class="skill-tooltip-header"></div>
         <div class="skill-tooltip-body"></div>
-    `;
-    document.body.appendChild(tooltip);
+      `;
+      document.body.appendChild(tooltip);
 
-    const modalOverlay = document.createElement('div');
-    modalOverlay.className = 'skill-modal-overlay';
-    modalOverlay.innerHTML = `
+      const modalOverlay = document.createElement('div');
+      modalOverlay.className = 'skill-modal-overlay';
+      modalOverlay.innerHTML = `
         <div class="skill-modal">
-            <div class="skill-modal-header">
-                <span id="modalTitle" style="flex: 1;"></span>
-                <button class="skill-modal-close" aria-label="Close">✕</button>
-            </div>
-            <div class="skill-modal-body" id="modalBody"></div>
+          <div class="skill-modal-header">
+            <span id="modalTitle" style="flex: 1;"></span>
+            <button class="skill-modal-close" aria-label="Close">✕</button>
+          </div>
+          <div class="skill-modal-body" id="modalBody"></div>
         </div>
-    `;
-    document.body.appendChild(modalOverlay);
+      `;
+      document.body.appendChild(modalOverlay);
 
-    const tooltipHeader = tooltip.querySelector('.skill-tooltip-header');
-    const tooltipBody = tooltip.querySelector('.skill-tooltip-body');
-    const modalHeader = modalOverlay.querySelector('.skill-modal-header');
-    const modalTitle = modalOverlay.querySelector('#modalTitle');
-    const modalBody = modalOverlay.querySelector('#modalBody');
-    const closeBtn = modalOverlay.querySelector('.skill-modal-close');
+      const tooltipHeader = tooltip.querySelector('.skill-tooltip-header');
+      const tooltipBody   = tooltip.querySelector('.skill-tooltip-body');
+      const modalHeader   = modalOverlay.querySelector('.skill-modal-header');
+      const modalTitle    = modalOverlay.querySelector('#modalTitle');
+      const modalBody     = modalOverlay.querySelector('#modalBody');
+      const closeBtn      = modalOverlay.querySelector('.skill-modal-close');
 
-    let activeEffect = null;
-    let tooltipTimeout = null;
+      let activeEffect = null;
+      let tooltipTimeout = null;
 
-    // ===== UTILITAIRES =====
-    // Find an interactive element (skill-effect, weapon-item, set-item-triangle)
-    const findInteractive = (target) => {
+      // ===== UTILITAIRES =====
+      const findInteractive = (target) => {
+        if (!(target instanceof Element)) return null;
         return target.closest('.skill-effect, .weapon-item, .set-item-triangle');
-    };
+      };
 
-    const getEffectType = (element) => {
+      const getEffectType = (element) => {
         if (!element) return 'buff';
         if (element.classList.contains('weapon-item')) return 'weapon';
         if (element.classList.contains('set-item-triangle')) return 'set';
@@ -1798,125 +1798,119 @@ document.addEventListener('DOMContentLoaded', function() {
         if (element.classList.contains('effect-debuff')) return 'debuff';
         if (element.classList.contains('effect-disable')) return 'disable';
         return 'buff';
-    };
+      };
 
-    const getEffectData = (element) => {
+      const getEffectData = (element) => {
         if (!element) return { name: 'Unknown', description: 'No description', type: 'buff' };
+
         const name = element.dataset.name || element.dataset.effect || 'Unknown';
         let description = element.dataset.description || '';
-        // if there's an inner tooltip content, prefer that
-        const inner = element.querySelector('[data-tooltip-target="content"]');
-        if (inner && inner.innerText.trim()) description = inner.innerText.trim();
-        if (!description && element.dataset.description) description = element.dataset.description;
-        const type = getEffectType(element);
-        return { name: name, description: description || 'No description', type: type };
-    };
 
-    // ===== TOOLTIP (DESKTOP) =====
-    const showTooltip = (e, data) => {
+        const inner = element.querySelector('[data-tooltip-target="content"]');
+        if (inner && inner.innerText && inner.innerText.trim()) {
+          description = inner.innerText.trim();
+        }
+
+        const type = getEffectType(element);
+        return { name, description: description || 'No description', type };
+      };
+
+      // ===== TOOLTIP (DESKTOP) =====
+      const positionTooltip = (event) => {
+        const ww = window.innerWidth;
+        const rect = tooltip.getBoundingClientRect();
+        const tw = 300;
+        const th = rect.height || 160;
+
+        let x = event.clientX - tw / 2;
+        let y = event.clientY - th - 12;
+
+        if (x < 10) x = 10;
+        if (x + tw > ww - 10) x = ww - tw - 10;
+        if (y < 10) y = event.clientY + 12;
+
+        tooltip.style.left = x + 'px';
+        tooltip.style.top  = y + 'px';
+      };
+
+      const showTooltip = (el, e, data) => {
         tooltipHeader.textContent = data.name;
         tooltipHeader.className = `skill-tooltip-header ${data.type}`;
         tooltipBody.textContent = data.description;
         tooltip.className = `skill-tooltip ${data.type}`;
         tooltip.style.display = 'block';
-        activeEffect = e.target;
-        positionTooltip(e);
-    };
 
-    const hideTooltip = () => {
+        activeEffect = el; // important: pas e.target
+        positionTooltip(e);
+      };
+
+      const hideTooltip = () => {
         tooltip.style.display = 'none';
         activeEffect = null;
         if (tooltipTimeout) clearTimeout(tooltipTimeout);
-    };
+      };
 
-    const positionTooltip = (event) => {
-        const ww = window.innerWidth;
-        const wh = window.innerHeight;
-        const rect = tooltip.getBoundingClientRect();
-        const tw = 300;
-        const th = rect.height || 160;
-        
-        let x = event.clientX - tw / 2;
-        let y = event.clientY - th - 12;
-        
-        // Bordures du viewport
-        if (x < 10) x = 10;
-        if (x + tw > ww - 10) x = ww - tw - 10;
-        if (y < 10) y = event.clientY + 12;
-        
-        tooltip.style.left = x + 'px';
-        tooltip.style.top = y + 'px';
-    };
-
-    // ===== MODAL (MOBILE) =====
-    const showModal = (data) => {
+      // ===== MODAL (MOBILE) =====
+      const showModal = (data) => {
         modalTitle.textContent = data.name;
         modalHeader.className = `skill-modal-header ${data.type}`;
         modalBody.textContent = data.description;
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
-    };
+      };
 
-    const closeModal = () => {
+      const closeModal = () => {
         modalOverlay.classList.remove('active');
         document.body.style.overflow = '';
-    };
+      };
 
-    // ===== EVENT LISTENERS =====
-    if (isTouch) {
-        // ===== MODE MOBILE: Modal au clic (supports skill-effect, weapon, set) =====
+      // ===== EVENT LISTENERS =====
+      if (isTouch) {
         document.addEventListener('click', (e) => {
-            const el = findInteractive(e.target);
-            if (el) {
-                e.preventDefault();
-                const data = getEffectData(el);
-                showModal(data);
-            }
+          const el = findInteractive(e.target);
+          if (!el) return;
+
+          e.preventDefault();
+          showModal(getEffectData(el));
         });
 
         closeBtn.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) closeModal();
+          if (e.target === modalOverlay) closeModal();
         });
-    } else {
-        // ===== MODE DESKTOP: Tooltip au hover (supports skill-effect, weapon, set) =====
-        document.addEventListener('mouseenter', (e) => {
-            const el = findInteractive(e.target);
-            if (el) {
-                const data = getEffectData(el);
 
-                // Délai pour éviter le scintillement
-                if (tooltipTimeout) clearTimeout(tooltipTimeout);
-                tooltipTimeout = setTimeout(() => {
-                    showTooltip(e, data);
-                }, 100);
-            }
+      } else {
+        document.addEventListener('mouseenter', (e) => {
+          const el = findInteractive(e.target);
+          if (!el) return;
+
+          const data = getEffectData(el);
+          if (tooltipTimeout) clearTimeout(tooltipTimeout);
+          tooltipTimeout = setTimeout(() => showTooltip(el, e, data), 100);
         }, true);
 
         document.addEventListener('mouseleave', (e) => {
-            const el = findInteractive(e.target);
-            if (el) {
-                if (tooltipTimeout) clearTimeout(tooltipTimeout);
-                hideTooltip();
-            }
+          const el = findInteractive(e.target);
+          if (!el) return;
+
+          if (tooltipTimeout) clearTimeout(tooltipTimeout);
+          hideTooltip();
         }, true);
 
         document.addEventListener('mousemove', (e) => {
-            if (activeEffect) {
-                positionTooltip(e);
-            }
+          if (activeEffect) positionTooltip(e);
         }, true);
-    }
+      }
 
-    // ===== FERMETURE AVEC ÉCHAP =====
-    document.addEventListener('keydown', (e) => {
+      document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            hideTooltip();
-            closeModal();
+          hideTooltip();
+          closeModal();
         }
+      });
     });
-});
-</script>
+  </script>
 {% endblock %}
+
 
 
