@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ set.name }} | OddOneGaming{% endblock %}
+
+{% block stylesheets %}
+<style>
+    body { 
+        background-color: #0a0f18; 
+        color: #ffffff !important; 
+        font-family: 'Poppins', sans-serif;
+        padding-top: 160px !important;
+    }
+
+    .show-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #000000;
+        border: 2px solid #ffd700;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
+    }
+
+    .set-image {
+        width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        margin-bottom: 25px;
+        border-radius: 12px;
+    }
+
+    .set-placeholder {
+        height: 200px;
+        background: rgba(255, 215, 0, 0.1);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        margin-bottom: 25px;
+    }
+
+    .piece-badge {
+        display: inline-block;
+        background: rgba(255, 215, 0, 0.2);
+        color: #ffd700;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .btn-back {
+        color: #888;
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-weight: bold;
+        display: inline-block;
+    }
+    .btn-back:hover { color: #ffd700; }
+
+    .btn-edit {
+        background: #ffd700;
+        color: #000;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 20px;
+    }
+    .btn-edit:hover { color: #000; background: #ffed4e; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <a href="{{ path('app_sets_index') }}" class="btn-back">← Retour aux Sets</a>
+
+    <div class="show-container">
+        <h1 style="color: #ffd700; margin-bottom: 10px;">{{ set.name }}</h1>
+        <span class="piece-badge">{{ set.pieceType }}-Piece Bonus</span>
+
+        {% if set.imageUrl %}
+            <img src="{{ set.imageUrl }}" alt="{{ set.name }}" class="set-image">
+        {% else %}
+            <div class="set-placeholder">🛡️</div>
+        {% endif %}
+
+        {% if set.effect %}
+            <h3 style="color: #ffd700; margin-top: 20px;">Effet</h3>
+            <p style="color: rgba(255,255,255,0.9); line-height: 1.6;">{{ set.effect }}</p>
+        {% endif %}
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_sets_edit', {'id': set.id}) }}" class="btn-edit">Modifier</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

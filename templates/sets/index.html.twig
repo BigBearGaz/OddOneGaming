@@ -404,10 +404,15 @@
         {% endif %}
 
         {# Armor Sets Section #}
-        <div class="armor-sets-header">
-            <span style="font-size: 2.5rem;">🛡️</span>
-            <h2 class="armor-sets-title">Armor Sets</h2>
-            <span class="sets-count">({{ armor_sets|length }} sets disponibles)</span>
+        <div class="armor-sets-header" style="justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span style="font-size: 2.5rem;">🛡️</span>
+                <h2 class="armor-sets-title">Armor Sets</h2>
+                <span class="sets-count">({{ armor_sets|length }} sets disponibles)</span>
+            </div>
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('app_sets_new') }}" style="background: #ffd700; color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none;">+ Ajouter un Set</a>
+            {% endif %}
         </div>
 
         <div class="sets-grid">
@@ -463,6 +468,16 @@
                                 <div class="bonus-description">
                                     {{ set.six }}
                                 </div>
+                            </div>
+                        {% endif %}
+
+                        {% if is_granted('ROLE_ADMIN') and set.items is defined and set.items|length > 0 %}
+                            <hr class="set-divider">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px;">
+                                {% for item in set.items %}
+                                    <a href="{{ path('app_sets_edit', {'id': item.id}) }}" style="background: rgba(255,215,0,0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">Edit {{ item.pieceType }}-P</a>
+                                {% endfor %}
+                                <a href="{{ path('app_sets_new') }}" style="background: rgba(76,175,80,0.2); color: #4caf50; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; text-decoration: none; font-weight: 600;">+ Bonus</a>
                             </div>
                         {% endif %}
                     </div>
