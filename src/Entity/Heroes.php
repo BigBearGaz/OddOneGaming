@@ -9,7 +9,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: HeroesRepository::class)]
-#[ORM\HasLifecycleCallbacks]
 class Heroes
 {
     #[ORM\Id]
@@ -148,20 +147,6 @@ class Heroes
         $this->skillUpgrades = new ArrayCollection();
     }
 
-    #[ORM\PrePersist]
-    #[ORM\PreUpdate]
-    public function updateSlug(): void
-    {
-        if (!$this->Name) return;
-        $slug = mb_strtolower($this->Name);
-        $slug = preg_replace('~[^\pL\d]+~u', '-', $slug);
-        $slug = trim($slug, '-');
-        $slug = iconv('utf-8', 'us-ascii//TRANSLIT', $slug);
-        $slug = preg_replace('~[^-\w]+~', '', $slug);
-        $slug = preg_replace('~-+~', '-', $slug);
-        $slug = trim($slug, '-');
-        $this->slug = $slug ?: 'hero';
-    }
 
     // --- GETTERS / SETTERS ---
 
@@ -176,7 +161,6 @@ class Heroes
     public function setName(string $Name): static
     {
         $this->Name = $Name;
-        $this->updateSlug();
         return $this;
     }
     public function getSlug(): ?string
