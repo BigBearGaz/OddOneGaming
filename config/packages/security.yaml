@@ -37,7 +37,7 @@ security:
 
     access_control:
         # Public
-        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/oog-panel-7x9k, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         
         # Heroes - ADMIN only

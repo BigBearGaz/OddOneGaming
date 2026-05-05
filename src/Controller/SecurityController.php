@@ -14,7 +14,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class SecurityController extends AbstractController
 {
-    #[Route('/login', name: 'app_login')]
+    #[Route('/oog-panel-7x9k', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         // Si déjà connecté, rediriger
