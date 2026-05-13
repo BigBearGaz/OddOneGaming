@@ -91,7 +91,7 @@
             "importmap:install": "symfony-cmd"
         },
         "patch-dbal-mariadb": [
-            "php -r \"$f='vendor/doctrine/dbal/src/Schema/AbstractSchemaManager.php';$c=file_get_contents($f);$n=str_replace('->setOptions($options);','->setOptions($options??[]);',$c);if($c!==$n){file_put_contents($f,$n);echo 'DBAL MariaDB patch applied'.PHP_EOL;}\""
+            "php scripts/patch-dbal-mariadb.php"
         ],
         "post-install-cmd": [
             "@auto-scripts",
