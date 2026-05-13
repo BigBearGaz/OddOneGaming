@@ -15,6 +15,7 @@ use App\Repository\DebuffsRepository;
 use App\Repository\DisableRepository;
 use App\Repository\LeaderRepository;
 use App\Repository\InstantsRepository; // Ajouté
+use App\Service\EffectGrouperService;
 use App\Service\ExcelExportService;
 use App\Service\ExcelImportService;
 use App\Service\SlugService;
@@ -113,10 +114,67 @@ final class HeroesController extends AbstractController
         ]);
     }
 
-    #[Route('/effects', name: 'app_heroes_effects', methods: ['GET'])]
-    public function effects(): Response
+    #[Route('/json-db', name: 'app_heroes_json_db', methods: ['GET'])]
+    public function jsonDb(Request $request): Response
     {
-        return $this->render('heroes/effect_heroes.html.twig');
+        $jsonPath = $this->getParameter('kernel.project_dir') . '/var/godforge-heroes-db.json';
+
+        if (!file_exists($jsonPath)) {
+            return $this->render('heroes/json_db.html.twig', ['heroes' => [], 'jsonMissing' => true]);
+        }
+
+        $raw = json_decode(file_get_contents($jsonPath), true) ?? [];
+
+        $search    = strtolower($request->query->get('q', ''));
+        $filterRarity    = $request->query->get('rarity', '');
+        $filterFaction   = $request->query->get('faction', '');
+        $filterAffinity  = $request->query->get('affinity', '');
+        $filterArchetype = $request->query->get('archetype', '');
+
+        $rarities   = [];
+        $factions   = [];
+        $affinities = [];
+        $archetypes = [];
+
+        foreach ($raw as $hero) {
+            $rarities[$hero['rarity'] ?? '']     = true;
+            $factions[$hero['faction'] ?? '']    = true;
+            $affinities[$hero['affinity'] ?? ''] = true;
+            $archetypes[$hero['archetype'] ?? ''] = true;
+        }
+
+        ksort($rarities); ksort($factions); ksort($affinities); ksort($archetypes);
+
+        $heroes = array_filter($raw, function (array $h) use ($search, $filterRarity, $filterFaction, $filterAffinity, $filterArchetype): bool {
+            if ($search && !str_contains(strtolower($h['name'] ?? ''), $search)) return false;
+            if ($filterRarity    && ($h['rarity']    ?? '') !== $filterRarity)    return false;
+            if ($filterFaction   && ($h['faction']   ?? '') !== $filterFaction)   return false;
+            if ($filterAffinity  && ($h['affinity']  ?? '') !== $filterAffinity)  return false;
+            if ($filterArchetype && ($h['archetype'] ?? '') !== $filterArchetype) return false;
+            return true;
+        });
+
+        usort($heroes, fn ($a, $b) => strcmp($a['name'] ?? '', $b['name'] ?? ''));
+
+        return $this->render('heroes/json_db.html.twig', [
+            'heroes'      => $heroes,
+            'jsonMissing' => false,
+            'rarities'    => array_keys($rarities),
+            'factions'    => array_keys($factions),
+            'affinities'  => array_keys($affinities),
+            'archetypes'  => array_keys($archetypes),
+            'filters'     => compact('search', 'filterRarity', 'filterFaction', 'filterAffinity', 'filterArchetype'),
+        ]);
+    }
+
+    #[Route('/effects', name: 'app_heroes_effects', methods: ['GET'])]
+    public function effects(EffectGrouperService $grouper): Response
+    {
+        return $this->render('heroes/effect_heroes.html.twig', [
+            'buffGroups'    => $grouper->getGroups('buff'),
+            'debuffGroups'  => $grouper->getGroups('debuff'),
+            'disableGroups' => $grouper->getGroups('disable'),
+        ]);
     }
 
     #[Route('/export', name: 'app_heroes_export', methods: ['GET'])]

@@ -3,77 +3,254 @@
 
 {% block title %}Admin Dashboard - OddOne Gaming{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body { background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); min-height: 100vh; }
+.dash { max-width: 1400px; margin: 0 auto; padding: 40px; }
+
+/* Flash */
+.flash { padding: 14px 20px; border-radius: 10px; font-weight: 600; margin-bottom: 20px; }
+.flash-success { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.35); color: #00ff88; }
+.flash-error   { background: rgba(255,82,82,0.1);  border: 1px solid rgba(255,82,82,0.4);  color: #ff5252; }
+
+/* Header */
+.dash-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 35px; }
+.dash-title  { font-size: 2rem; color: #00ff88; font-weight: 900; margin: 0; }
+.dash-actions { display: flex; gap: 12px; }
+.btn-site   { padding: 10px 22px; background: rgba(255,255,255,0.06); color: #fff; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; font-weight: 600; }
+.btn-logout { padding: 10px 22px; background: rgba(255,82,82,0.15); color: #ff5252; border-radius: 10px; border: 1px solid rgba(255,82,82,0.4); text-decoration: none; font-weight: 600; }
+
+/* Stats grid */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 35px; }
+.stat-card  { background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px 20px; border: 1px solid rgba(255,255,255,0.08); text-align: center; }
+.stat-icon  { font-size: 2rem; margin-bottom: 8px; }
+.stat-num   { font-size: 2rem; font-weight: 900; margin-bottom: 4px; }
+.stat-label { color: rgba(255,255,255,0.6); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Sync section */
+.section-title { color: rgba(255,255,255,0.8); font-size: 1.1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 18px; }
+
+.sync-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 35px; }
+.sync-card {
+    background: rgba(255,255,255,0.03);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 24px;
+    display: flex; flex-direction: column; gap: 14px;
+}
+.sync-card-head { display: flex; align-items: flex-start; gap: 14px; }
+.sync-card-icon { font-size: 2rem; flex-shrink: 0; }
+.sync-card-title { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.sync-card-desc  { font-size: 0.82rem; color: rgba(255,255,255,0.5); line-height: 1.5; }
+.sync-last { font-size: 0.78rem; padding: 5px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; }
+.sync-last.ok    { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
+.sync-last.never { background: rgba(255,200,0,0.1);  color: #ffc800;  border: 1px solid rgba(255,200,0,0.3); }
+.sync-last.error { background: rgba(255,82,82,0.1);  color: #ff5252;  border: 1px solid rgba(255,82,82,0.3); }
+.sync-btn {
+    width: 100%; padding: 12px; border: none; border-radius: 10px;
+    font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: opacity .2s;
+}
+.sync-btn:disabled { opacity: .5; cursor: not-allowed; }
+.sync-btn.green { background: linear-gradient(135deg, #00ff88, #00ccff); color: #0a0e27; }
+.sync-btn.blue  { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: #fff; }
+.sync-btn.amber { background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; }
+.sync-btn.all   { background: linear-gradient(135deg, #00ff88, #3b82f6); color: #0a0e27; }
+
+/* Quick actions */
+.actions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.action-link {
+    display: block; padding: 18px 14px; border-radius: 12px;
+    text-decoration: none; font-weight: 700; text-align: center; font-size: 0.9rem;
+    border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);
+    color: rgba(255,255,255,0.7); transition: all .2s;
+}
+.action-link:hover { transform: translateY(-2px); background: rgba(255,255,255,0.07); color: #fff; }
+.action-link.green { color: #00ff88; border-color: rgba(0,255,136,0.25); }
+.action-link.gold  { color: #ffc800; border-color: rgba(255,200,0,0.25); }
+.action-link.blue  { color: #00ccff; border-color: rgba(0,200,255,0.25); }
+.action-link.red   { color: #ff5252; border-color: rgba(255,82,82,0.25); }
+.action-link.violet{ color: #a78bfa; border-color: rgba(167,139,250,0.25); }
+</style>
+{% endblock %}
+
 {% block body %}
-<div style="min-height: 100vh; background: linear-gradient(135deg, rgba(10, 14, 39, 0.92) 0%, rgba(26, 31, 58, 0.92) 100%); padding: 100px 40px;">
-    <div style="max-width: 1400px; margin: 0 auto;">
-        
-        {# Header #}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+<div class="dash" style="padding-top: 100px;">
+
+    {# Flash messages #}
+    {% for label, messages in app.flashes %}
+        {% for msg in messages %}
+            <div class="flash flash-{{ label }}">{{ msg }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    {# Header #}
+    <div class="dash-header">
+        <h1 class="dash-title">👋 {{ app.user.fullName ?? app.user.email }}</h1>
+        <div class="dash-actions">
+            <a href="{{ path('app_home') }}" class="btn-site">🏠 View Site</a>
+            <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Logout</a>
+        </div>
+    </div>
+
+    {# Stats #}
+    <div class="stats-grid">
+        <div class="stat-card" style="border-color:rgba(0,255,136,.2)">
+            <div class="stat-icon">⚔️</div>
+            <div class="stat-num" style="color:#00ff88">{{ heroes_count }}</div>
+            <div class="stat-label">Heroes</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(255,200,0,.2)">
+            <div class="stat-icon">🗡️</div>
+            <div class="stat-num" style="color:#ffc800">{{ weapons_count }}</div>
+            <div class="stat-label">Weapons</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(0,200,255,.2)">
+            <div class="stat-icon">💎</div>
+            <div class="stat-num" style="color:#00ccff">{{ imprints_count }}</div>
+            <div class="stat-label">Imprints</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(251,191,36,.2)">
+            <div class="stat-icon">🛡️</div>
+            <div class="stat-num" style="color:#fbbf24">{{ sets_count }}</div>
+            <div class="stat-label">Armor Sets</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(255,82,82,.2)">
+            <div class="stat-icon">🏰</div>
+            <div class="stat-num" style="color:#ff5252">{{ dungeons_count }}</div>
+            <div class="stat-label">Dungeons</div>
+        </div>
+        <div class="stat-card" style="border-color:rgba(102,126,234,.2)">
+            <div class="stat-icon">👥</div>
+            <div class="stat-num" style="color:#667eea">{{ users_count }}</div>
+            <div class="stat-label">Users</div>
+        </div>
+    </div>
+
+    {# Sync #}
+    <p class="section-title">🔄 Data Sync</p>
+    <div class="sync-grid">
+
+        {# Heroes #}
+        {% set hs = sync_state.heroes ?? null %}
+        <div class="sync-card" style="border-color:rgba(0,255,136,.2)">
+            <div class="sync-card-head">
+                <div class="sync-card-icon">⚔️</div>
+                <div>
+                    <div class="sync-card-title">Heroes</div>
+                    <div class="sync-card-desc">Fetches all heroes from ravenpyros.com API — skills, stats, leader bonuses, awakenings.</div>
+                </div>
+            </div>
             <div>
-                <h1 style="color: #00ff88; font-size: 2.5rem; margin-bottom: 10px;">👋 Welcome, {{ app.user.fullName }}</h1>
-                <p style="color: rgba(255, 255, 255, 0.6);">Admin Dashboard</p>
+                {% if hs %}
+                    <span class="sync-last {{ (hs.status ?? 'ok') == 'ok' ? 'ok' : 'error' }}">
+                        {{ (hs.status ?? 'ok') == 'ok' ? '✅' : '⚠️' }} Last run: {{ hs.last_run|date('Y-m-d H:i') }}
+                    </span>
+                {% else %}
+                    <span class="sync-last never">⚠️ Never synced</span>
+                {% endif %}
             </div>
-            <div style="display: flex; gap: 15px;">
-                <a href="{{ path('app_home') }}" style="padding: 12px 25px; background: rgba(255, 255, 255, 0.05); color: white; text-decoration: none; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2);">
-                    🏠 View Site
-                </a>
-                <a href="{{ path('app_logout') }}" style="padding: 12px 25px; background: rgba(255, 82, 82, 0.2); color: #ff5252; text-decoration: none; border-radius: 10px; border: 1px solid #ff5252;">
-                    🚪 Logout
-                </a>
-            </div>
+            <form method="POST" action="{{ path('app_admin_sync') }}" onsubmit="startSync(this,'heroesBtn')">
+                <input type="hidden" name="action" value="heroes">
+                <input type="hidden" name="_token" value="{{ csrf_token('sync_heroes') }}">
+                <button id="heroesBtn" class="sync-btn green" type="submit">⚔️ Sync Heroes</button>
+            </form>
         </div>
 
-        {# Stats Cards #}
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 40px;">
-            
-            {# Heroes Stats #}
-            <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px; border: 1px solid rgba(0, 255, 136, 0.2);">
-                <div style="font-size: 3rem; margin-bottom: 15px;">⚔️</div>
-                <div style="font-size: 2.5rem; color: #00ff88; font-weight: 900; margin-bottom: 10px;">{{ heroes_count }}</div>
-                <div style="color: rgba(255, 255, 255, 0.7); font-weight: 600;">Total Heroes</div>
+        {# Catalog #}
+        {% set cs = sync_state.catalog ?? null %}
+        <div class="sync-card" style="border-color:rgba(255,200,0,.2)">
+            <div class="sync-card-head">
+                <div class="sync-card-icon">📦</div>
+                <div>
+                    <div class="sync-card-title">Catalog</div>
+                    <div class="sync-card-desc">Updates weapons and imprints catalog from the API.</div>
+                </div>
             </div>
-
-            {# Dungeons Stats #}
-            <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px; border: 1px solid rgba(255, 82, 82, 0.2);">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🏰</div>
-                <div style="font-size: 2.5rem; color: #ff5252; font-weight: 900; margin-bottom: 10px;">{{ dungeons_count }}</div>
-                <div style="color: rgba(255, 255, 255, 0.7); font-weight: 600;">Total Dungeons</div>
+            <div>
+                {% if cs %}
+                    <span class="sync-last {{ (cs.status ?? 'ok') == 'ok' ? 'ok' : 'error' }}">
+                        {{ (cs.status ?? 'ok') == 'ok' ? '✅' : '⚠️' }} Last run: {{ cs.last_run|date('Y-m-d H:i') }}
+                    </span>
+                {% else %}
+                    <span class="sync-last never">⚠️ Never synced</span>
+                {% endif %}
             </div>
-
-            {# Users Stats #}
-            <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px; border: 1px solid rgba(102, 126, 234, 0.2);">
-                <div style="font-size: 3rem; margin-bottom: 15px;">👥</div>
-                <div style="font-size: 2.5rem; color: #667eea; font-weight: 900; margin-bottom: 10px;">{{ users_count }}</div>
-                <div style="color: rgba(255, 255, 255, 0.7); font-weight: 600;">Admin Users</div>
-            </div>
-
+            <form method="POST" action="{{ path('app_admin_sync') }}" onsubmit="startSync(this,'catalogBtn')">
+                <input type="hidden" name="action" value="catalog">
+                <input type="hidden" name="_token" value="{{ csrf_token('sync_catalog') }}">
+                <button id="catalogBtn" class="sync-btn blue" type="submit">📦 Sync Catalog</button>
+            </form>
         </div>
 
-        {# Quick Actions #}
-        <div style="background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border-radius: 20px; padding: 40px; border: 1px solid rgba(0, 255, 136, 0.2);">
-            <h2 style="color: #00ff88; font-size: 1.8rem; margin-bottom: 25px;">🚀 Quick Actions</h2>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                
-                <a href="{{ path('app_heroes_import') }}" style="padding: 25px; background: linear-gradient(135deg, #00ff88 0%, #00ccff 100%); color: #0a0e27; text-decoration: none; border-radius: 15px; font-weight: 700; text-align: center; transition: all 0.3s ease;">
-                    📤 Import Heroes Excel
-                </a>
-
-                <a href="{{ path('app_heroes_new') }}" style="padding: 25px; background: rgba(0, 255, 136, 0.1); color: #00ff88; text-decoration: none; border-radius: 15px; font-weight: 700; text-align: center; border: 1px solid rgba(0, 255, 136, 0.3); transition: all 0.3s ease;">
-                    ➕ Add New Hero
-                </a>
-
-                <a href="{{ path('app_dungeons_new') }}" style="padding: 25px; background: rgba(255, 82, 82, 0.1); color: #ff5252; text-decoration: none; border-radius: 15px; font-weight: 700; text-align: center; border: 1px solid rgba(255, 82, 82, 0.3); transition: all 0.3s ease;">
-                    🏰 Add New Dungeon
-                </a>
-
-                <a href="{{ path('app_admin_users') }}" style="padding: 25px; background: rgba(102, 126, 234, 0.1); color: #667eea; text-decoration: none; border-radius: 15px; font-weight: 700; text-align: center; border: 1px solid rgba(102, 126, 234, 0.3); transition: all 0.3s ease;">
-                    👥 Manage Users
-                </a>
-
+        {# Images #}
+        {% set is = sync_state.images ?? null %}
+        <div class="sync-card" style="border-color:rgba(249,115,22,.2)">
+            <div class="sync-card-head">
+                <div class="sync-card-icon">🖼️</div>
+                <div>
+                    <div class="sync-card-title">Hero Images</div>
+                    <div class="sync-card-desc">Downloads portraits & skill icons for new heroes. Only fetches missing files — may take 1–2 min on first run.</div>
+                </div>
             </div>
+            <div>
+                {% if is %}
+                    <span class="sync-last {{ (is.status ?? 'ok') == 'ok' ? 'ok' : 'error' }}">
+                        {{ (is.status ?? 'ok') == 'ok' ? '✅' : '⚠️' }} Last run: {{ is.last_run|date('Y-m-d H:i') }}
+                    </span>
+                {% else %}
+                    <span class="sync-last never">⚠️ Never run</span>
+                {% endif %}
+            </div>
+            <form method="POST" action="{{ path('app_admin_sync') }}" onsubmit="startSync(this,'imagesBtn')">
+                <input type="hidden" name="action" value="images">
+                <input type="hidden" name="_token" value="{{ csrf_token('sync_images') }}">
+                <button id="imagesBtn" class="sync-btn amber" type="submit">🖼️ Download Images</button>
+            </form>
+        </div>
+
+        {# Sync All #}
+        <div class="sync-card" style="border-color:rgba(0,255,136,.15);background:rgba(0,255,136,0.03)">
+            <div class="sync-card-head">
+                <div class="sync-card-icon">🚀</div>
+                <div>
+                    <div class="sync-card-title">Full Sync</div>
+                    <div class="sync-card-desc">Runs Heroes + Catalog in one click. Recommended after any game update on ravenpyros.com.</div>
+                </div>
+            </div>
+            <div style="color:rgba(255,255,255,0.4); font-size:0.8rem;">Heroes sync + Catalog sync</div>
+            <form method="POST" action="{{ path('app_admin_sync') }}" onsubmit="startSync(this,'allBtn')">
+                <input type="hidden" name="action" value="all">
+                <input type="hidden" name="_token" value="{{ csrf_token('sync_all') }}">
+                <button id="allBtn" class="sync-btn all" type="submit">🚀 Sync Everything</button>
+            </form>
         </div>
 
     </div>
+
+    {# Quick Actions #}
+    <p class="section-title">⚡ Quick Actions</p>
+    <div class="actions-grid">
+        <a href="{{ path('app_heroes_new') }}"     class="action-link green">➕ Add Hero</a>
+        <a href="{{ path('app_heroes_index') }}"   class="action-link">⚔️ All Heroes</a>
+        <a href="{{ path('app_weapons_index') }}"  class="action-link gold">🗡️ Weapons</a>
+        <a href="{{ path('app_sets_index') }}"     class="action-link" style="color:#fbbf24;border-color:rgba(251,191,36,.25)">🛡️ Armor Sets</a>
+        <a href="{{ path('app_dungeons_new') }}"   class="action-link red">🏰 Add Dungeon</a>
+        <a href="{{ path('app_buffs_index') }}"    class="action-link blue">✨ Buffs</a>
+        <a href="{{ path('app_debuffs_index') }}"  class="action-link" style="color:#ef4444;border-color:rgba(239,68,68,.25)">💀 Debuffs</a>
+        <a href="{{ path('app_disable_index') }}"  class="action-link violet">🚫 Disables</a>
+        <a href="{{ path('app_heroes_import') }}"  class="action-link">📤 Excel Import</a>
+        <a href="{{ path('app_admin_users') }}"    class="action-link" style="color:#667eea;border-color:rgba(102,126,234,.25)">👥 Users</a>
+    </div>
+
 </div>
+
+<script>
+function startSync(form, btnId) {
+    const btn = document.getElementById(btnId);
+    btn.textContent = '⏳ Running…';
+    btn.disabled = true;
+    document.querySelectorAll('.sync-btn').forEach(b => { if (b.id !== btnId) b.disabled = true; });
+}
+</script>
 {% endblock %}

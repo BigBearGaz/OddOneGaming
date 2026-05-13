@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Buffs;
 use App\Form\BuffsType;
 use App\Repository\BuffsRepository;
+use App\Service\EffectGrouperService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +16,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class BuffsController extends AbstractController
 {
     #[Route(name: 'app_buffs_index', methods: ['GET'])]
-    public function index(BuffsRepository $buffsRepository): Response
+    public function index(EffectGrouperService $grouper): Response
     {
-        return $this->render('buffs/index.html.twig', [
-            'buffs' => $buffsRepository->findAll(),
+        return $this->render('effects/category.html.twig', [
+            'type'   => 'buff',
+            'groups' => $grouper->getGroups('buff'),
         ]);
     }
 

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Debuffs;
 use App\Form\DebuffsType;
 use App\Repository\DebuffsRepository;
+use App\Service\EffectGrouperService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +16,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DebuffsController extends AbstractController
 {
     #[Route(name: 'app_debuffs_index', methods: ['GET'])]
-    public function index(DebuffsRepository $debuffsRepository): Response
+    public function index(EffectGrouperService $grouper): Response
     {
-        return $this->render('debuffs/index.html.twig', [
-            'debuffs' => $debuffsRepository->findAll(),
+        return $this->render('effects/category.html.twig', [
+            'type'   => 'debuff',
+            'groups' => $grouper->getGroups('debuff'),
         ]);
     }
 

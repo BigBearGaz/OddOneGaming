@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Disable;
 use App\Form\DisableType;
 use App\Repository\DisableRepository;
+use App\Service\EffectGrouperService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,10 +16,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DisableController extends AbstractController
 {
     #[Route(name: 'app_disable_index', methods: ['GET'])]
-    public function index(DisableRepository $disableRepository): Response
+    public function index(EffectGrouperService $grouper): Response
     {
-        return $this->render('disable/index.html.twig', [
-            'disables' => $disableRepository->findAll(),
+        return $this->render('effects/category.html.twig', [
+            'type'   => 'disable',
+            'groups' => $grouper->getGroups('disable'),
         ]);
     }
 

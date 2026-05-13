@@ -1,663 +1,254 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Godforge Buffs, Debuffs, and Disables{% endblock %}
+{% block title %}Godforge Buffs, Debuffs & Disables{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             background: linear-gradient(135deg, #1a1f3a 0%, #0a0e27 100%);
             min-height: 100vh;
-            padding: 100px 20px 50px 20px;
+            padding: 100px 20px 50px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        .effects-container {
-            max-width: 1600px;
-            margin: 0 auto;
-        }
+        .effects-container { max-width: 1600px; margin: 0 auto; }
 
         .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 30px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #00ff88;
-            text-decoration: none;
-            border-radius: 25px;
-            font-weight: 600;
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            transition: all 0.3s ease;
-            margin-bottom: 30px;
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 12px 30px; background: rgba(255,255,255,0.05);
+            color: #00ff88; text-decoration: none; border-radius: 25px;
+            font-weight: 600; border: 1px solid rgba(0,255,136,0.3);
+            transition: all 0.3s ease; margin-bottom: 30px;
+        }
+        .back-btn:hover { background: rgba(0,255,136,0.1); border-color: #00ff88; transform: translateX(-5px); color: #00ff88; }
+
+        .page-header { text-align: center; margin-bottom: 40px; }
+        .page-title { font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 10px; }
+        .page-subtitle { color: rgba(255,255,255,0.6); font-size: 1.1rem; }
+
+        /* ── TABS ── */
+        .tabs-nav {
+            display: flex; gap: 0; margin-bottom: 40px;
+            border-radius: 14px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+        }
+        .tab-btn {
+            flex: 1; padding: 16px 20px;
+            background: transparent; border: none; cursor: pointer;
+            font-size: 1rem; font-weight: 700; letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.45); transition: all 0.25s ease;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            position: relative;
+        }
+        .tab-btn:last-child { border-right: none; }
+        .tab-btn:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.05); }
+
+        .tab-btn[data-tab="buff"].active    { color: #3b82f6; background: rgba(59,130,246,0.12); }
+        .tab-btn[data-tab="debuff"].active  { color: #ef4444; background: rgba(239,68,68,0.12); }
+        .tab-btn[data-tab="disable"].active { color: #a855f7; background: rgba(168,85,247,0.12); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+            background: currentColor; border-radius: 3px 3px 0 0;
         }
 
-        .back-btn:hover {
-            background: rgba(0, 255, 136, 0.1);
-            border-color: #00ff88;
-            transform: translateX(-5px);
+        .tab-count {
+            font-size: 0.75rem; font-weight: 600; padding: 2px 8px;
+            border-radius: 20px; background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+        }
+        .tab-btn.active .tab-count {
+            background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.85);
         }
 
-        .page-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .page-title {
-            font-size: 3rem;
-            font-weight: 900;
-            color: #ffffff;
-            margin-bottom: 10px;
-        }
-
-        .page-subtitle {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.1rem;
-        }
-
-        .section {
-            margin-bottom: 60px;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .section-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .section-title.buffs {
-            color: #00ff88;
-        }
-
-        .section-title.debuffs {
-            color: #ff4757;
-        }
-
-        .section-title.disables {
-            color: #ffa502;
-        }
+        /* ── PANELS ── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
         .effects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
 
         .effect-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px; padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; gap: 12px;
         }
-
+        .effect-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+        .effect-card.buff    { --ac: #3b82f6; border-color: rgba(59,130,246,0.2); }
+        .effect-card.buff:hover { border-color: rgba(59,130,246,0.6); box-shadow: 0 12px 32px rgba(59,130,246,0.15); }
+        .effect-card.debuff  { --ac: #ef4444; border-color: rgba(239,68,68,0.2); }
+        .effect-card.debuff:hover { border-color: rgba(239,68,68,0.6); box-shadow: 0 12px 32px rgba(239,68,68,0.15); }
+        .effect-card.disable { --ac: #a855f7; border-color: rgba(168,85,247,0.2); }
+        .effect-card.disable:hover { border-color: rgba(168,85,247,0.6); box-shadow: 0 12px 32px rgba(168,85,247,0.15); }
         .effect-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, var(--ac), transparent);
         }
 
-        .effect-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-color);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        .card-header { display: flex; align-items: center; gap: 14px; }
+
+        .effect-icon-wrap {
+            width: 56px; height: 56px; flex-shrink: 0;
+            border-radius: 10px; overflow: hidden;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid var(--ac);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .effect-icon-wrap img { width: 100%; height: 100%; object-fit: contain; }
+        .effect-icon-placeholder {
+            font-size: 1.4rem; color: var(--ac);
+            font-weight: 900; text-transform: uppercase;
         }
 
-        .effect-card:hover::before {
-            opacity: 1;
-        }
-
-        .effect-card.buff {
-            --accent-color: #00ff88;
-        }
-
-        .effect-card.debuff {
-            --accent-color: #ff4757;
-        }
-
-        .effect-card.disable {
-            --accent-color: #ffa502;
-        }
-
-        .effect-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
+        .card-header-right { flex: 1; min-width: 0; }
 
         .effect-name {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            margin-bottom: 12px;
+            font-size: 1.05rem; font-weight: 800;
+            color: #fff; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px;
         }
+
+        .tier-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+        .tier-badge {
+            display: inline-block; padding: 2px 8px;
+            border-radius: 4px; font-size: 0.75rem; font-weight: 700;
+            background: var(--ac); color: #fff; cursor: default;
+        }
+
+        .hero-count {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.7);
+        }
+        .hero-count.has-heroes { background: rgba(255,255,255,0.12); color: #fff; }
 
         .effect-description {
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.6;
-            font-size: 0.9rem;
+            color: rgba(255,255,255,0.75);
+            font-size: 0.88rem; line-height: 1.6;
+            flex: 1;
         }
 
-        .effect-levels {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        .effect-tiers {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 10px; display: flex; flex-direction: column; gap: 5px;
         }
-
-        .effect-level {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.85rem;
-            margin: 5px 0;
-            padding-left: 10px;
-            position: relative;
+        .effect-tier-row {
+            display: flex; gap: 8px; align-items: flex-start;
+            font-size: 0.82rem; color: rgba(255,255,255,0.65); line-height: 1.4;
         }
-
-        .effect-level::before {
-            content: '▸';
-            position: absolute;
-            left: 0;
-            color: var(--accent-color);
-        }
-
-        .effect-level strong {
-            color: var(--accent-color);
-            font-weight: 600;
+        .tier-label {
+            flex-shrink: 0; min-width: 22px; font-weight: 700; color: var(--ac);
         }
 
         @media (max-width: 768px) {
-            .effects-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .page-title {
-                font-size: 2rem;
-            }
-
-            .section-title {
-                font-size: 1.5rem;
-            }
+            .effects-grid { grid-template-columns: 1fr; }
+            .page-title { font-size: 2rem; }
+            .tabs-nav { flex-direction: column; border-radius: 10px; }
+            .tab-btn { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+            .tab-btn:last-child { border-bottom: none; }
         }
     </style>
 {% endblock %}
 
 {% block body %}
-    <div class="effects-container">
-        <a href="{{ path('app_heroes_index') }}" class="back-btn">
-            ← Retour aux héros
-        </a>
+<div class="effects-container">
+    <a href="{{ path('app_heroes_index') }}" class="back-btn">← Retour aux héros</a>
 
-        <div class="page-header">
-            <h1 class="page-title">Godforge Buffs, Debuffs, and Disables</h1>
-            <p class="page-subtitle">Guide complet des effets de statut</p>
-        </div>
-
-        <!-- BUFFS SECTION -->
-        <div class="section">
-            <div class="section-header">
-                <span style="font-size: 2.5rem;">✨</span>
-                <h2 class="section-title buffs">Buffs</h2>
-            </div>
-
-            <div class="effects-grid">
-                <div class="effect-card buff">
-                    <div class="effect-icon">🎯</div>
-                    <div class="effect-name">ACC Up</div>
-                    <div class="effect-description">Increases ACC stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Increases ACC stat 20%</div>
-                        <div class="effect-level"><strong>II:</strong> Increases ACC stat 40%</div>
-                        <div class="effect-level"><strong>III:</strong> Increases ACC stat 60%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">⚔️</div>
-                    <div class="effect-name">ATK Up</div>
-                    <div class="effect-description">Increases Hero Battle ATK stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Increases ATK stat 20%</div>
-                        <div class="effect-level"><strong>II:</strong> Increases ATK stat 40%</div>
-                        <div class="effect-level"><strong>III:</strong> Increases ATK stat 60%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🛡️</div>
-                    <div class="effect-name">Barrier</div>
-                    <div class="effect-description">Absorbs incoming damage equal to the strength of the barrier before depleting HP. Barriers can stack and be increased.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🛡️</div>
-                    <div class="effect-name">DEF Up</div>
-                    <div class="effect-description">Increases DEF stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Increases DEF stat 20%</div>
-                        <div class="effect-level"><strong>II:</strong> Increases DEF stat 40%</div>
-                        <div class="effect-level"><strong>III:</strong> Increases DEF stat 60%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">💫</div>
-                    <div class="effect-name">Immortal</div>
-                    <div class="effect-description">HP cannot be reduced below 1. Duration reduced when triggered.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">⚡</div>
-                    <div class="effect-name">INIT Up</div>
-                    <div class="effect-description">Increases INIT stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Increases INIT stat 10%</div>
-                        <div class="effect-level"><strong>II:</strong> Increases INIT stat 20%</div>
-                        <div class="effect-level"><strong>III:</strong> Increases INIT stat 30%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🔄</div>
-                    <div class="effect-name">Intercept</div>
-                    <div class="effect-description">Redirects an attack to the hero that placed Intercept. Duration is reduced when triggered.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">💚</div>
-                    <div class="effect-name">Mend</div>
-                    <div class="effect-description">Reduce Bleed Stacks by 1 and Heal 10% max HP at the start of the turn.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🔥</div>
-                    <div class="effect-name">Phoenix</div>
-                    <div class="effect-description">Instantly revive upon death with 100% HP and 100% turn meter.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🤝</div>
-                    <div class="effect-name">Protect</div>
-                    <div class="effect-description">Ally takes a portion of damage instead</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> 15% of damage transferred</div>
-                        <div class="effect-level"><strong>II:</strong> 30% of damage transferred</div>
-                        <div class="effect-level"><strong>III:</strong> 45% of damage transferred</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">✨</div>
-                    <div class="effect-name">Radiance</div>
-                    <div class="effect-description">Reduces and reflects attack damage</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> 10% reduction and reflection</div>
-                        <div class="effect-level"><strong>II:</strong> 20% reduction and reflection</div>
-                        <div class="effect-level"><strong>III:</strong> 30% reduction and reflection</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🔮</div>
-                    <div class="effect-name">Reflect</div>
-                    <div class="effect-description">Reflect the next non-resisted debuff received. Duration reduced when triggered.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🧿</div>
-                    <div class="effect-name">RES Up</div>
-                    <div class="effect-description">Increases RES stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Increases RES stat 20%</div>
-                        <div class="effect-level"><strong>II:</strong> Increases RES stat 40%</div>
-                        <div class="effect-level"><strong>III:</strong> Increases RES stat 60%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">⚡</div>
-                    <div class="effect-name">Retaliate</div>
-                    <div class="effect-description">Counterattack enemy attackers when hit</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🗡️</div>
-                    <div class="effect-name">Sharpen</div>
-                    <div class="effect-description">Raises Crit Damage stat and strong hit damage</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> +5% Crit Damage</div>
-                        <div class="effect-level"><strong>II:</strong> +10% Crit Damage</div>
-                        <div class="effect-level"><strong>III:</strong> +15% Crit Damage</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🛡️</div>
-                    <div class="effect-name">Shield</div>
-                    <div class="effect-description">Absorbs incoming damage equal to the strength of the Shield before depleting HP. Shields cannot stack or be increased.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">💨</div>
-                    <div class="effect-name">SPD Up</div>
-                    <div class="effect-description">Increases SPD stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Increases SPD stat 10%</div>
-                        <div class="effect-level"><strong>II:</strong> Increases SPD stat 20%</div>
-                        <div class="effect-level"><strong>III:</strong> Increases SPD stat 30%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">💪</div>
-                    <div class="effect-name">Stalwart</div>
-                    <div class="effect-description">Immune to Disable. Duration is reduced when receiving a disable. Removes a disable on initial placement.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">👻</div>
-                    <div class="effect-name">Vanish</div>
-                    <div class="effect-description">Cannot be directly targeted.</div>
-                </div>
-
-                <div class="effect-card buff">
-                    <div class="effect-icon">🛡️</div>
-                    <div class="effect-name">Ward</div>
-                    <div class="effect-description">Immune to attack damage. Duration reduced when triggered.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- DEBUFFS SECTION -->
-        <div class="section">
-            <div class="section-header">
-                <span style="font-size: 2.5rem;">💀</span>
-                <h2 class="section-title debuffs">Debuffs</h2>
-            </div>
-
-            <div class="effects-grid">
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🎯</div>
-                    <div class="effect-name">ACC Down</div>
-                    <div class="effect-description">Decrease ACC stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Decrease ACC stat 20%</div>
-                        <div class="effect-level"><strong>II:</strong> Decrease ACC stat 40%</div>
-                        <div class="effect-level"><strong>III:</strong> Decrease ACC stat 60%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🧪</div>
-                    <div class="effect-name">Acid</div>
-                    <div class="effect-description">Disables Armor Sets and Deals 5% Max HP Damage at the start of the turn. Deals double to Shield and Barrier</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🌀</div>
-                    <div class="effect-name">Aetherburn</div>
-                    <div class="effect-description">Increases Chance to Weak Hit and reduces Divinity</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> 5% Weak Hit, 3% Divinity reduction</div>
-                        <div class="effect-level"><strong>II:</strong> 10% Weak Hit, 6% Divinity reduction</div>
-                        <div class="effect-level"><strong>III:</strong> 15% Weak Hit, 9% Divinity reduction</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">⚔️</div>
-                    <div class="effect-name">ATK Down</div>
-                    <div class="effect-description">Decreases ATK stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Decreases ATK stat 20%</div>
-                        <div class="effect-level"><strong>II:</strong> Decreases ATK stat 40%</div>
-                        <div class="effect-level"><strong>III:</strong> Decreases ATK stat 60%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🚫</div>
-                    <div class="effect-name">Banish</div>
-                    <div class="effect-description">Enemies that die with this debuff cannot be revived whilst this is on. When a revive occurs, the duration of this debuff is reduced.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🔥</div>
-                    <div class="effect-name">Blaze</div>
-                    <div class="effect-description">Deals damage equal to Enemy Max HP to all heroes on the team</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> 2% Enemy Max HP</div>
-                        <div class="effect-level"><strong>II:</strong> 4% Enemy Max HP</div>
-                        <div class="effect-level"><strong>III:</strong> 6% Enemy Max HP</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🩸</div>
-                    <div class="effect-name">Bleed</div>
-                    <div class="effect-description">Deals an enemy 1% of Max HP Damage each turn. Stacks up to 10 times on subsequent application.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">⚰️</div>
-                    <div class="effect-name">Block Revive</div>
-                    <div class="effect-description">Enemies that die with this debuff cannot be revived.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🔨</div>
-                    <div class="effect-name">Blunt</div>
-                    <div class="effect-description">Decreases Strong Hit Damage and Critical Damage</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> -10% damage</div>
-                        <div class="effect-level"><strong>II:</strong> -20% damage</div>
-                        <div class="effect-level"><strong>III:</strong> -30% damage</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">💘</div>
-                    <div class="effect-name">Charm</div>
-                    <div class="effect-description">Takes the next attack for the enemy that placed this debuff. Duration reduced when triggered.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🌀</div>
-                    <div class="effect-name">Corrupt</div>
-                    <div class="effect-description">The unit that placed this debuff steals any buffs received. Duration reduced when triggered.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🗡️</div>
-                    <div class="effect-name">Curse</div>
-                    <div class="effect-description">Reduced incoming healing and shield/barrier strength</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> 25% reduction</div>
-                        <div class="effect-level"><strong>II:</strong> 50% reduction</div>
-                        <div class="effect-level"><strong>III:</strong> 75% reduction</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🛡️</div>
-                    <div class="effect-name">DEF Down</div>
-                    <div class="effect-description">Decreases DEF stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Decreases DEF stat 20%</div>
-                        <div class="effect-level"><strong>II:</strong> Decreases DEF stat 40%</div>
-                        <div class="effect-level"><strong>III:</strong> Decreases DEF stat 60%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🩸</div>
-                    <div class="effect-name">Drain</div>
-                    <div class="effect-description">Attackers deal increased damage and heal for the damage inflicted</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> 10% damage + heal</div>
-                        <div class="effect-level"><strong>II:</strong> 20% damage + heal</div>
-                        <div class="effect-level"><strong>III:</strong> 30% damage + heal</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">💔</div>
-                    <div class="effect-name">Hex</div>
-                    <div class="effect-description">Allies also take damage received. This is halved for AoE Damage</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> 5% damage shared</div>
-                        <div class="effect-level"><strong>II:</strong> 10% damage shared</div>
-                        <div class="effect-level"><strong>III:</strong> 15% damage shared</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">⚡</div>
-                    <div class="effect-name">INIT Down</div>
-                    <div class="effect-description">Decreases INIT stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Decreases INIT stat 10%</div>
-                        <div class="effect-level"><strong>II:</strong> Decreases INIT stat 20%</div>
-                        <div class="effect-level"><strong>III:</strong> Decreases INIT stat 30%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🔒</div>
-                    <div class="effect-name">Lock Core</div>
-                    <div class="effect-description">Core abilities cannot be used.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🔒</div>
-                    <div class="effect-name">Lock Passive</div>
-                    <div class="effect-description">Passive abilities cannot be used.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🔒</div>
-                    <div class="effect-name">Lock Ultimate</div>
-                    <div class="effect-description">Ultimate abilities cannot be used.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">🧿</div>
-                    <div class="effect-name">RES Down</div>
-                    <div class="effect-description">Decreases RES stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Decreases RES stat 20%</div>
-                        <div class="effect-level"><strong>II:</strong> Decreases RES stat 40%</div>
-                        <div class="effect-level"><strong>III:</strong> Decreases RES stat 60%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">💨</div>
-                    <div class="effect-name">SPD Down</div>
-                    <div class="effect-description">Decreases SPD stat</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> Decreases SPD stat 10%</div>
-                        <div class="effect-level"><strong>II:</strong> Decreases SPD stat 20%</div>
-                        <div class="effect-level"><strong>III:</strong> Decreases SPD stat 30%</div>
-                    </div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">😨</div>
-                    <div class="effect-name">Terrify</div>
-                    <div class="effect-description">Increases Divinity Cost by 50%.</div>
-                </div>
-
-                <div class="effect-card debuff">
-                    <div class="effect-icon">💢</div>
-                    <div class="effect-name">Vulnerable</div>
-                    <div class="effect-description">Increases damage dealt by debuffs</div>
-                    <div class="effect-levels">
-                        <div class="effect-level"><strong>I:</strong> +20% debuff damage</div>
-                        <div class="effect-level"><strong>II:</strong> +40% debuff damage</div>
-                        <div class="effect-level"><strong>III:</strong> +60% debuff damage</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- DISABLES SECTION -->
-        <div class="section">
-            <div class="section-header">
-                <span style="font-size: 2.5rem;">🚫</span>
-                <h2 class="section-title disables">Disables</h2>
-            </div>
-
-            <div class="effects-grid">
-                <div class="effect-card disable">
-                    <div class="effect-icon">🌀</div>
-                    <div class="effect-name">Confuse</div>
-                    <div class="effect-description">This unit attacks a random ally with its basic ability on its turn, doing 75% reduced damage.</div>
-                </div>
-
-                <div class="effect-card disable">
-                    <div class="effect-icon">😔</div>
-                    <div class="effect-name">Despair</div>
-                    <div class="effect-description">Skips next turn. Cannot receive positive buffs or effects. Duration is reduced when attempt to receive a positive buff or effect.</div>
-                </div>
-
-                <div class="effect-card disable">
-                    <div class="effect-icon">❄️</div>
-                    <div class="effect-name">Freeze</div>
-                    <div class="effect-description">Skips next turn. Incoming Turn Meter Fill effects are reduced by 50%.</div>
-                </div>
-
-                <div class="effect-card disable">
-                    <div class="effect-icon">🐸</div>
-                    <div class="effect-name">Morph</div>
-                    <div class="effect-description">Transforms the hero into a creature - Wolf, Bear or Frog. Heroes retain their stats but only have 1 ability.</div>
-                </div>
-
-                <div class="effect-card disable">
-                    <div class="effect-icon">🗿</div>
-                    <div class="effect-name">Petrify</div>
-                    <div class="effect-description">Skips next turn. Increase Divinity Effects are Reduced by 50%</div>
-                </div>
-
-                <div class="effect-card disable">
-                    <div class="effect-icon">😴</div>
-                    <div class="effect-name">Sleep</div>
-                    <div class="effect-description">Skips next turn. Incoming Damage from Attacks increases by 30%. Duration reduced when attacked (per ability).</div>
-                </div>
-
-                <div class="effect-card disable">
-                    <div class="effect-icon">⚡</div>
-                    <div class="effect-name">Stun</div>
-                    <div class="effect-description">Skips next turn.</div>
-                </div>
-
-                <div class="effect-card disable">
-                    <div class="effect-icon">🎯</div>
-                    <div class="effect-name">Taunt</div>
-                    <div class="effect-description">Attacks the unit that placed this disable with its basic ability, doing 25% reduced damage.</div>
-                </div>
-            </div>
-        </div>
+    <div class="page-header">
+        <h1 class="page-title">Buffs, Debuffs & Disables</h1>
+        <p class="page-subtitle">Guide complet des effets de statut</p>
     </div>
+
+    {# ── Onglets ── #}
+    <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="buff">
+            ✨ Buffs <span class="tab-count">{{ buffGroups|length }}</span>
+        </button>
+        <button class="tab-btn" data-tab="debuff">
+            💀 Debuffs <span class="tab-count">{{ debuffGroups|length }}</span>
+        </button>
+        <button class="tab-btn" data-tab="disable">
+            🚫 Disables <span class="tab-count">{{ disableGroups|length }}</span>
+        </button>
+    </div>
+
+    {# ── Panneaux ── #}
+    {% set sections = [
+        { key: 'buffGroups',    type: 'buff',    panel: 'buff'    },
+        { key: 'debuffGroups',  type: 'debuff',  panel: 'debuff'  },
+        { key: 'disableGroups', type: 'disable', panel: 'disable' },
+    ] %}
+
+    {% for section in sections %}
+        {% set groups = attribute(_context, section.key) %}
+        <div class="tab-panel {{ loop.first ? 'active' : '' }}" id="panel-{{ section.panel }}">
+            <div class="effects-grid">
+                {% for group in groups %}
+                <div class="effect-card {{ section.type }}">
+                    <div class="card-header">
+                        <div class="effect-icon-wrap">
+                            {% if group.iconUrl %}
+                                <img src="{{ group.iconUrl }}" alt="{{ group.name }}" loading="lazy"
+                                     onerror="this.parentNode.innerHTML='<span class=effect-icon-placeholder>{{ group.name|slice(0,1) }}</span>'">
+                            {% else %}
+                                <span class="effect-icon-placeholder">{{ group.name|slice(0,1) }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-header-right">
+                            <div class="effect-name">{{ group.name }}</div>
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                {% if group.tiers|length > 0 %}
+                                    <div class="tier-badges">
+                                        {% for tier, desc in group.tiers %}
+                                            <span class="tier-badge" title="{{ desc }}">{{ tier }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <span class="hero-count {{ group.heroCount > 0 ? 'has-heroes' : '' }}">
+                                    {{ group.heroCount > 0 ? group.heroCount ~ ' heroes' : 'No current heroes' }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if group.description %}
+                        <div class="effect-description">{{ group.description }}</div>
+                    {% endif %}
+
+                    {% if group.tiers|length > 1 %}
+                        <div class="effect-tiers">
+                            {% for tier, desc in group.tiers %}
+                                <div class="effect-tier-row">
+                                    <span class="tier-label">{{ tier }}</span>
+                                    <span>{{ desc }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('panel-' + tab).classList.add('active');
+    });
+});
+</script>
 {% endblock %}

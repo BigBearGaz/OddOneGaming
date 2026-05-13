@@ -1351,6 +1351,128 @@
                         {% endif %}
                     </div>
 
+                    <!-- Stats interactives -->
+                    {% if hero.statHp or hero.statAtk %}
+                    <div style="margin-bottom: 24px; background: rgba(0,0,0,0.3); border: 1px solid var(--rarity-border); border-radius: 12px; padding: 16px;">
+
+                        <!-- Header avec label rank/level -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                            <div style="font-size:0.75rem; font-weight:700; color: var(--rarity-primary); text-transform:uppercase; letter-spacing:1px;">Base Stats</div>
+                            <div id="statRankLabel" style="font-size:0.8rem; font-weight:700; color: var(--rarity-primary);">Rank 1 / Level 1</div>
+                        </div>
+
+                        <!-- Slider level -->
+                        <div style="margin-bottom:16px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:0.75rem; color:rgba(255,255,255,0.4);">1</span>
+                                <input type="range" id="statLevelSlider" min="1" max="60" value="1"
+                                    style="flex:1; accent-color: var(--rarity-primary); cursor:pointer; height:4px;">
+                                <span style="font-size:0.75rem; color:rgba(255,255,255,0.4);">60</span>
+                            </div>
+                        </div>
+
+                        <!-- Grille des stats -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                            <div class="stat-box" data-stat="hp" style="display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px;">
+                                <i class="fas fa-heart" style="color: var(--rarity-primary); font-size:1rem; width:16px; text-align:center;"></i>
+                                <div><div style="font-size:0.7rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">HP</div><div class="stat-val" style="font-size:1rem; font-weight:700; color:#fff;">{{ hero.statHp }}</div></div>
+                            </div>
+                            <div class="stat-box" data-stat="atk" style="display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px;">
+                                <i class="fas fa-sword" style="color: var(--rarity-primary); font-size:1rem; width:16px; text-align:center;"></i>
+                                <div><div style="font-size:0.7rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">ATK</div><div class="stat-val" style="font-size:1rem; font-weight:700; color:#fff;">{{ hero.statAtk }}</div></div>
+                            </div>
+                            <div class="stat-box" data-stat="def" style="display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px;">
+                                <i class="fas fa-shield" style="color: var(--rarity-primary); font-size:1rem; width:16px; text-align:center;"></i>
+                                <div><div style="font-size:0.7rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">DEF</div><div class="stat-val" style="font-size:1rem; font-weight:700; color:#fff;">{{ hero.statDef }}</div></div>
+                            </div>
+                            <div class="stat-box" data-stat="spd" style="display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px;">
+                                <i class="fas fa-wind" style="color: var(--rarity-primary); font-size:1rem; width:16px; text-align:center;"></i>
+                                <div><div style="font-size:0.7rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">SPD</div><div class="stat-val" style="font-size:1rem; font-weight:700; color:#fff;">{{ hero.statSpd }}</div></div>
+                            </div>
+                            <div class="stat-box" data-stat="init" style="display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px;">
+                                <i class="fas fa-bolt" style="color: var(--rarity-primary); font-size:1rem; width:16px; text-align:center;"></i>
+                                <div><div style="font-size:0.7rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">INIT</div><div class="stat-val" style="font-size:1rem; font-weight:700; color:#fff;">{{ hero.statInit }}</div></div>
+                            </div>
+                            <div class="stat-box" data-stat="acc" style="display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px;">
+                                <i class="fas fa-crosshairs" style="color: var(--rarity-primary); font-size:1rem; width:16px; text-align:center;"></i>
+                                <div><div style="font-size:0.7rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">ACC</div><div class="stat-val" style="font-size:1rem; font-weight:700; color:#fff;">{{ hero.statAcc }}</div></div>
+                            </div>
+                            <div class="stat-box" data-stat="res" style="display:flex; align-items:center; gap:10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px;">
+                                <i class="fas fa-circle-half-stroke" style="color: var(--rarity-primary); font-size:1rem; width:16px; text-align:center;"></i>
+                                <div><div style="font-size:0.7rem; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.5px;">RES</div><div class="stat-val" style="font-size:1rem; font-weight:700; color:#fff;">{{ hero.statRes }}</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                    (function() {
+                        const BASE = {
+                            hp:   {{ hero.statHp ?? 0 }},
+                            atk:  {{ hero.statAtk ?? 0 }},
+                            def:  {{ hero.statDef ?? 0 }},
+                            spd:  {{ hero.statSpd ?? 0 }},
+                            init: {{ hero.statInit ?? 0 }},
+                            acc:  {{ hero.statAcc ?? 0 }},
+                            res:  {{ hero.statRes ?? 0 }},
+                        };
+                        const SCALING = {{ hero.statScalingJson ? hero.statScalingJson|raw : '[]' }};
+                        // HP, ATK, DEF seuls scalent avec le level (confirmé via l'API)
+                        const LEVEL_SCALES = ['hp', 'atk', 'def'];
+                        // Facteur au level 60 (dérivé empiriquement : constant pour tous les héros)
+                        const MAX_FACTOR = 9.2453;
+
+                        function levelFactor(level) {
+                            return 1 + (MAX_FACTOR - 1) * (level - 1) / 59;
+                        }
+
+                        function rankFromLevel(level) {
+                            return Math.min(Math.ceil(level / 10), 6);
+                        }
+
+                        function calcStats(level) {
+                            const rank = rankFromLevel(level);
+                            const s = Object.assign({}, BASE);
+
+                            // Appliquer les bonus d'ascension des rangs précédents
+                            for (const b of SCALING) {
+                                if (b.rank < rank) {
+                                    const key = b.stat.toLowerCase();
+                                    if (key in s) {
+                                        if (b.multiplier) s[key] = s[key] * (1 + b.multiplier);
+                                        if (b.flat_bonus)  s[key] = s[key] + b.flat_bonus;
+                                    }
+                                }
+                            }
+
+                            // Scaling par level sur HP/ATK/DEF
+                            const lf = levelFactor(level);
+                            for (const k of LEVEL_SCALES) {
+                                if (s[k]) s[k] = s[k] * lf;
+                            }
+
+                            for (const k in s) s[k] = Math.round(s[k]);
+                            return s;
+                        }
+
+                        const slider = document.getElementById('statLevelSlider');
+                        const label  = document.getElementById('statRankLabel');
+
+                        function update() {
+                            const level = parseInt(slider.value);
+                            const rank  = rankFromLevel(level);
+                            label.textContent = 'Rank ' + rank + ' / Level ' + level;
+                            const stats = calcStats(level);
+                            document.querySelectorAll('.stat-box').forEach(box => {
+                                const key = box.dataset.stat;
+                                if (key in stats) box.querySelector('.stat-val').textContent = stats[key];
+                            });
+                        }
+
+                        slider.addEventListener('input', update);
+                    })();
+                    </script>
+                    {% endif %}
+
                     <!-- Weapons and Leader -->
                     <div class="weapons-leader-grid">
                         {% if hero.weapons|length > 0 %}
@@ -1377,16 +1499,33 @@
                         {% endif %}
 
                         {% if hero.leaderEntity %}
+                            {% set statColors = {
+                                'HP':    '#22c55e',
+                                'ATK':   '#ef4444',
+                                'DEF':   '#3b82f6',
+                                'SPD':   '#eab308',
+                                'FTH':   '#f97316',
+                                'ACC':   '#a855f7',
+                                'RES':   '#06b6d4',
+                                'CDMG':  '#ec4899',
+                                'CRATE': '#f43f5e',
+                            } %}
+                            {% set statName = hero.leaderEntity.name %}
+                            {% set statColor = statColors[statName] ?? '#ffd700' %}
                             <div class="info-box info-box-leader">
                                 <div class="info-box-title">👑 Leader Aura</div>
                                 <div class="leader-content">
-                                    {% if hero.leaderEntity.imageUrl %}
-                                        <div class="leader-image">
-                                            <img src="{{ hero.leaderEntity.imageUrl }}" alt="{{ hero.leaderEntity.name }}">
-                                        </div>
-                                    {% endif %}
+                                    <div class="leader-image" style="background: linear-gradient(135deg, {{ statColor }}33, {{ statColor }}11); border-color: {{ statColor }}99; box-shadow: 0 4px 15px {{ statColor }}44;">
+                                        {% if hero.leaderEntity.imageUrl %}
+                                            <img src="{{ hero.leaderEntity.imageUrl }}" alt="{{ statName }}"
+                                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" style="width:100%;height:100%;object-fit:contain;">
+                                            <span style="display:none;font-size:0.75rem;font-weight:900;color:{{ statColor }};align-items:center;justify-content:center;">{{ statName }}</span>
+                                        {% else %}
+                                            <span style="font-size:0.75rem;font-weight:900;color:{{ statColor }};">{{ statName }}</span>
+                                        {% endif %}
+                                    </div>
                                     <div class="leader-text">
-                                        <div style="font-weight: 700; color: #ffd700; margin-bottom: 4px;">{{ hero.leaderEntity.name }}</div>
+                                        <div style="font-weight: 700; color: {{ statColor }}; margin-bottom: 4px;">{{ statName }} Leader</div>
                                         {% if hero.leaderValue %}
                                             <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.8);">{{ hero.leaderValue }}</div>
                                         {% endif %}
@@ -1444,38 +1583,35 @@
                         </div>
                     {% endif %}
 
-                    <!-- Recommended Equipment -->
+                    <!-- Recommended Sets -->
+                    {% if hero.recommendedSets|length > 0 %}
+                        <div class="equipment-section">
+                            <h3 class="section-title">⚡ Recommended Sets</h3>
+                            <div class="sets-triangle-container">
+                                <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 15px;">
+                                    {% for set in hero.recommendedSets %}
+                                        <div class="set-item-triangle" tabindex="0" data-name="{{ set.name|e('html_attr') }}" data-description="{{ set.effect ? (set.effect|striptags)|e('html_attr') : '' }}">
+                                            {% if set.imageUrl %}
+                                                <img src="{{ set.imageUrl }}" alt="{{ set.name }}">
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div style="text-align: center;">
+                                    {% for set in hero.recommendedSets %}
+                                        <span style="display: inline-block; background: var(--rarity-bg); color: var(--rarity-primary); padding: 5px 12px; border-radius: 8px; margin: 3px; font-size: 0.85rem; font-weight: 600;">
+                                            {{ set.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Recommended Armor -->
                     {% if hero.armors|length > 0 %}
                         <div class="equipment-section">
                             <h3 class="section-title">🛡️ Recommended Armor</h3>
-                            
-                            <!-- Sets Display -->
-                            {% if hero.recommendedSets|length > 0 %}
-                                <div class="sets-triangle-container">
-                                    <div class="sets-triangle-title">⚡ Recommended Sets</div>
-                                    
-                                    <!-- Affichage en grille flexible -->
-                                    <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 15px;">
-                                        {% for set in hero.recommendedSets %}
-                                            <div class="set-item-triangle" tabindex="0" data-name="{{ set.name|e('html_attr') }}" data-description="{{ set.effect ? (set.effect|striptags)|e('html_attr') : '' }}">
-                                                {% if set.imageUrl %}
-                                                    <img src="{{ set.imageUrl }}" alt="{{ set.name }}">
-                                                {% endif %}
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                    
-                                    <!-- Liste des noms des sets -->
-                                    <div style="text-align: center;">
-                                        {% for set in hero.recommendedSets %}
-                                            <span style="display: inline-block; background: var(--rarity-bg); color: var(--rarity-primary); padding: 5px 12px; border-radius: 8px; margin: 3px; font-size: 0.85rem; font-weight: 600;">
-                                                {{ set.name }}
-                                            </span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            {% endif %}
-
                             <div class="equipment-grid">
                                 {% for armor in hero.armors %}
                                     <div class="equipment-item">
@@ -1505,185 +1641,51 @@
             <div class="skills-section">
                 <h2 class="skills-title">⚡ Skills & Abilities</h2>
                 <div class="skills-grid">
-                    <!-- Base Skill -->
-                    {% if hero.base %}
-                        <div class="skill-card skill-card-base">
-                            <div class="skill-header">
-                                <div class="skill-title-wrapper">
-                                    <span class="skill-badge skill-badge-base">S1</span>
-                                    <span class="skill-name">Base Skill</span>
-                                </div>
-                                {% set baseSkill = hero.getSkillUpgradeByType('base') %}
-                                {% if baseSkill and baseSkill.cooldown %}
-                                    <div class="skill-meta-badges">
-                                        <div class="cooldown-badge">
-                                            <i class="fas fa-clock"></i> {{ baseSkill.cooldown }} turns
-                                        </div>
+                    {% set skillDefs = [
+                        { field: hero.base,     type: 'basic',   badge: 'S1', badgeClass: 'base',    label: 'Basic' },
+                        { field: hero.core,     type: 'core',    badge: 'S2', badgeClass: 'core',    label: 'Core' },
+                        { field: hero.ultimate, type: 'ultimate',badge: 'S3', badgeClass: 'ultimate', label: 'Ultimate' },
+                        { field: hero.passive,  type: 'passive', badge: 'P',  badgeClass: 'passive', label: 'Passive' },
+                    ] %}
+
+                    {% for skill in skillDefs %}
+                        {% if skill.field %}
+                            {% set parts = skill.field|split('|||', 3) %}
+                            {% set abilityName = parts[0] %}
+                            {% set abilityDesc = parts[1] ?? skill.field %}
+                            {% set abilityIcon = parts[2] ?? '' %}
+                            <div class="skill-card skill-card-{{ skill.badgeClass }}">
+                                <div class="skill-header">
+                                    <div class="skill-title-wrapper">
+                                        {% if abilityIcon %}
+                                            <img src="{{ abilityIcon }}" alt="{{ abilityName }}"
+                                                 style="width:42px;height:42px;border-radius:8px;object-fit:cover;border:2px solid currentColor;flex-shrink:0;"
+                                                 onerror="this.style.display='none'">
+                                        {% endif %}
+                                        <span class="skill-badge skill-badge-{{ skill.badgeClass }}">{{ skill.badge }}</span>
+                                        <span class="skill-name">{{ abilityName ?: skill.label }}</span>
                                     </div>
-                                {% endif %}
-                            </div>
-                            <div class="skill-body">
-                                <div class="skill-description">{{ hero.base|parse_effects|raw }}</div>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <!-- Core Skill -->
-                    {% if hero.core %}
-                        <div class="skill-card skill-card-core">
-                            <div class="skill-header">
-                                <div class="skill-title-wrapper">
-                                    <span class="skill-badge skill-badge-core">S2</span>
-                                    <span class="skill-name">Core Skill</span>
-                                </div>
-                                {% set coreSkill = hero.getSkillUpgradeByType('core') %}
-                                {% if coreSkill and coreSkill.cooldown %}
-                                    <div class="skill-meta-badges">
-                                        <div class="cooldown-badge">
-                                            <i class="fas fa-clock"></i> {{ coreSkill.cooldown }} turns
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="skill-body">
-                                <div class="skill-description">{{ hero.core|parse_effects|raw }}</div>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <!-- Ultimate -->
-                    {% if hero.ultimate %}
-                        <div class="skill-card skill-card-ultimate">
-                            <div class="skill-header">
-                                <div class="skill-title-wrapper">
-                                    <span class="skill-badge skill-badge-ultimate">S3</span>
-                                    <span class="skill-name">Ultimate</span>
-                                </div>
-                                <div class="skill-meta-badges">
-                                    {% set ultimateSkill = hero.getSkillUpgradeByType('ultimate') %}
-                                    {% if ultimateSkill and ultimateSkill.cooldown %}
-                                        <div class="cooldown-badge">
-                                            <i class="fas fa-clock"></i> {{ ultimateSkill.cooldown }} turns
-                                        </div>
-                                    {% endif %}
-                                    {% if hero.InitialDivinity %}
-                                        <div class="divinity-badge divinity-initial">
-                                            Initial: {{ hero.InitialDivinity }}
-                                        </div>
-                                    {% endif %}
-                                    {% if hero.DivinityCost %}
-                                        <div class="divinity-badge divinity-cost">
-                                            Cost: {{ hero.DivinityCost }}
+                                    {% if skill.type == 'ultimate' %}
+                                        <div class="skill-meta-badges">
+                                            {% if hero.InitialDivinity %}
+                                                <div class="divinity-badge divinity-initial">Initial: {{ hero.InitialDivinity }}</div>
+                                            {% endif %}
+                                            {% if hero.DivinityCost %}
+                                                <div class="divinity-badge divinity-cost">Cost: {{ hero.DivinityCost }}</div>
+                                            {% endif %}
                                         </div>
                                     {% endif %}
                                 </div>
-                            </div>
-                            <div class="skill-body">
-                                <div class="skill-description">{{ hero.ultimate|parse_effects|raw }}</div>
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <!-- Passive -->
-                    {% if hero.passive %}
-                        <div class="skill-card skill-card-passive">
-                            <div class="skill-header">
-                                <div class="skill-title-wrapper">
-                                    <span class="skill-badge skill-badge-passive">Passive</span>
-                                    <span class="skill-name">Passive Skill</span>
+                                <div class="skill-body">
+                                    <div class="skill-description">{{ abilityDesc|parse_effects|raw }}</div>
                                 </div>
                             </div>
-                            <div class="skill-body">
-                                <div class="skill-description">{{ hero.passive|parse_effects|raw }}</div>
-                            </div>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    {% endfor %}
                 </div>
             </div>
 
-            <!-- SKILL LEVEL UPGRADES -->
-            {% if hero.skillUpgrades|length > 0 %}
-                <div class="bonuses-section" style="background: rgba(6, 182, 212, 0.05); border-top: 2px solid rgba(6, 182, 212, 0.3); padding: 30px;">
-                    <h2 class="bonuses-title" style="color: #06b6d4;">🔥 Skill Level Upgrades</h2>
-                    <div class="accordion" id="skillUpgradesAccordion">
-                        {% for skillUpgrade in hero.skillUpgrades %}
-                            <div class="accordion-item mb-3" style="background: rgba(6, 182, 212, 0.1); border: 2px solid rgba(6, 182, 212, 0.3);">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#skillUpgrade{{ loop.index }}" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4; font-weight: 700;">
-                                        {{ skillUpgrade.skillType|upper }}
-                                    </button>
-                                </h2>
-                                <div id="skillUpgrade{{ loop.index }}" class="accordion-collapse collapse">
-                                    <div class="accordion-body" style="background: rgba(0, 0, 0, 0.3); color: rgba(255, 255, 255, 0.9);">
-                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px;">
-                                            {% if skillUpgrade.level1 %}
-                                                <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
-                                                    <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 1</span>
-                                                    <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level1 }}</div>
-                                                </div>
-                                            {% endif %}
-                                            {% if skillUpgrade.level2 %}
-                                                <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
-                                                    <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 2</span>
-                                                    <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level2 }}</div>
-                                                </div>
-                                            {% endif %}
-                                            {% if skillUpgrade.level3 %}
-                                                <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
-                                                    <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 3</span>
-                                                    <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level3 }}</div>
-                                                </div>
-                                            {% endif %}
-                                            {% if skillUpgrade.level4 %}
-                                                <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
-                                                    <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 4</span>
-                                                    <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level4 }}</div>
-                                                </div>
-                                            {% endif %}
-                                            {% if skillUpgrade.level5 %}
-                                                <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
-                                                    <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 5</span>
-                                                    <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level5 }}</div>
-                                                </div>
-                                            {% endif %}
-                                            {% if skillUpgrade.level6 %}
-                                                <div style="background: rgba(6, 182, 212, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #06b6d4;">
-                                                    <span style="background: rgba(6, 182, 212, 0.5); color: #ffffff; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; margin-right: 8px;">Level 6</span>
-                                                    <div style="margin-top: 8px; font-size: 0.9rem;">{{ skillUpgrade.level6 }}</div>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
-
-            <!-- SKILL AWAKENINGS -->
-            {% if hero.awakenings|length > 0 %}
-                <div class="bonuses-section" style="background: rgba(255, 215, 0, 0.05); border-top: 2px solid rgba(255, 215, 0, 0.3);">
-                    <h2 class="bonuses-title" style="color: #ffd700;">🌟 Skill Awakenings</h2>
-                    <div class="accordion" id="awakeningsAccordion">
-                        {% for awakening in hero.awakenings %}
-                            <div class="accordion-item mb-3" style="background: rgba(255, 215, 0, 0.1); border: 2px solid rgba(255, 215, 0, 0.3);">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#awakening{{ loop.index }}" style="background: rgba(255, 215, 0, 0.15); color: #ffd700; font-weight: 700;">
-                                        <span style="background: rgba(255, 215, 0, 0.5); padding: 5px 12px; border-radius: 8px; margin-right: 12px; color: #0a0e27; font-weight: 700;">Awakening {{ awakening.awakeningLevel }}</span>
-                                        {{ awakening.skillType }}
-                                    </button>
-                                </h2>
-                                <div id="awakening{{ loop.index }}" class="accordion-collapse collapse">
-                                    <div class="accordion-body" style="background: rgba(0, 0, 0, 0.3); color: rgba(255, 255, 255, 0.9);">
-                                        {{ awakening.effectDescription }}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
+            {# Skill Level Upgrades et Skill Awakenings non utilisés — données non renseignées via API #}
 
             <!-- Bonuses Section -->
             {% if hero.awakeningBonuses or hero.ascensionBonuses %}

@@ -82,6 +82,30 @@ class Heroes
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $InitialDivinity = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $statHp = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $statAtk = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $statDef = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $statSpd = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $statInit = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $statAcc = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $statRes = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $statScalingJson = null;
+
     /** @var Collection<int, Buffs> */
     #[ORM\ManyToMany(targetEntity: Buffs::class)]
     #[ORM\JoinTable(name: 'heroes_buffs')]
@@ -336,6 +360,30 @@ class Heroes
         $this->InitialDivinity = $i;
         return $this;
     }
+
+    public function getStatHp(): ?int { return $this->statHp; }
+    public function setStatHp(?int $v): static { $this->statHp = $v; return $this; }
+
+    public function getStatAtk(): ?int { return $this->statAtk; }
+    public function setStatAtk(?int $v): static { $this->statAtk = $v; return $this; }
+
+    public function getStatDef(): ?int { return $this->statDef; }
+    public function setStatDef(?int $v): static { $this->statDef = $v; return $this; }
+
+    public function getStatSpd(): ?int { return $this->statSpd; }
+    public function setStatSpd(?int $v): static { $this->statSpd = $v; return $this; }
+
+    public function getStatInit(): ?int { return $this->statInit; }
+    public function setStatInit(?int $v): static { $this->statInit = $v; return $this; }
+
+    public function getStatAcc(): ?int { return $this->statAcc; }
+    public function setStatAcc(?int $v): static { $this->statAcc = $v; return $this; }
+
+    public function getStatRes(): ?int { return $this->statRes; }
+    public function setStatRes(?int $v): static { $this->statRes = $v; return $this; }
+
+    public function getStatScalingJson(): ?string { return $this->statScalingJson; }
+    public function setStatScalingJson(?string $v): static { $this->statScalingJson = $v; return $this; }
 
     // --- COLLECTIONS ---
 

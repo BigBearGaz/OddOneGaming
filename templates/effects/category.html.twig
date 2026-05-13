@@ -1,0 +1,212 @@
+{% extends 'base.html.twig' %}
+
+{% set cfg = {
+    'buff':    { label: 'Buffs',    icon: '✨', color: '#3b82f6', rgb: '59,130,246',  css: 'buff'    },
+    'debuff':  { label: 'Debuffs',  icon: '💀', color: '#ef4444', rgb: '239,68,68',   css: 'debuff'  },
+    'disable': { label: 'Disables', icon: '🚫', color: '#a855f7', rgb: '168,85,247',  css: 'disable' },
+} %}
+{% set c = cfg[type] %}
+
+{% block title %}Godforge {{ c.label }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0a0e27 100%);
+            min-height: 100vh;
+            padding: 100px 20px 50px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .page-container { max-width: 1600px; margin: 0 auto; }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 12px 30px; background: rgba(255,255,255,0.05);
+            color: #00ff88; text-decoration: none; border-radius: 25px;
+            font-weight: 600; border: 1px solid rgba(0,255,136,0.3);
+            transition: all 0.3s ease; margin-bottom: 30px;
+        }
+        .back-btn:hover { background: rgba(0,255,136,0.1); border-color: #00ff88; transform: translateX(-5px); color: #00ff88; }
+
+        .page-header { text-align: center; margin-bottom: 40px; }
+        .page-title {
+            font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: 10px;
+        }
+        .page-title span { color: {{ c.color }}; }
+        .page-subtitle { color: rgba(255,255,255,0.6); font-size: 1.1rem; }
+
+        /* ── Nav entre les 3 catégories ── */
+        .cat-nav {
+            display: flex; gap: 0; margin-bottom: 40px;
+            border-radius: 14px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+        }
+        .cat-link {
+            flex: 1; padding: 14px 20px;
+            text-decoration: none; text-align: center;
+            font-size: 0.95rem; font-weight: 700; letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.45);
+            border-right: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.25s ease; position: relative;
+        }
+        .cat-link:last-child { border-right: none; }
+        .cat-link:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.05); }
+        .cat-link.active-buff    { color: #3b82f6; background: rgba(59,130,246,0.12);  }
+        .cat-link.active-debuff  { color: #ef4444; background: rgba(239,68,68,0.12);   }
+        .cat-link.active-disable { color: #a855f7; background: rgba(168,85,247,0.12);  }
+        .cat-link.active-buff::after,
+        .cat-link.active-debuff::after,
+        .cat-link.active-disable::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+            background: currentColor; border-radius: 3px 3px 0 0;
+        }
+        .cat-count {
+            font-size: 0.73rem; font-weight: 600; padding: 1px 7px;
+            border-radius: 20px; background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5); margin-left: 6px;
+        }
+
+        /* ── Grille ── */
+        .effects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .effect-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px; padding: 20px;
+            border: 1px solid rgba({{ c.rgb }},0.2);
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; gap: 12px;
+            --ac: {{ c.color }};
+        }
+        .effect-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba({{ c.rgb }},0.6);
+            box-shadow: 0 12px 32px rgba({{ c.rgb }},0.15);
+        }
+        .effect-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, {{ c.color }}, transparent);
+        }
+
+        .card-header { display: flex; align-items: center; gap: 14px; }
+
+        .effect-icon-wrap {
+            width: 56px; height: 56px; flex-shrink: 0;
+            border-radius: 10px; overflow: hidden;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid {{ c.color }};
+            display: flex; align-items: center; justify-content: center;
+        }
+        .effect-icon-wrap img { width: 100%; height: 100%; object-fit: contain; }
+        .effect-icon-placeholder {
+            font-size: 1.4rem; color: {{ c.color }};
+            font-weight: 900; text-transform: uppercase;
+        }
+
+        .card-header-right { flex: 1; min-width: 0; }
+
+        .effect-name {
+            font-size: 1.05rem; font-weight: 800;
+            color: #fff; text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+
+        .tier-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+        .tier-badge {
+            display: inline-block; padding: 2px 8px;
+            border-radius: 4px; font-size: 0.75rem; font-weight: 700;
+            background: {{ c.color }}; color: #fff; cursor: default;
+        }
+
+.effect-description {
+            color: rgba(255,255,255,0.75);
+            font-size: 0.88rem; line-height: 1.6; flex: 1;
+        }
+
+        .effect-tiers {
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 10px; display: flex; flex-direction: column; gap: 5px;
+        }
+        .effect-tier-row {
+            display: flex; gap: 8px; align-items: flex-start;
+            font-size: 0.82rem; color: rgba(255,255,255,0.65); line-height: 1.4;
+        }
+        .tier-label {
+            flex-shrink: 0; min-width: 22px; font-weight: 700; color: {{ c.color }};
+        }
+
+        @media (max-width: 768px) {
+            .effects-grid { grid-template-columns: 1fr; }
+            .page-title { font-size: 2rem; }
+            .cat-nav { flex-direction: column; border-radius: 10px; }
+            .cat-link { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+            .cat-link:last-child { border-bottom: none; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="page-container">
+    <a href="{{ path('app_heroes_index') }}" class="back-btn">← Back to Heroes</a>
+
+    <div class="page-header">
+        <h1 class="page-title">{{ c.icon }} <span>{{ c.label }}</span></h1>
+    </div>
+
+    <nav class="cat-nav">
+        <a href="{{ path('app_buffs_index') }}"   class="cat-link {{ type == 'buff'    ? 'active-buff'    : '' }}">✨ Buffs    <span class="cat-count">{{ type == 'buff'    ? groups|length : '' }}</span></a>
+        <a href="{{ path('app_debuffs_index') }}"  class="cat-link {{ type == 'debuff'  ? 'active-debuff'  : '' }}">💀 Debuffs  <span class="cat-count">{{ type == 'debuff'  ? groups|length : '' }}</span></a>
+        <a href="{{ path('app_disable_index') }}"  class="cat-link {{ type == 'disable' ? 'active-disable' : '' }}">🚫 Disables <span class="cat-count">{{ type == 'disable' ? groups|length : '' }}</span></a>
+    </nav>
+
+    <div class="effects-grid">
+        {% for group in groups %}
+        <div class="effect-card">
+            <div class="card-header">
+                <div class="effect-icon-wrap">
+                    {% if group.iconUrl %}
+                        <img src="{{ group.iconUrl }}" alt="{{ group.name }}" loading="lazy"
+                             onerror="this.parentNode.innerHTML='<span class=effect-icon-placeholder>{{ group.name|slice(0,1) }}</span>'">
+                    {% else %}
+                        <span class="effect-icon-placeholder">{{ group.name|slice(0,1) }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-header-right">
+                    <div class="effect-name">{{ group.name }}</div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        {% if group.tiers|length > 0 %}
+                            <div class="tier-badges">
+                                {% for tier, desc in group.tiers %}
+                                    <span class="tier-badge" title="{{ desc }}">{{ tier }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if group.description %}
+                <div class="effect-description">{{ group.description }}</div>
+            {% endif %}
+
+            {% if group.tiers|length > 1 %}
+                <div class="effect-tiers">
+                    {% for tier, desc in group.tiers %}
+                        <div class="effect-tier-row">
+                            <span class="tier-label">{{ tier }}</span>
+                            <span>{{ desc }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

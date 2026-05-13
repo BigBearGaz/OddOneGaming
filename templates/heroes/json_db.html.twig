@@ -1,0 +1,417 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Godforge Hero Database – OddOne Gaming{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            overflow-x: hidden;
+            background:
+                linear-gradient(135deg, rgba(10,14,39,0.93) 0%, rgba(26,31,58,0.93) 100%),
+                url('{{ asset('images/castle-background.jpg') }}') center/cover no-repeat fixed;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(0,255,100,.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0,200,255,.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-section { position: relative; min-height: 100vh; padding: 180px 0 80px; z-index: 1; }
+        .container-custom { max-width: 1400px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 2; }
+
+        /* ---- Header ---- */
+        .page-title {
+            font-size: 3rem; font-weight: 900;
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            text-transform: uppercase; letter-spacing: -1px; margin-bottom: 8px;
+        }
+        .page-subtitle { color: rgba(255,255,255,.55); font-size: 1rem; margin-bottom: 40px; }
+
+        /* ---- Filters ---- */
+        .filters-card {
+            background: rgba(255,255,255,.03); backdrop-filter: blur(20px);
+            border-radius: 20px; border: 1px solid rgba(0,255,136,.2);
+            padding: 30px; margin-bottom: 30px;
+            transition: border-color .4s, box-shadow .4s;
+        }
+        .filters-card:hover { border-color: rgba(0,255,136,.4); box-shadow: 0 20px 60px rgba(0,255,136,.15); }
+        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 16px; }
+        .filter-label { display: block; color: rgba(255,255,255,.85); font-weight: 700; font-size: .8rem; text-transform: uppercase; letter-spacing: .5px; margin-bottom: .5rem; }
+        .filter-input, .filter-select {
+            width: 100%; padding: .75rem 1rem; font-size: .95rem;
+            border: 2px solid rgba(0,255,136,.2); border-radius: 12px;
+            background: rgba(255,255,255,.05); color: #fff;
+            transition: all .3s; cursor: pointer;
+        }
+        .filter-input::placeholder { color: rgba(255,255,255,.35); }
+        .filter-input:focus, .filter-select:focus { outline: none; border-color: #00ff88; background: rgba(255,255,255,.09); box-shadow: 0 0 0 4px rgba(0,255,136,.1); }
+        .filter-select option { background: #1a1f3a; color: #fff; }
+
+        .filter-actions { display: flex; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-reset {
+            padding: 10px 24px; background: rgba(255,255,255,.05); color: #fff;
+            border: 2px solid rgba(255,255,255,.2); border-radius: 50px;
+            font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: .85rem; letter-spacing: .5px;
+            transition: all .3s; text-decoration: none;
+        }
+        .btn-reset:hover { border-color: #00ff88; color: #00ff88; transform: translateY(-2px); }
+
+        /* ---- Counter ---- */
+        .results-counter {
+            background: linear-gradient(135deg, #00ff88, #00ccff); color: #0a0e27;
+            font-size: 1.1rem; font-weight: 700; text-align: center;
+            padding: 13px 30px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,255,136,.3); margin-bottom: 30px;
+        }
+
+        /* ---- Grid ---- */
+        .heroes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px,1fr)); gap: 28px; }
+        .hero-card {
+            background: rgba(255,255,255,.03); backdrop-filter: blur(20px);
+            border-radius: 20px; border: 2px solid rgba(0,255,136,.2);
+            overflow: hidden; transition: all .35s;
+            box-shadow: 0 10px 40px rgba(0,0,0,.3);
+            display: flex; flex-direction: column;
+        }
+        .hero-card:hover { transform: translateY(-8px); box-shadow: 0 22px 60px rgba(0,255,136,.25); }
+        .hero-card.hidden { display: none; }
+
+        /* rarity borders */
+        .hero-card[data-rarity="Legendary"]  { border-color: rgba(255,215,0,.7);  background: linear-gradient(135deg,rgba(255,215,0,.1),rgba(218,165,32,.08)); }
+        .hero-card[data-rarity="Legendary"]:hover { box-shadow: 0 22px 60px rgba(255,215,0,.45); }
+        .hero-card[data-rarity="Epic"]       { border-color: rgba(138,43,226,.7); background: linear-gradient(135deg,rgba(138,43,226,.1),rgba(148,0,211,.08)); }
+        .hero-card[data-rarity="Epic"]:hover { box-shadow: 0 22px 60px rgba(138,43,226,.45); }
+        .hero-card[data-rarity="Rare"]       { border-color: rgba(30,144,255,.7); background: linear-gradient(135deg,rgba(30,144,255,.1),rgba(65,105,225,.08)); }
+        .hero-card[data-rarity="Rare"]:hover { box-shadow: 0 22px 60px rgba(30,144,255,.45); }
+        .hero-card[data-rarity="Uncommon"]   { border-color: rgba(34,197,94,.7);  background: linear-gradient(135deg,rgba(34,197,94,.1),rgba(22,163,74,.08)); }
+        .hero-card[data-rarity="Uncommon"]:hover { box-shadow: 0 22px 60px rgba(34,197,94,.45); }
+        .hero-card[data-rarity="Common"]     { border-color: rgba(156,163,175,.5); }
+
+        /* ---- Hero avatar placeholder ---- */
+        .hero-avatar {
+            height: 160px; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, rgba(0,255,136,.08), rgba(0,200,255,.08));
+            border-bottom: 1px solid rgba(255,255,255,.07); position: relative; overflow: hidden;
+        }
+        .hero-avatar::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 60%, rgba(0,255,136,.12), transparent 70%);
+        }
+        .hero-initials {
+            font-size: 3.5rem; font-weight: 900; letter-spacing: -2px;
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            position: relative; z-index: 1; user-select: none;
+        }
+
+        /* ---- Card header ---- */
+        .card-header-band {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .hero-name { color: #0a0e27; font-weight: 800; font-size: 1.15rem; text-transform: uppercase; letter-spacing: .4px; }
+        .hero-title { color: rgba(10,14,39,.65); font-size: .78rem; font-style: italic; }
+
+        /* ---- Badges ---- */
+        .badges-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 16px 10px; }
+        .badge-pill {
+            font-size: .7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: .4px;
+        }
+        .badge-rarity-Legendary { background: rgba(255,215,0,.18); color: #ffd700; border: 1px solid rgba(255,215,0,.4); }
+        .badge-rarity-Epic       { background: rgba(138,43,226,.18); color: #b44ff0; border: 1px solid rgba(138,43,226,.4); }
+        .badge-rarity-Rare       { background: rgba(30,144,255,.18); color: #4da6ff; border: 1px solid rgba(30,144,255,.4); }
+        .badge-rarity-Uncommon   { background: rgba(34,197,94,.18);  color: #4ade80; border: 1px solid rgba(34,197,94,.4); }
+        .badge-rarity-Common     { background: rgba(156,163,175,.15); color: #9ca3af; border: 1px solid rgba(156,163,175,.3); }
+        .badge-generic { background: rgba(0,255,136,.08); color: rgba(255,255,255,.75); border: 1px solid rgba(0,255,136,.2); }
+        .badge-archetype { background: rgba(0,200,255,.1); color: #00ccff; border: 1px solid rgba(0,200,255,.3); }
+
+        /* ---- Summary ---- */
+        .hero-summary { padding: 0 16px 12px; color: rgba(255,255,255,.55); font-size: .82rem; line-height: 1.5; }
+
+        /* ---- Stats ---- */
+        .stats-section { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.07); }
+        .stats-title { color: #00ff88; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+        .stat-row { display: flex; align-items: center; gap: 8px; }
+        .stat-label { color: rgba(255,255,255,.5); font-size: .7rem; font-weight: 600; text-transform: uppercase; width: 28px; flex-shrink: 0; }
+        .stat-bar-wrap { flex: 1; height: 6px; background: rgba(255,255,255,.08); border-radius: 4px; overflow: hidden; }
+        .stat-bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #00ff88, #00ccff); transition: width .6s ease; }
+        .stat-val { color: rgba(255,255,255,.8); font-size: .7rem; font-weight: 700; width: 28px; text-align: right; flex-shrink: 0; }
+
+        /* ---- Abilities accordion ---- */
+        .abilities-section { border-top: 1px solid rgba(255,255,255,.07); margin-top: auto; }
+        .abilities-toggle {
+            width: 100%; background: rgba(0,255,136,.05); border: none; color: #00ff88;
+            font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+            padding: 12px 16px; text-align: left; cursor: pointer; display: flex; align-items: center;
+            justify-content: space-between; transition: background .25s;
+        }
+        .abilities-toggle:hover { background: rgba(0,255,136,.1); }
+        .abilities-toggle .caret { transition: transform .3s; }
+        .abilities-toggle.open .caret { transform: rotate(180deg); }
+        .abilities-body { display: none; padding: 0 16px 14px; }
+        .abilities-body.open { display: block; }
+
+        .ability-item { margin-bottom: 12px; }
+        .ability-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .ability-type {
+            font-size: .65rem; font-weight: 700; text-transform: uppercase; padding: 2px 8px;
+            border-radius: 10px; letter-spacing: .4px; flex-shrink: 0;
+        }
+        .type-Basic    { background: rgba(0,255,136,.15); color: #00ff88; border: 1px solid rgba(0,255,136,.3); }
+        .type-Core     { background: rgba(0,200,255,.15); color: #00ccff; border: 1px solid rgba(0,200,255,.3); }
+        .type-Ultimate { background: rgba(255,100,0,.15);  color: #ff6400; border: 1px solid rgba(255,100,0,.3); }
+        .type-Passive  { background: rgba(200,150,255,.15); color: #c896ff; border: 1px solid rgba(200,150,255,.3); }
+        .type-Leader   { background: rgba(255,215,0,.15);  color: #ffd700; border: 1px solid rgba(255,215,0,.3); }
+        .ability-name { color: #fff; font-size: .85rem; font-weight: 700; }
+        .ability-cooldown { margin-left: auto; font-size: .7rem; color: rgba(255,255,255,.4); flex-shrink: 0; }
+        .ability-desc {
+            color: rgba(255,255,255,.55); font-size: .78rem; line-height: 1.5;
+        }
+        /* strip rich-text style tags from game data */
+        .ability-desc .style-Number  { color: #00ccff; font-weight: 700; }
+        .ability-desc .style-Buff    { color: #00ff88; font-weight: 700; }
+        .ability-desc .style-Debuff  { color: #ff4444; font-weight: 700; }
+        .ability-desc .style-Attack  { color: #ff8c00; font-weight: 700; }
+        .ability-desc .style-Divinity{ color: #ffd700; font-weight: 700; }
+
+        /* ---- Awakening ---- */
+        .awakening-bonus { margin-top: 4px; color: rgba(200,150,255,.75); font-size: .73rem; font-style: italic; }
+
+        /* ---- Empty ---- */
+        .empty-state { grid-column: 1/-1; text-align: center; padding: 60px; color: rgba(255,255,255,.4); }
+
+        /* ---- Missing JSON ---- */
+        .missing-json {
+            background: rgba(255,100,0,.08); border: 2px dashed rgba(255,100,0,.4);
+            border-radius: 20px; padding: 50px; text-align: center; color: rgba(255,255,255,.6);
+        }
+        .missing-json code { background: rgba(255,255,255,.06); padding: 2px 8px; border-radius: 6px; color: #ff8c00; font-size: .9rem; }
+
+        @media (max-width: 768px) {
+            .container-custom { padding: 0 16px; }
+            .page-title { font-size: 2rem; }
+            .heroes-grid { grid-template-columns: 1fr; }
+            .filters-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="page-section">
+<div class="container-custom">
+
+    <div style="text-align:center; margin-bottom:40px;">
+        <h1 class="page-title">Godforge Hero Database</h1>
+        <p class="page-subtitle">Live JSON preview — {{ jsonMissing ? 0 : heroes|length }} entries loaded from <code>var/godforge-heroes-db.json</code></p>
+    </div>
+
+    {% if jsonMissing %}
+        <div class="missing-json">
+            <div style="font-size:3rem; margin-bottom:16px;">📂</div>
+            <h2 style="color:#ff8c00; margin-bottom:12px;">JSON file not found</h2>
+            <p>Copy your JSON export to <code>var/godforge-heroes-db.json</code> at the root of the project.</p>
+        </div>
+    {% else %}
+
+    {# ---- Filters ---- #}
+    <form method="GET" action="{{ path('app_heroes_json_db') }}" class="filters-card">
+        <div class="filters-grid">
+            <div>
+                <label class="filter-label">Search hero</label>
+                <input class="filter-input" type="text" name="q" value="{{ filters.search }}" placeholder="Name…" autocomplete="off">
+            </div>
+            <div>
+                <label class="filter-label">Rarity</label>
+                <select name="rarity" class="filter-select">
+                    <option value="">All rarities</option>
+                    {% for r in rarities %}<option value="{{ r }}" {% if filters.filterRarity == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="filter-label">Faction</label>
+                <select name="faction" class="filter-select">
+                    <option value="">All factions</option>
+                    {% for f in factions %}<option value="{{ f }}" {% if filters.filterFaction == f %}selected{% endif %}>{{ f }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="filter-label">Affinity</label>
+                <select name="affinity" class="filter-select">
+                    <option value="">All affinities</option>
+                    {% for a in affinities %}<option value="{{ a }}" {% if filters.filterAffinity == a %}selected{% endif %}>{{ a }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="filter-label">Archetype</label>
+                <select name="archetype" class="filter-select">
+                    <option value="">All archetypes</option>
+                    {% for ar in archetypes %}<option value="{{ ar }}" {% if filters.filterArchetype == ar %}selected{% endif %}>{{ ar }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-reset" style="border-color:rgba(0,255,136,.4); color:#00ff88;">
+                <i class="fas fa-search"></i> Filter
+            </button>
+            <a href="{{ path('app_heroes_json_db') }}" class="btn-reset">
+                <i class="fas fa-redo"></i> Reset
+            </a>
+        </div>
+    </form>
+
+    <div class="results-counter">
+        <i class="fas fa-database"></i> {{ heroes|length }} hero{{ heroes|length != 1 ? 'es' : '' }} found
+    </div>
+
+    <div class="heroes-grid">
+        {% for hero in heroes %}
+            {% set stats = hero.stats ?? {} %}
+            {% set maxStat = 150 %}
+            <div class="hero-card" data-rarity="{{ hero.rarity ?? '' }}">
+
+                {# Avatar placeholder #}
+                {% set initials = hero.name|split(' ')|map(w => w|slice(0,1))|join('')|upper|slice(0,2) %}
+                <div class="hero-avatar">
+                    <span class="hero-initials">{{ initials }}</span>
+                </div>
+
+                {# Header #}
+                <div class="card-header-band">
+                    <div>
+                        <div class="hero-name">{{ hero.name }}</div>
+                        {% if hero.title is defined and hero.title %}<div class="hero-title">{{ hero.title }}</div>{% endif %}
+                    </div>
+                </div>
+
+                {# Badges #}
+                <div class="badges-row">
+                    {% if hero.rarity is defined and hero.rarity %}
+                        <span class="badge-pill badge-rarity-{{ hero.rarity }}">{{ hero.rarity }}</span>
+                    {% endif %}
+                    {% if hero.faction is defined and hero.faction %}
+                        <span class="badge-pill badge-generic">{{ hero.faction }}</span>
+                    {% endif %}
+                    {% if hero.affinity is defined and hero.affinity %}
+                        <span class="badge-pill badge-generic">{{ hero.affinity }}</span>
+                    {% endif %}
+                    {% if hero.archetype is defined and hero.archetype %}
+                        <span class="badge-pill badge-archetype">{{ hero.archetype }}</span>
+                    {% endif %}
+                    {% if hero.allegiance is defined and hero.allegiance %}
+                        <span class="badge-pill badge-generic">{{ hero.allegiance }}</span>
+                    {% endif %}
+                </div>
+
+                {# Summary #}
+                {% if hero.summary is defined and hero.summary %}
+                    <div class="hero-summary">{{ hero.summary }}</div>
+                {% endif %}
+
+                {# Stats #}
+                {% if stats is not empty %}
+                <div class="stats-section">
+                    <div class="stats-title"><i class="fas fa-chart-bar"></i> Base Stats</div>
+                    <div class="stats-grid">
+                        {% set statMap = {
+                            'HP':  stats.health          ?? 0,
+                            'ATK': stats.attack          ?? 0,
+                            'DEF': stats.defense         ?? 0,
+                            'SPD': stats.speed           ?? 0,
+                            'ACC': stats.accuracy        ?? 0,
+                            'RES': stats.resistance      ?? 0,
+                            'CC':  stats.criticalChance  ?? 0,
+                            'CD':  stats.criticalDamage  ?? 0
+                        } %}
+                        {% for label, val in statMap %}
+                            <div class="stat-row">
+                                <span class="stat-label">{{ label }}</span>
+                                <div class="stat-bar-wrap">
+                                    <div class="stat-bar" style="width: {{ ((val / maxStat) * 100)|round < 100 ? ((val / maxStat) * 100)|round : 100 }}%"></div>
+                                </div>
+                                <span class="stat-val">{{ val }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {# Abilities accordion #}
+                {% if hero.abilities is defined and hero.abilities is not empty %}
+                <div class="abilities-section">
+                    <button type="button" class="abilities-toggle" onclick="toggleAbilities(this)">
+                        <span><i class="fas fa-bolt"></i> Abilities ({{ hero.abilities|length }})</span>
+                        <i class="fas fa-chevron-down caret"></i>
+                    </button>
+                    <div class="abilities-body">
+                        {% for ability in hero.abilities %}
+                        <div class="ability-item">
+                            <div class="ability-header">
+                                <span class="ability-type type-{{ ability.type ?? 'Passive' }}">{{ ability.type ?? 'Passive' }}</span>
+                                <span class="ability-name">{{ ability.name }}</span>
+                                {% if ability.cooldown is defined and ability.cooldown > 0 %}
+                                    <span class="ability-cooldown"><i class="fas fa-clock"></i> {{ ability.cooldown }}t</span>
+                                {% endif %}
+                            </div>
+                            {% if ability.description is defined and ability.description %}
+                                {# Convert game rich-text style tags to HTML spans #}
+                                {% set desc = ability.description
+                                    |replace({'<style="Number">': '<span class="style-Number">'})
+                                    |replace({'<style="Buff">': '<span class="style-Buff">'})
+                                    |replace({'<style="Debuff">': '<span class="style-Debuff">'})
+                                    |replace({'<style="Attack">': '<span class="style-Attack">'})
+                                    |replace({'<style="Divinity">': '<span class="style-Divinity">'})
+                                    |replace({'<style="AuraLoc">': '<span style="color:#ffd700;font-weight:700">'})
+                                    |replace({'</style>': '</span>'})
+                                %}
+                                <div class="ability-desc">{{ desc|raw }}</div>
+                            {% endif %}
+                            {% if ability.awakeningBonus is defined and ability.awakeningBonus
+                                and ability.awakeningBonus != 'This ability is still under review - please check back later.' %}
+                                <div class="awakening-bonus"><i class="fas fa-star"></i> {{ ability.awakeningBonus }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div style="font-size:3rem; margin-bottom:12px;">🔍</div>
+                <p>No heroes match your filters.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% endif %}{# /jsonMissing #}
+
+</div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    <script>
+        function toggleAbilities(btn) {
+            btn.classList.toggle('open');
+            const body = btn.nextElementSibling;
+            body.classList.toggle('open');
+        }
+    </script>
+{% endblock %}

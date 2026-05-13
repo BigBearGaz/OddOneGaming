@@ -18,3 +18,14 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+###> local dev / tools ###
+/.claude/
+/WindowsTemp*.json
+###< local dev / tools ###
+
+###> scraped assets (served via API imageUrl) ###
+/public/images/heroes/
+/public/images/abilities/
+/public/images/portraits/
+###< scraped assets ###
