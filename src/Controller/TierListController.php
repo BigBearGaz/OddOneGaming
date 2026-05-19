@@ -151,6 +151,27 @@ class TierListController extends AbstractController
         ]);
     }
 
+    // RENAME - Renommer une catégorie
+    #[Route('/{category}/rename', name: 'app_tier_list_rename', methods: ['POST'])]
+    public function rename(string $category, Request $request, EntityManagerInterface $em, HeroTierListRepository $repo): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $newName = trim($request->request->get('newName', ''));
+
+        if ($newName && $newName !== $category) {
+            $entries = $repo->findBy(['category' => $category]);
+            foreach ($entries as $entry) {
+                $entry->setCategory($newName);
+            }
+            $em->flush();
+            $this->addFlash('success', "Tier list renamed to '$newName'.");
+            return $this->redirectToRoute('app_tier_list_edit', ['category' => $newName]);
+        }
+
+        return $this->redirectToRoute('app_tier_list_edit', ['category' => $category]);
+    }
+
     // DELETE - Supprimer une catégorie entière
     #[Route('/{category}/delete', name: 'app_tier_list_delete', methods: ['POST'])]
     public function delete(string $category, Request $request, EntityManagerInterface $em, HeroTierListRepository $repo): Response

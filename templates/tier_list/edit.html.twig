@@ -59,7 +59,8 @@ body {
 .btn-new  { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid rgba(0,255,136,0.35); }
 .btn-view { background: rgba(255,255,255,0.08); color: #ccc; border: 1px solid rgba(255,255,255,0.2); }
 .btn-save { background: linear-gradient(135deg, #00ff88, #00ccff); color: #04081e; font-weight: 900; }
-.btn-del  { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
+.btn-del    { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
+.btn-rename { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
 
 /* ── TIER TABLE ── */
 .tier-table { border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3); }
@@ -213,10 +214,18 @@ body {
         <button class="btn-tb btn-new" onclick="location.href='{{ path('app_tier_list_new') }}'">+ New</button>
         <div class="tb-spacer"></div>
         <a href="{{ path('app_tier_list_show', {category: category}) }}" class="btn-tb btn-view">View</a>
+        <button class="btn-tb btn-rename" onclick="toggleRename()">Rename</button>
         <button id="save-btn" class="btn-tb btn-save">Save</button>
         <button class="btn-tb btn-del" onclick="if(confirm('Delete this tier list?')) document.getElementById('del-form').submit()">Delete</button>
         <form id="del-form" method="post" action="{{ path('app_tier_list_delete', {category: category}) }}" style="display:none">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category) }}">
+        </form>
+        <form id="rename-form" method="post" action="{{ path('app_tier_list_rename', {category: category}) }}"
+              style="display:none; align-items:center; gap:6px;" onsubmit="return validateRename()">
+            <input type="text" name="newName" id="rename-input" value="{{ category }}"
+                   style="height:34px; padding:0 10px; background:rgba(10,14,39,0.9); border:1px solid rgba(0,255,136,0.5); border-radius:7px; color:#fff; font-weight:700; font-size:0.85rem; min-width:180px;">
+            <button type="submit" class="btn-tb btn-save" style="padding:0 12px;">OK</button>
+            <button type="button" class="btn-tb btn-view" style="padding:0 10px;" onclick="toggleRename()">✕</button>
         </form>
     </div>
 
@@ -327,6 +336,19 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
 const category = '{{ category }}';
+
+/* ── Rename ── */
+function toggleRename() {
+    const form = document.getElementById('rename-form');
+    const visible = form.style.display === 'none';
+    form.style.display = visible ? 'flex' : 'none';
+    if (visible) { document.getElementById('rename-input').select(); }
+}
+function validateRename() {
+    const val = document.getElementById('rename-input').value.trim();
+    if (!val) { alert('Please enter a name.'); return false; }
+    return true;
+}
 
 /* ── Drag detection ── */
 let dragHappened = false;

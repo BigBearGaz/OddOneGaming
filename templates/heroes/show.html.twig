@@ -1642,18 +1642,19 @@
                 <h2 class="skills-title">⚡ Skills & Abilities</h2>
                 <div class="skills-grid">
                     {% set skillDefs = [
-                        { field: hero.base,     type: 'basic',   badge: 'S1', badgeClass: 'base',    label: 'Basic' },
-                        { field: hero.core,     type: 'core',    badge: 'S2', badgeClass: 'core',    label: 'Core' },
-                        { field: hero.ultimate, type: 'ultimate',badge: 'S3', badgeClass: 'ultimate', label: 'Ultimate' },
+                        { field: hero.base,     type: 'basic',   badge: 'Basic',    badgeClass: 'base',    label: 'Basic' },
+                        { field: hero.core,     type: 'core',    badge: 'Core',     badgeClass: 'core',    label: 'Core' },
+                        { field: hero.ultimate, type: 'ultimate',badge: 'Ultimate', badgeClass: 'ultimate', label: 'Ultimate' },
                         { field: hero.passive,  type: 'passive', badge: 'P',  badgeClass: 'passive', label: 'Passive' },
                     ] %}
 
                     {% for skill in skillDefs %}
                         {% if skill.field %}
-                            {% set parts = skill.field|split('|||', 3) %}
+                            {% set parts = skill.field|split('|||', 4) %}
                             {% set abilityName = parts[0] %}
                             {% set abilityDesc = parts[1] ?? skill.field %}
                             {% set abilityIcon = parts[2] ?? '' %}
+                            {% set abilityCooldown = parts[3] ?? '' %}
                             <div class="skill-card skill-card-{{ skill.badgeClass }}">
                                 <div class="skill-header">
                                     <div class="skill-title-wrapper">
@@ -1665,16 +1666,19 @@
                                         <span class="skill-badge skill-badge-{{ skill.badgeClass }}">{{ skill.badge }}</span>
                                         <span class="skill-name">{{ abilityName ?: skill.label }}</span>
                                     </div>
-                                    {% if skill.type == 'ultimate' %}
-                                        <div class="skill-meta-badges">
+                                    <div class="skill-meta-badges">
+                                        {% if abilityCooldown %}
+                                            <div class="cooldown-badge"><i class="fas fa-clock"></i> {{ abilityCooldown }} turn{{ abilityCooldown != '1' ? 's' : '' }}</div>
+                                        {% endif %}
+                                        {% if skill.type == 'ultimate' %}
                                             {% if hero.InitialDivinity %}
                                                 <div class="divinity-badge divinity-initial">Initial: {{ hero.InitialDivinity }}</div>
                                             {% endif %}
                                             {% if hero.DivinityCost %}
                                                 <div class="divinity-badge divinity-cost">Cost: {{ hero.DivinityCost }}</div>
                                             {% endif %}
-                                        </div>
-                                    {% endif %}
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <div class="skill-body">
                                     <div class="skill-description">{{ abilityDesc|parse_effects|raw }}</div>
