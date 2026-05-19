@@ -258,6 +258,15 @@ final class HeroesController extends AbstractController
         ]);
     }
 
+    #[Route('/{slug}/modal', name: 'app_heroes_modal', methods: ['GET'], requirements: ['slug' => Requirement::ASCII_SLUG])]
+    public function modal(
+        #[MapEntity(mapping: ['slug' => 'slug'])] Heroes $hero
+    ): Response {
+        return $this->render('heroes/modal_content.html.twig', [
+            'hero' => $hero,
+        ]);
+    }
+
     #[Route('/{slug}/edit', name: 'app_heroes_edit', methods: ['GET', 'POST'], requirements: ['slug' => Requirement::ASCII_SLUG])]
     public function edit(
         Request $request,

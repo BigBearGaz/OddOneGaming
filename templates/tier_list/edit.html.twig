@@ -118,39 +118,35 @@ body {
 .rarity-common   { border-color: #6b7280 !important; }
 
 /* ── HERO MODAL ── */
+#hero-modal .modal-dialog { max-width: 860px; }
 #hero-modal .modal-content {
-    background: rgba(8,11,30,0.98);
-    border: 1px solid rgba(0,255,136,0.3);
-    border-radius: 12px;
+    background: rgba(8,11,30,0.99);
+    border: 1px solid rgba(0,255,136,0.25);
+    border-radius: 14px;
     overflow: hidden;
     color: #fff;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
 }
-#hero-modal .modal-img {
-    width: 100%; height: 200px; object-fit: cover; display: block;
+#hero-modal .modal-header {
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.4);
     border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
 }
-#hero-modal .modal-body { padding: 16px; text-align: center; }
-#hero-modal .modal-hero-name { font-size: 1.1rem; font-weight: 900; margin-bottom: 10px; color: #fff; }
-#hero-modal .modal-badges { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 14px; }
-.modal-badge {
-    padding: 2px 10px; border-radius: 20px;
-    font-size: 0.72rem; font-weight: 700;
-    text-transform: capitalize;
+#hero-modal .modal-title { color: #00ff88; font-weight: 800; font-size: 0.9rem; }
+#hero-modal .btn-close { filter: invert(1); opacity: 0.6; }
+#hero-modal .modal-body {
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
 }
-#hero-modal .btn-hero-page {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: linear-gradient(135deg, #00ff88, #00ccff);
-    color: #04081e; font-weight: 900; font-size: 0.82rem;
-    padding: 7px 18px; border-radius: 8px; text-decoration: none;
-    transition: filter 0.2s;
-}
-#hero-modal .btn-hero-page:hover { filter: brightness(1.1); }
-#hero-modal .modal-close {
-    position: absolute; top: 10px; right: 12px;
-    background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
-    color: #fff; border-radius: 50%; width: 28px; height: 28px;
+#hero-modal .modal-body::-webkit-scrollbar { width: 6px; }
+#hero-modal .modal-body::-webkit-scrollbar-thumb { background: rgba(0,255,136,0.3); border-radius: 3px; }
+.modal-loading {
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 1rem; z-index: 10;
+    height: 200px; color: rgba(255,255,255,0.4); font-size: 0.9rem; gap: 10px;
 }
 
 /* ── FIXED HERO POOL ── */
@@ -253,16 +249,16 @@ body {
 
 {# ── HERO MODAL ── #}
 <div class="modal fade" id="hero-modal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content" style="position:relative">
-            <button class="modal-close" data-bs-dismiss="modal" aria-label="Close">&times;</button>
-            <img id="modal-img" src="" alt="" class="modal-img">
-            <div class="modal-body">
-                <div class="modal-hero-name" id="modal-name"></div>
-                <div class="modal-badges" id="modal-badges"></div>
-                <a id="modal-link" href="#" target="_blank" class="btn-hero-page">
-                    <i class="fas fa-external-link-alt"></i> View Hero Page
-                </a>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="modal-title">Hero</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="modal-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading…
+                </div>
             </div>
         </div>
     </div>
@@ -351,47 +347,41 @@ function makeSortable(el, extra = {}) {
 makeSortable(document.getElementById('grid-pool'));
 
 /* ── Click → modal (si pas un drag) ── */
-document.addEventListener('click', e => {
+const heroCache = {};
+
+document.addEventListener('click', async e => {
     const card = e.target.closest('.hero-card');
     if (!card || dragHappened) return;
 
-    const name    = card.title;
-    const img     = card.querySelector('img').src;
-    const slug    = card.dataset.slug    || '';
-    const rarity  = card.dataset.rarity  || '';
-    const faction = card.dataset.faction || '';
-    const type    = card.dataset.type    || '';
-    const aff     = card.dataset.affinity|| '';
+    const slug = card.dataset.slug || '';
+    const name = card.title;
 
-    document.getElementById('modal-img').src = img;
-    document.getElementById('modal-img').alt = name;
-    document.getElementById('modal-name').textContent = name;
-
-    const badgeColors = {
-        legendary: '#ffd700', légendaire: '#ffd700',
-        epic: '#a855f7', rare: '#3b82f6',
-        uncommon: '#10b981', common: '#6b7280'
-    };
-    const badges = document.getElementById('modal-badges');
-    badges.innerHTML = '';
-    [
-        { val: rarity,  col: badgeColors[rarity.toLowerCase()] || '#9ca3af' },
-        { val: faction, col: '#60a5fa' },
-        { val: type,    col: '#a78bfa' },
-        { val: aff,     col: '#34d399' },
-    ].filter(b => b.val).forEach(b => {
-        const sp = document.createElement('span');
-        sp.className = 'modal-badge';
-        sp.textContent = b.val;
-        sp.style.cssText = `background:${b.col}22;border:1px solid ${b.col}55;color:${b.col}`;
-        badges.appendChild(sp);
-    });
-
-    const link = document.getElementById('modal-link');
-    link.href = slug ? '/heroes/' + slug : '#';
-    link.style.display = slug ? '' : 'none';
+    document.getElementById('modal-title').textContent = name;
+    document.getElementById('modal-body').innerHTML =
+        '<div class="modal-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</div>';
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById('hero-modal')).show();
+
+    if (!slug) {
+        document.getElementById('modal-body').innerHTML =
+            '<div class="modal-loading">No hero page available.</div>';
+        return;
+    }
+
+    if (heroCache[slug]) {
+        document.getElementById('modal-body').innerHTML = heroCache[slug];
+        return;
+    }
+
+    try {
+        const res  = await fetch('/heroes/' + slug + '/modal');
+        const html = await res.text();
+        heroCache[slug] = html;
+        document.getElementById('modal-body').innerHTML = html;
+    } catch {
+        document.getElementById('modal-body').innerHTML =
+            '<div class="modal-loading">Failed to load hero data.</div>';
+    }
 }, true);
 
 /* ── Pool ── */

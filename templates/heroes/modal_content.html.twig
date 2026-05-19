@@ -1,0 +1,260 @@
+{# Partial template — pas de base, chargé via fetch() dans la modal tier list #}
+{% set rarityColors = {
+    'Legendary': '#ffd700', 'Légendaire': '#ffd700',
+    'Epic':      '#a855f7',
+    'Rare':      '#3b82f6',
+    'Uncommon':  '#10b981',
+    'Common':    '#9ca3af',
+} %}
+{% set rc = rarityColors[hero.rarityEntity ? hero.rarityEntity.name : ''] ?? '#00ff88' %}
+
+<style>
+.mc { --rc: {{ rc }}; font-family: 'Segoe UI', sans-serif; color: #fff; }
+.mc-hero-top { display: flex; gap: 0; }
+.mc-img-wrap { flex-shrink: 0; width: 220px; position: relative; }
+.mc-img-wrap img { width: 100%; height: 280px; object-fit: cover; display: block; }
+.mc-img-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.95)); padding: 16px 14px 12px; }
+.mc-name { font-size: 1.3rem; font-weight: 900; color: var(--rc); text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+.mc-rarity { display: inline-block; margin-top: 4px; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: var(--rc); background: rgba(0,0,0,0.5); border: 1px solid var(--rc); }
+
+.mc-info { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+
+.mc-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.mc-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+.mc-badge img { width: 16px; height: 16px; object-fit: contain; border-radius: 3px; }
+.mc-b-faction   { background: linear-gradient(135deg,#a855f7,#ec4899); color:#fff; }
+.mc-b-type      { background: linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; }
+.mc-b-affinity  { background: linear-gradient(135deg,#06b6d4,#0891b2); color:#fff; }
+.mc-b-allegiance{ background: rgba(255,255,255,0.1); color:#fff; border: 1px solid rgba(255,255,255,0.2); }
+
+/* Stats */
+.mc-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.mc-stat { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 7px 8px; text-align: center; }
+.mc-stat-label { font-size: 0.6rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; }
+.mc-stat-val { font-size: 0.95rem; font-weight: 700; color: var(--rc); }
+
+/* Skills */
+.mc-section-title { font-size: 0.8rem; font-weight: 800; color: var(--rc); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 5px; margin-bottom: 8px; }
+.mc-skills { display: flex; flex-direction: column; gap: 8px; }
+.mc-skill { border-radius: 8px; overflow: hidden; border: 1px solid; }
+.mc-skill-s1 { border-color: #3b82f6; }
+.mc-skill-s2 { border-color: #10b981; }
+.mc-skill-s3 { border-color: #ef4444; }
+.mc-skill-p  { border-color: #eab308; }
+.mc-skill-head { display: flex; align-items: center; gap: 8px; padding: 7px 12px; }
+.mc-skill-s1 .mc-skill-head { background: rgba(59,130,246,0.15); }
+.mc-skill-s2 .mc-skill-head { background: rgba(16,185,129,0.15); }
+.mc-skill-s3 .mc-skill-head { background: rgba(239,68,68,0.15); }
+.mc-skill-p  .mc-skill-head { background: rgba(234,179,8,0.15); }
+.mc-skill-icon { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; border: 1px solid currentColor; flex-shrink: 0; }
+.mc-skill-badge { padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; }
+.mc-skill-s1 .mc-skill-badge { background: #3b82f6; color: #fff; }
+.mc-skill-s2 .mc-skill-badge { background: #10b981; color: #fff; }
+.mc-skill-s3 .mc-skill-badge { background: #ef4444; color: #fff; }
+.mc-skill-p  .mc-skill-badge { background: #eab308; color: #05091f; }
+.mc-skill-name { font-weight: 700; font-size: 0.85rem; }
+.mc-skill-s1 .mc-skill-name { color: #60a5fa; }
+.mc-skill-s2 .mc-skill-name { color: #34d399; }
+.mc-skill-s3 .mc-skill-name { color: #f87171; }
+.mc-skill-p  .mc-skill-name { color: #fbbf24; }
+.mc-skill-meta { margin-left: auto; display: flex; gap: 5px; align-items: center; }
+.mc-cd { font-size: 0.7rem; padding: 2px 7px; border-radius: 10px; background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.4); color: #22d3ee; }
+.mc-div { font-size: 0.7rem; padding: 2px 7px; border-radius: 10px; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; }
+.mc-skill-body { padding: 8px 12px; font-size: 0.8rem; color: rgba(255,255,255,0.85); line-height: 1.6; background: rgba(0,0,0,0.2); }
+
+/* Leader */
+.mc-leader { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.25); border-radius: 8px; }
+.mc-leader-img { width: 42px; height: 42px; border-radius: 50%; object-fit: contain; border: 2px solid rgba(255,215,0,0.5); }
+.mc-leader-text { font-size: 0.8rem; color: rgba(255,255,255,0.85); }
+.mc-leader-name { font-weight: 700; color: #ffd700; font-size: 0.85rem; }
+
+/* Weapons */
+.mc-weapons { display: flex; flex-direction: column; gap: 5px; }
+.mc-weapon { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.2); border-radius: 7px; }
+.mc-weapon img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(59,130,246,0.4); }
+.mc-weapon-name { font-size: 0.78rem; font-weight: 700; color: #93c5fd; }
+.mc-weapon-stat { font-size: 0.68rem; color: rgba(255,255,255,0.45); }
+
+/* Bonuses */
+.mc-bonus-list { list-style: none; padding: 0; margin: 0; }
+.mc-bonus-list li { padding: 5px 0 5px 20px; position: relative; font-size: 0.78rem; color: rgba(255,255,255,0.8); line-height: 1.5; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.mc-bonus-list li::before { content: '⭐'; position: absolute; left: 0; font-size: 0.7rem; }
+
+/* Link button */
+.mc-full-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; background: linear-gradient(135deg, var(--rc), #00ccff); color: #04081e; font-weight: 900; font-size: 0.82rem; border-radius: 8px; text-decoration: none; transition: filter 0.2s; }
+.mc-full-link:hover { filter: brightness(1.1); color: #04081e; }
+</style>
+
+<div class="mc">
+    {# ── TOP: image + info ── #}
+    <div class="mc-hero-top" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div class="mc-img-wrap">
+            <img src="{{ hero.imageUrl }}" alt="{{ hero.Name }}">
+            <div class="mc-img-overlay">
+                <div class="mc-name">{{ hero.Name }}</div>
+                {% if hero.rarityEntity %}<div class="mc-rarity">{{ hero.rarityEntity.name }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="mc-info">
+            {# Badges #}
+            <div class="mc-badges">
+                {% if hero.factionEntity %}
+                <span class="mc-badge mc-b-faction">
+                    {% if hero.factionEntity.imageUrl is defined and hero.factionEntity.imageUrl %}<img src="{{ hero.factionEntity.imageUrl }}" alt="">{% endif %}
+                    {{ hero.factionEntity.name }}
+                </span>
+                {% endif %}
+                {% if hero.typeEntity %}
+                <span class="mc-badge mc-b-type">
+                    {% if hero.typeEntity.imageUrl is defined and hero.typeEntity.imageUrl %}<img src="{{ hero.typeEntity.imageUrl }}" alt="">{% endif %}
+                    {{ hero.typeEntity.name }}
+                </span>
+                {% endif %}
+                {% if hero.affinityEntity %}
+                <span class="mc-badge mc-b-affinity">
+                    {% if hero.affinityEntity.imageUrl is defined and hero.affinityEntity.imageUrl %}<img src="{{ hero.affinityEntity.imageUrl }}" alt="">{% endif %}
+                    {{ hero.affinityEntity.name }}
+                </span>
+                {% endif %}
+                {% if hero.allegianceEntity %}
+                <span class="mc-badge mc-b-allegiance">{{ hero.allegianceEntity.name }}</span>
+                {% endif %}
+            </div>
+
+            {# Stats #}
+            {% if hero.statHp or hero.statAtk %}
+            <div>
+                <div class="mc-section-title">Base Stats (Rank 1 / Lv 1)</div>
+                <div class="mc-stats-grid">
+                    {% set statDefs = [
+                        {key: hero.statHp,   label: 'HP',   icon: 'fa-heart'},
+                        {key: hero.statAtk,  label: 'ATK',  icon: 'fa-sword'},
+                        {key: hero.statDef,  label: 'DEF',  icon: 'fa-shield'},
+                        {key: hero.statSpd,  label: 'SPD',  icon: 'fa-wind'},
+                        {key: hero.statInit, label: 'INIT', icon: 'fa-bolt'},
+                        {key: hero.statAcc,  label: 'ACC',  icon: 'fa-crosshairs'},
+                        {key: hero.statRes,  label: 'RES',  icon: 'fa-circle-half-stroke'},
+                    ] %}
+                    {% for s in statDefs %}
+                        {% if s.key %}
+                        <div class="mc-stat">
+                            <div class="mc-stat-label">{{ s.label }}</div>
+                            <div class="mc-stat-val">{{ s.key }}</div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Leader #}
+            {% if hero.leaderEntity %}
+            <div>
+                <div class="mc-section-title">Leader Aura</div>
+                <div class="mc-leader">
+                    {% if hero.leaderEntity.imageUrl %}<img src="{{ hero.leaderEntity.imageUrl }}" alt="{{ hero.leaderEntity.name }}" class="mc-leader-img" onerror="this.style.display='none'">{% endif %}
+                    <div>
+                        <div class="mc-leader-name">{{ hero.leaderEntity.name }}</div>
+                        {% if hero.leaderValue %}<div class="mc-leader-text">{{ hero.leaderValue }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Weapons #}
+            {% if hero.weapons|length > 0 %}
+            <div>
+                <div class="mc-section-title">Recommended Weapons</div>
+                <div class="mc-weapons">
+                    {% for w in hero.weapons %}
+                    <div class="mc-weapon">
+                        {% if w.imageUrl %}<img src="{{ w.imageUrl }}" alt="{{ w.name }}">{% endif %}
+                        <div>
+                            <div class="mc-weapon-name">{{ w.name }}</div>
+                            {% if w.mainStat %}<div class="mc-weapon-stat">{{ w.mainStat|upper }}</div>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Link #}
+            <div style="margin-top: auto; padding-top: 8px;">
+                <a href="/heroes/{{ hero.slug }}" target="_blank" class="mc-full-link">
+                    <i class="fas fa-external-link-alt"></i> Full Hero Page
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# ── SKILLS ── #}
+    {% set skillDefs = [
+        {field: hero.base,     badge: 'S1', cls: 'mc-skill-s1', label: 'Basic'},
+        {field: hero.core,     badge: 'S2', cls: 'mc-skill-s2', label: 'Core'},
+        {field: hero.ultimate, badge: 'S3', cls: 'mc-skill-s3', label: 'Ultimate'},
+        {field: hero.passive,  badge: 'P',  cls: 'mc-skill-p',  label: 'Passive'},
+    ] %}
+    {% set hasSkills = hero.base or hero.core or hero.ultimate or hero.passive %}
+    {% if hasSkills %}
+    <div style="padding: 16px;">
+        <div class="mc-section-title">Skills & Abilities</div>
+        <div class="mc-skills">
+            {% for skill in skillDefs %}
+                {% if skill.field %}
+                    {% set parts = skill.field|split('|||', 4) %}
+                    {% set sName = parts[0] %}
+                    {% set sDesc = parts[1] ?? skill.field %}
+                    {% set sIcon = parts[2] ?? '' %}
+                    {% set sCd   = parts[3] ?? '' %}
+                    <div class="mc-skill {{ skill.cls }}">
+                        <div class="mc-skill-head">
+                            {% if sIcon %}<img src="{{ sIcon }}" alt="{{ sName }}" class="mc-skill-icon" onerror="this.style.display='none'">{% endif %}
+                            <span class="mc-skill-badge">{{ skill.badge }}</span>
+                            <span class="mc-skill-name">{{ sName ?: skill.label }}</span>
+                            <div class="mc-skill-meta">
+                                {% if sCd %}<span class="mc-cd"><i class="fas fa-clock"></i> {{ sCd }}t</span>{% endif %}
+                                {% if skill.badge == 'S3' %}
+                                    {% if hero.InitialDivinity %}<span class="mc-div">Init: {{ hero.InitialDivinity }}</span>{% endif %}
+                                    {% if hero.DivinityCost   %}<span class="mc-div">Cost: {{ hero.DivinityCost }}</span>{% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mc-skill-body">{{ sDesc|parse_effects|raw }}</div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# ── BONUSES ── #}
+    {% if hero.awakeningBonuses or hero.ascensionBonuses %}
+    <div style="padding: 16px; border-top: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.2);">
+        <div class="mc-section-title">Bonuses</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            {% if hero.awakeningBonuses %}
+            <div>
+                <div style="font-size:0.75rem; color: var(--rc); font-weight:700; margin-bottom:6px;">Awakening</div>
+                <ul class="mc-bonus-list">
+                    {% for line in hero.awakeningBonuses|split('\n') %}
+                        {% if line|trim %}<li>{{ line|trim }}</li>{% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if hero.ascensionBonuses %}
+            <div>
+                <div style="font-size:0.75rem; color: var(--rc); font-weight:700; margin-bottom:6px;">Ascension</div>
+                <ul class="mc-bonus-list">
+                    {% for line in hero.ascensionBonuses|split('\n') %}
+                        {% if line|trim %}<li>{{ line|trim }}</li>{% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
