@@ -191,10 +191,10 @@
 
     {# ── SKILLS ── #}
     {% set skillDefs = [
-        {field: hero.base,     badge: 'S1', cls: 'mc-skill-s1', label: 'Basic'},
-        {field: hero.core,     badge: 'S2', cls: 'mc-skill-s2', label: 'Core'},
-        {field: hero.ultimate, badge: 'S3', cls: 'mc-skill-s3', label: 'Ultimate'},
-        {field: hero.passive,  badge: 'P',  cls: 'mc-skill-p',  label: 'Passive'},
+        {field: hero.base,     badge: 'Basic',    cls: 'mc-skill-s1', label: 'Basic'},
+        {field: hero.core,     badge: 'Core',     cls: 'mc-skill-s2', label: 'Core'},
+        {field: hero.ultimate, badge: 'Ultimate', cls: 'mc-skill-s3', label: 'Ultimate'},
+        {field: hero.passive,  badge: 'Passive',  cls: 'mc-skill-p',  label: 'Passive'},
     ] %}
     {% set hasSkills = hero.base or hero.core or hero.ultimate or hero.passive %}
     {% if hasSkills %}
