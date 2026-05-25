@@ -226,7 +226,8 @@ class SyncHeroesFromApiCommand extends Command
         $skills = $data['skills'] ?? [];
         foreach ($skills as $skill) {
             $type   = ucfirst(strtolower($skill['type'] ?? ''));
-            $packed = ($skill['name'] ?? '') . '|||' . ($skill['description'] ?? '') . '|||' . ($skill['icon_url'] ?? '');
+            $cooldown = isset($skill['cooldown']) && $skill['cooldown'] !== null ? (string) $skill['cooldown'] : '';
+            $packed = ($skill['name'] ?? '') . '|||' . ($skill['description'] ?? '') . '|||' . ($skill['icon_url'] ?? '') . '|||' . $cooldown;
             match ($type) {
                 'Basic'    => $hero->setBase($packed),
                 'Core'     => $hero->setCore($packed),

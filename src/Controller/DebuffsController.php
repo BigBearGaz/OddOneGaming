@@ -16,11 +16,14 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DebuffsController extends AbstractController
 {
     #[Route(name: 'app_debuffs_index', methods: ['GET'])]
-    public function index(EffectGrouperService $grouper): Response
+    public function index(EffectGrouperService $grouper, DebuffsRepository $repo): Response
     {
         return $this->render('effects/category.html.twig', [
-            'type'   => 'debuff',
-            'groups' => $grouper->getGroups('debuff'),
+            'type'       => 'debuff',
+            'groups'     => $grouper->getGroups('debuff'),
+            'adminItems' => $repo->findBy([], ['name' => 'ASC']),
+            'editRoute'  => 'app_debuffs_edit',
+            'newRoute'   => 'app_debuffs_new',
         ]);
     }
 

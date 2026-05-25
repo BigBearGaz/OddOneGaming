@@ -16,11 +16,14 @@ use Symfony\Component\Routing\Attribute\Route;
 final class DisableController extends AbstractController
 {
     #[Route(name: 'app_disable_index', methods: ['GET'])]
-    public function index(EffectGrouperService $grouper): Response
+    public function index(EffectGrouperService $grouper, DisableRepository $repo): Response
     {
         return $this->render('effects/category.html.twig', [
-            'type'   => 'disable',
-            'groups' => $grouper->getGroups('disable'),
+            'type'       => 'disable',
+            'groups'     => $grouper->getGroups('disable'),
+            'adminItems' => $repo->findBy([], ['name' => 'ASC']),
+            'editRoute'  => 'app_disable_edit',
+            'newRoute'   => 'app_disable_new',
         ]);
     }
 

@@ -13,10 +13,8 @@ class BuffsType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('type')
-            ->add('iconUrl')
             ->add('description')
-            ->add('createdAt')
+            ->add('iconUrl')
         ;
     }
 

@@ -22,10 +22,13 @@ class EffectGrouperService
         );
         $nameToId = $this->connection->fetchAllKeyValue("SELECT name, id FROM {$nameTable}");
 
-        return $this->buildGroups($type, $nameToId, $counts);
+        $rows   = $this->connection->fetchAllAssociative("SELECT name, description, icon_url FROM {$nameTable}");
+        $dbRows = array_column($rows, null, 'name');
+
+        return $this->buildGroups($type, $nameToId, $counts, $dbRows);
     }
 
-    private function buildGroups(string $type, array $nameToId, array $countById): array
+    private function buildGroups(string $type, array $nameToId, array $countById, array $dbRows = []): array
     {
         $groups = [];
         $romanPattern = '/\s+(I{1,3}|IV|VI{0,3}|IX)$/i';
@@ -38,24 +41,28 @@ class EffectGrouperService
 
             $baseName = preg_replace($romanPattern, '', $name);
             $tier     = strtoupper(trim(substr($name, strlen($baseName)))) ?: null;
-            $iconUrl  = SkillExtension::iconUrl($name);
-            $id       = $nameToId[$name] ?? null;
-            $count    = $id !== null ? (int) ($countById[$id] ?? 0) : 0;
+
+            $dbRow   = $dbRows[$name] ?? null;
+            $iconUrl = ($dbRow['icon_url'] ?? null) ?: SkillExtension::iconUrl($name);
+            $desc    = ($dbRow['description'] ?? null) ?: $data['desc'];
+
+            $id    = $nameToId[$name] ?? null;
+            $count = $id !== null ? (int) ($countById[$id] ?? 0) : 0;
 
             if (!isset($groups[$baseName])) {
                 $groups[$baseName] = [
                     'name'        => $baseName,
                     'iconUrl'     => $iconUrl,
-                    'description' => $tier ? null : $data['desc'],
+                    'description' => $tier ? null : $desc,
                     'tiers'       => [],
                     'heroCount'   => 0,
                 ];
             }
 
             if ($tier) {
-                $groups[$baseName]['tiers'][$tier] = $data['desc'];
+                $groups[$baseName]['tiers'][$tier] = $desc;
                 if ($tier === 'I' || !$groups[$baseName]['description']) {
-                    $groups[$baseName]['description'] = $data['desc'];
+                    $groups[$baseName]['description'] = $desc;
                 }
             }
 

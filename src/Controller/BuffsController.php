@@ -16,11 +16,14 @@ use Symfony\Component\Routing\Attribute\Route;
 final class BuffsController extends AbstractController
 {
     #[Route(name: 'app_buffs_index', methods: ['GET'])]
-    public function index(EffectGrouperService $grouper): Response
+    public function index(EffectGrouperService $grouper, BuffsRepository $repo): Response
     {
         return $this->render('effects/category.html.twig', [
-            'type'   => 'buff',
-            'groups' => $grouper->getGroups('buff'),
+            'type'        => 'buff',
+            'groups'      => $grouper->getGroups('buff'),
+            'adminItems'  => $repo->findBy([], ['name' => 'ASC']),
+            'editRoute'   => 'app_buffs_edit',
+            'newRoute'    => 'app_buffs_new',
         ]);
     }
 

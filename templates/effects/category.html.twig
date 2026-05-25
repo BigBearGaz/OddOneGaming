@@ -141,6 +141,47 @@
             flex-shrink: 0; min-width: 22px; font-weight: 700; color: {{ c.color }};
         }
 
+        /* ── Admin panel ── */
+        .admin-panel {
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,200,0,0.25);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255,200,0,0.03);
+        }
+        .admin-panel-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            color: rgba(255,200,0,0.8);
+            font-size: 0.9rem; font-weight: 700; letter-spacing: 0.5px;
+            user-select: none;
+        }
+        .admin-panel-header:hover { background: rgba(255,200,0,0.05); }
+        .admin-chevron { margin-left: auto; transition: transform 0.2s; }
+        .admin-panel.open .admin-chevron { transform: rotate(180deg); }
+        .admin-panel-body { display: none; padding: 0 16px 16px; }
+        .admin-panel.open .admin-panel-body { display: block; }
+        .admin-new-btn {
+            margin-left: 8px; padding: 5px 14px;
+            background: rgba(255,200,0,0.15); color: rgba(255,200,0,0.9);
+            border: 1px solid rgba(255,200,0,0.3); border-radius: 6px;
+            text-decoration: none; font-size: 0.8rem; font-weight: 700;
+        }
+        .admin-new-btn:hover { background: rgba(255,200,0,0.25); color: #ffd700; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .admin-table th { color: rgba(255,255,255,0.4); padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .admin-table td { padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+        .admin-name { color: #fff; font-weight: 600; white-space: nowrap; }
+        .admin-desc { color: rgba(255,255,255,0.45); }
+        .admin-edit-btn {
+            padding: 4px 12px; background: rgba(255,200,0,0.1);
+            color: rgba(255,200,0,0.8); border: 1px solid rgba(255,200,0,0.25);
+            border-radius: 5px; text-decoration: none; font-size: 0.78rem; font-weight: 700;
+            white-space: nowrap;
+        }
+        .admin-edit-btn:hover { background: rgba(255,200,0,0.2); color: #ffd700; }
+
         @media (max-width: 768px) {
             .effects-grid { grid-template-columns: 1fr; }
             .page-title { font-size: 2rem; }
@@ -164,6 +205,36 @@
         <a href="{{ path('app_debuffs_index') }}"  class="cat-link {{ type == 'debuff'  ? 'active-debuff'  : '' }}">💀 Debuffs  <span class="cat-count">{{ type == 'debuff'  ? groups|length : '' }}</span></a>
         <a href="{{ path('app_disable_index') }}"  class="cat-link {{ type == 'disable' ? 'active-disable' : '' }}">🚫 Disables <span class="cat-count">{{ type == 'disable' ? groups|length : '' }}</span></a>
     </nav>
+
+    {% if is_granted('ROLE_ADMIN') %}
+    <div class="admin-panel">
+        <div class="admin-panel-header" onclick="this.parentNode.classList.toggle('open')">
+            <span>⚙ Admin — {{ adminItems|length }} entrées en DB</span>
+            <span class="admin-chevron">▼</span>
+            <a href="{{ path(newRoute) }}" class="admin-new-btn" onclick="event.stopPropagation()">+ Nouveau</a>
+        </div>
+        <div class="admin-panel-body">
+            {% if adminItems|length == 0 %}
+                <p style="color:rgba(255,255,255,0.4); padding:12px;">
+                    Aucune entrée en DB. Lance : <code>php bin/console app:init-effects-from-code</code>
+                </p>
+            {% else %}
+                <table class="admin-table">
+                    <thead><tr><th>Nom</th><th>Description</th><th></th></tr></thead>
+                    <tbody>
+                    {% for item in adminItems %}
+                        <tr>
+                            <td class="admin-name">{{ item.name }}</td>
+                            <td class="admin-desc">{{ item.description|slice(0,80) }}{% if item.description|length > 80 %}…{% endif %}</td>
+                            <td><a href="{{ path(editRoute, {id: item.id}) }}" class="admin-edit-btn">Edit</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 
     <div class="effects-grid">
         {% for group in groups %}
