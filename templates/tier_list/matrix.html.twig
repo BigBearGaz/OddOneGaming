@@ -1,0 +1,524 @@
+{% extends 'base.html.twig' %}
+{% block title %}Tier List — Classement Global{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* ═══════════════════════════════════
+   BASE
+═══════════════════════════════════ */
+.mx-page {
+    min-height: calc(100vh - 110px);
+    background: #0b0d18;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    padding-bottom: 80px;
+}
+
+/* ═══════════════════════════════════
+   HEADER
+═══════════════════════════════════ */
+.mx-header {
+    padding: 32px 40px 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.mx-title-wrap {}
+.mx-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+.mx-subtitle {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.3);
+    margin-top: 3px;
+    font-weight: 500;
+}
+.mx-score-legend {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+.mx-score-pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+.pill-sss { background: rgba(255,245,192,0.12); color: #fff5c0; border: 1px solid rgba(255,245,192,0.3); }
+.pill-ss  { background: rgba(246,201,14,0.15);  color: #f6c90e; border: 1px solid rgba(246,201,14,0.3); }
+.pill-s   { background: rgba(251,140,0,0.15);   color: #fb8c00; border: 1px solid rgba(251,140,0,0.3); }
+.pill-a   { background: rgba(249,115,22,0.15);  color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+.pill-b   { background: rgba(234,179,8,0.12);   color: #facc15; border: 1px solid rgba(234,179,8,0.3); }
+.pill-c   { background: rgba(34,197,94,0.12);   color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+.pill-d   { background: rgba(96,165,250,0.12);  color: #93c5fd; border: 1px solid rgba(96,165,250,0.3); }
+{% if is_granted('ROLE_ADMIN') %}
+.mx-edit-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: 8px;
+    background: rgba(91,124,255,0.15); border: 1px solid rgba(91,124,255,0.4);
+    color: #7a9bff; font-size: 0.8rem; font-weight: 700; text-decoration: none;
+    transition: all 0.15s;
+}
+.mx-edit-btn:hover { background: rgba(91,124,255,0.25); color: #a0b8ff; }
+{% endif %}
+
+/* ═══════════════════════════════════
+   FILTRES (faction + recherche)
+═══════════════════════════════════ */
+.mx-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 40px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    flex-wrap: wrap;
+}
+.mx-search {
+    height: 34px; padding: 0 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; color: #fff; font-size: 0.8rem;
+    min-width: 180px; outline: none; transition: border-color 0.15s;
+}
+.mx-search::placeholder { color: rgba(255,255,255,0.22); }
+.mx-search:focus { border-color: rgba(91,124,255,0.5); }
+.mx-fac-btn {
+    height: 34px; padding: 0 13px;
+    border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.45); font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; transition: all 0.13s; white-space: nowrap;
+}
+.mx-fac-btn:hover  { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+.mx-fac-btn.active { background: rgba(91,124,255,0.18); border-color: rgba(91,124,255,0.45); color: #a0b8ff; }
+.mx-count { margin-left: auto; font-size: 0.72rem; color: rgba(255,255,255,0.22); font-weight: 600; }
+.mx-count span { color: rgba(255,255,255,0.55); font-weight: 800; }
+
+/* ═══════════════════════════════════
+   CONTENEUR TABLE (scroll horizontal + vertical)
+═══════════════════════════════════ */
+.mx-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: calc(100vh - 290px);
+    min-height: 400px;
+    padding: 0 40px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.mx-wrap::-webkit-scrollbar { height: 5px; width: 5px; }
+.mx-wrap::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+.mx-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* ═══════════════════════════════════
+   TABLE
+═══════════════════════════════════ */
+.mx-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 3px;   /* gap vertical entre lignes */
+    min-width: max-content;
+}
+
+/* ── En-têtes ── */
+.mx-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #0b0d18;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0;
+    user-select: none;
+}
+
+/* Colonne rang */
+.th-rank {
+    width: 52px;
+    text-align: center;
+    padding: 10px 8px !important;
+    font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.2);
+    position: sticky; left: 0; z-index: 25 !important;
+}
+
+/* Colonne héros (sticky) */
+.th-hero {
+    position: sticky !important;
+    left: 52px; z-index: 25 !important;
+    min-width: 180px;
+    text-align: left;
+    padding: 10px 16px !important;
+    font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.2);
+}
+
+/* Colonne score */
+.th-score {
+    min-width: 110px; text-align: center;
+    padding: 10px 12px !important;
+    font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.2);
+}
+
+/* Colonnes mode (boss) */
+.th-mode {
+    min-width: 80px; width: 80px; text-align: center;
+    padding: 8px 4px !important;
+    border-left: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer; transition: background 0.13s;
+}
+.th-mode:hover { background: rgba(255,255,255,0.03); }
+.th-mode.sort-col { background: rgba(91,124,255,0.07); }
+.th-mode-group {
+    font-size: 0.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    color: rgba(255,255,255,0.18); display: block; margin-bottom: 2px;
+}
+.th-mode-name {
+    font-size: 0.62rem; font-weight: 700;
+    color: rgba(255,255,255,0.45); line-height: 1.25; display: block;
+}
+.th-mode.sort-col .th-mode-name { color: #7a9bff; }
+
+/* ── Lignes héros ── */
+.mx-row {
+    background: #0f1226;
+    border-radius: 8px;
+    transition: background 0.12s;
+}
+.mx-row:hover { background: #141832; }
+.mx-row.hidden { display: none; }
+
+/* Top 3 accent */
+.mx-row.rank-1 { background: rgba(246,201,14,0.06); }
+.mx-row.rank-2 { background: rgba(192,192,192,0.05); }
+.mx-row.rank-3 { background: rgba(184,115,51,0.05); }
+.mx-row.rank-1:hover { background: rgba(246,201,14,0.1); }
+.mx-row.rank-2:hover { background: rgba(192,192,192,0.09); }
+.mx-row.rank-3:hover { background: rgba(184,115,51,0.09); }
+
+/* Cellule rang */
+.td-rank {
+    position: sticky; left: 0; z-index: 10;
+    width: 52px; text-align: center; padding: 0 8px;
+    background: inherit; border-radius: 8px 0 0 8px;
+    border-right: 1px solid rgba(255,255,255,0.04);
+}
+.rank-num {
+    font-size: 0.9rem; font-weight: 900;
+    color: rgba(255,255,255,0.2);
+}
+.rank-1 .rank-num { color: #f6c90e; font-size: 1.1rem; }
+.rank-2 .rank-num { color: #c0c0c0; font-size: 1rem; }
+.rank-3 .rank-num { color: #b8733b; font-size: 1rem; }
+
+/* Cellule héros (sticky) */
+.td-hero {
+    position: sticky; left: 52px; z-index: 10;
+    min-width: 180px; background: inherit;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    padding: 0;
+}
+.hero-inner {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 14px; cursor: pointer; text-decoration: none;
+}
+.hero-img {
+    width: 42px; height: 56px;
+    border-radius: 6px; object-fit: cover; flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,0.1);
+}
+/* Rarity accent sur portrait */
+.rar-legendary  .hero-img, .rar-légendaire .hero-img { border-color: rgba(246,201,14,0.55); box-shadow: 0 0 8px rgba(246,201,14,0.2); }
+.rar-epic  .hero-img  { border-color: rgba(139,92,246,0.55); box-shadow: 0 0 8px rgba(139,92,246,0.2); }
+.rar-rare  .hero-img  { border-color: rgba(59,130,246,0.5); }
+.rar-uncommon .hero-img { border-color: rgba(16,185,129,0.5); }
+
+.hero-meta { flex: 1; min-width: 0; }
+.hero-name {
+    font-size: 0.8rem; font-weight: 700; color: #e8eaf6;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hero-faction {
+    font-size: 0.6rem; color: rgba(255,255,255,0.28); font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Cellule note composite */
+.td-score {
+    min-width: 90px; width: 90px;
+    text-align: center; vertical-align: middle;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    padding: 0;
+}
+.composite-grade {
+    display: flex; align-items: center; justify-content: center;
+    height: 68px;
+    font-size: 1.6rem; font-weight: 900; letter-spacing: -2px;
+}
+/* Réutilise les couleurs existantes des grades */
+.composite-grade.grade-sss { color: #fff5c0; text-shadow: 0 0 22px rgba(255,245,192,0.8), 0 0 8px rgba(255,245,192,0.4); font-size: 1.15rem; }
+.composite-grade.grade-ss  { color: #f6c90e; text-shadow: 0 0 20px rgba(246,201,14,0.7), 0 0 6px rgba(246,201,14,0.4); font-size: 1.3rem; }
+.composite-grade.grade-s   { color: #fb8c00; text-shadow: 0 0 16px rgba(251,140,0,0.6); }
+.composite-grade.grade-a   { color: #fb923c; text-shadow: 0 0 14px rgba(249,115,22,0.5); }
+.composite-grade.grade-b   { color: #facc15; text-shadow: 0 0 12px rgba(234,179,8,0.45); }
+.composite-grade.grade-c   { color: #4ade80; text-shadow: 0 0 12px rgba(34,197,94,0.4); }
+.composite-grade.grade-d   { color: #93c5fd; text-shadow: 0 0 10px rgba(96,165,250,0.4); }
+
+/* Cellules grade (modes/boss) */
+.td-grade {
+    width: 80px; text-align: center; vertical-align: middle;
+    border-left: 1px solid rgba(255,255,255,0.04);
+    padding: 0;
+}
+.td-grade:last-child { border-radius: 0 8px 8px 0; }
+.grade-box {
+    display: flex; align-items: center; justify-content: center;
+    height: 68px; font-size: 1.25rem; font-weight: 900;
+    letter-spacing: -0.5px;
+}
+.grade-sss { color: #fff5c0; text-shadow: 0 0 20px rgba(255,245,192,0.7), 0 0 8px rgba(255,245,192,0.4); font-size: 1rem; letter-spacing: -2px; }
+.grade-ss  { color: #f6c90e; text-shadow: 0 0 18px rgba(246,201,14,0.6), 0 0 6px rgba(246,201,14,0.3); font-size: 1.1rem; letter-spacing: -1px; }
+.grade-s   { color: #fb8c00; text-shadow: 0 0 14px rgba(251,140,0,0.5); }
+.grade-a   { color: #fb923c; text-shadow: 0 0 14px rgba(249,115,22,0.45); }
+.grade-b   { color: #facc15; text-shadow: 0 0 12px rgba(234,179,8,0.4); }
+.grade-c   { color: #4ade80; text-shadow: 0 0 12px rgba(34,197,94,0.35); }
+.grade-d   { color: #93c5fd; text-shadow: 0 0 10px rgba(96,165,250,0.35); }
+.grade-empty { color: rgba(255,255,255,0.1); font-size: 0.8rem; }
+
+/* Highlight colonne au hover en-tête */
+.td-grade.col-hl { background: rgba(91,124,255,0.05); }
+
+/* ── Modal ── */
+#hero-modal .modal-content {
+    background: #0e1122; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; max-height: 88vh; overflow-y: auto;
+}
+#hero-modal .modal-body { padding: 0; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="mx-page">
+
+    {# ── Header ── #}
+    <div class="mx-header">
+        <div class="mx-title-wrap">
+            <div class="mx-title">Classement des Héros</div>
+            <div class="mx-subtitle">{{ matrix|length }} héros · score cumulé sur {{ modes|length }} modes</div>
+        </div>
+
+        <div class="mx-score-legend">
+            <span class="mx-score-pill pill-sss">SSS ≥ 86%</span>
+            <span class="mx-score-pill pill-ss">SS ≥ 72%</span>
+            <span class="mx-score-pill pill-s">S ≥ 57%</span>
+            <span class="mx-score-pill pill-a">A ≥ 43%</span>
+            <span class="mx-score-pill pill-b">B ≥ 29%</span>
+            <span class="mx-score-pill pill-c">C ≥ 14%</span>
+            <span class="mx-score-pill pill-d">D</span>
+        </div>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('app_tier_list_matrix_edit') }}" class="mx-edit-btn">
+                <i class="fas fa-pen"></i> Éditer
+            </a>
+        {% endif %}
+    </div>
+
+    {# ── Filtres ── #}
+    {% set factions = [] %}
+    {% for row in matrix %}
+        {% if row.hero.factionEntity and row.hero.factionEntity.name not in factions %}
+            {% set factions = factions|merge([row.hero.factionEntity.name]) %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="mx-filters">
+        <input type="text" class="mx-search" id="mx-search" placeholder="Rechercher un héros…">
+        {% if factions|length > 0 %}
+            <button class="mx-fac-btn active" data-faction="">Tous</button>
+            {% for faction in factions|sort %}
+                <button class="mx-fac-btn" data-faction="{{ faction|lower }}">{{ faction }}</button>
+            {% endfor %}
+        {% endif %}
+        <div class="mx-count"><span id="mx-cnt">{{ matrix|length }}</span> héros</div>
+    </div>
+
+    {# ── Table ── #}
+    <div class="mx-wrap">
+        <table class="mx-table" id="mx-table">
+            <thead>
+                <tr>
+                    <th class="th-rank">#</th>
+                    <th class="th-hero">Héros</th>
+                    <th class="th-score">Note</th>
+                    {% for mode in modes %}
+                        <th class="th-mode" data-mode="{{ mode.slug }}" onclick="sortByMode('{{ mode.slug }}', this)">
+                            <span class="th-mode-group">{{ mode.groupName }}</span>
+                            <span class="th-mode-name">{{ mode.name }}</span>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody id="mx-body">
+                {% for i, row in matrix %}
+                    {% set hero    = row.hero %}
+                    {% set score   = row.score %}
+                    {% set pct     = maxScore > 0 ? (score / maxScore * 100)|round : 0 %}
+                    {% set rarity  = hero.rarityEntity  ? hero.rarityEntity.name|lower  : '' %}
+                    {% set faction = hero.factionEntity ? hero.factionEntity.name|lower : '' %}
+                    {% set rankNum = i + 1 %}
+
+                    <tr class="mx-row rar-{{ rarity }} {% if rankNum <= 3 %}rank-{{ rankNum }}{% endif %}"
+                        data-name="{{ hero.name|lower }}"
+                        data-faction="{{ faction }}"
+                        data-score="{{ score }}">
+
+                        {# Rang #}
+                        <td class="td-rank"><span class="rank-num">{{ rankNum }}</span></td>
+
+                        {# Héros #}
+                        <td class="td-hero">
+                            <div class="hero-inner" onclick="openHeroModal('{{ hero.slug }}')">
+                                <img src="{{ hero.imageUrl }}" alt="{{ hero.name }}" class="hero-img"
+                                     onerror="this.src='/images/OddOneGaming_Logo.png'">
+                                <div class="hero-meta">
+                                    <div class="hero-name">{{ hero.name }}</div>
+                                    {% if hero.factionEntity %}
+                                        <div class="hero-faction">{{ hero.factionEntity.name }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        {# Note composite #}
+                        <td class="td-score">
+                            <div class="composite-grade grade-{{ row.grade|lower }}">
+                                {{ row.grade }}
+                            </div>
+                        </td>
+
+                        {# Grades par mode #}
+                        {% for mode in modes %}
+                            {% set grade = row.grades[mode.slug] ?? '' %}
+                            <td class="td-grade" data-mode="{{ mode.slug }}">
+                                <div class="grade-box grade-{{ grade|lower ?: 'empty' }}">
+                                    {{ grade ?: '—' }}
+                                </div>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{# Modal héros #}
+<div class="modal fade" id="hero-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body" id="modal-body">
+                <div class="text-center py-5">
+                    <div class="spinner-border" style="color:#5b7cff;width:2.5rem;height:2.5rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+/* ── Modal ── */
+const heroCache = {};
+const heroModal = new bootstrap.Modal(document.getElementById('hero-modal'));
+async function openHeroModal(slug) {
+    document.getElementById('modal-body').innerHTML =
+        '<div class="text-center py-5"><div class="spinner-border" style="color:#5b7cff;width:2.5rem;height:2.5rem;"></div></div>';
+    heroModal.show();
+    if (!heroCache[slug]) {
+        const res = await fetch('/heroes/' + slug + '/modal');
+        heroCache[slug] = await res.text();
+    }
+    document.getElementById('modal-body').innerHTML = heroCache[slug];
+}
+
+/* ── Filtres ── */
+let activeFaction = '';
+let searchTerm    = '';
+
+document.querySelectorAll('.mx-fac-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.mx-fac-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFaction = btn.dataset.faction;
+        applyFilters();
+    });
+});
+document.getElementById('mx-search').addEventListener('input', e => {
+    searchTerm = e.target.value.toLowerCase().trim();
+    applyFilters();
+});
+
+function applyFilters() {
+    let visible = 0;
+    let visibleRank = 1;
+    document.querySelectorAll('.mx-row').forEach(row => {
+        const ok = (!activeFaction || row.dataset.faction === activeFaction)
+                && (!searchTerm   || row.dataset.name.includes(searchTerm));
+        row.classList.toggle('hidden', !ok);
+        if (ok) {
+            // Renuméroter les rangs visibles
+            row.querySelector('.rank-num').textContent = visibleRank++;
+            visible++;
+        }
+    });
+    document.getElementById('mx-cnt').textContent = visible;
+}
+
+/* ── Tri par mode (clic colonne) ── */
+const tierPts = { sss: 7, ss: 6, s: 5, a: 4, b: 3, c: 2, d: 1, '': 0 };
+let sortMode = '', sortDir = -1;
+
+function sortByMode(slug, thEl) {
+    sortDir = (sortMode === slug) ? -sortDir : -1;
+    sortMode = slug;
+
+    document.querySelectorAll('.th-mode').forEach(th => th.classList.remove('sort-col'));
+    thEl.classList.add('sort-col');
+
+    const tbody = document.getElementById('mx-body');
+    const rows  = [...tbody.querySelectorAll('.mx-row')];
+
+    rows.sort((a, b) => {
+        const ga = a.querySelector('[data-mode="' + slug + '"] .grade-box')?.textContent?.trim().toLowerCase().replace('—','') || '';
+        const gb = b.querySelector('[data-mode="' + slug + '"] .grade-box')?.textContent?.trim().toLowerCase().replace('—','') || '';
+        const diff = (tierPts[gb] - tierPts[ga]) * sortDir;
+        if (diff !== 0) return diff;
+        return parseInt(b.dataset.score) - parseInt(a.dataset.score);
+    });
+
+    rows.forEach((r, i) => { tbody.appendChild(r); });
+    applyFilters();
+}
+
+/* ── Highlight colonne au survol en-tête ── */
+document.querySelectorAll('.th-mode').forEach(th => {
+    const slug = th.dataset.mode;
+    th.addEventListener('mouseenter', () =>
+        document.querySelectorAll('[data-mode="' + slug + '"]').forEach(c => c.classList.add('col-hl')));
+    th.addEventListener('mouseleave', () =>
+        document.querySelectorAll('[data-mode="' + slug + '"]').forEach(c => c.classList.remove('col-hl')));
+});
+</script>
+{% endblock %}

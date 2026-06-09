@@ -35,6 +35,9 @@ class Dungeons
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $spell1Description = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $spell1ImageUrl = null;
+
     // SPELL 2
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $spell2Name = null;
@@ -45,6 +48,9 @@ class Dungeons
     #[ORM\Column(nullable: true)]
     private ?int $spell2Cooldown = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $spell2ImageUrl = null;
+
     // SPELL 3
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $spell3Name = null;
@@ -54,6 +60,13 @@ class Dungeons
 
     #[ORM\Column(nullable: true)]
     private ?int $spell3Cooldown = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $spell3ImageUrl = null;
+
+    // REWARDS
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $rewardsJson = null;
 
     // PASSIVES DE BASE
     #[ORM\OneToMany(targetEntity: DungeonPassive::class, mappedBy: 'dungeon', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -147,6 +160,17 @@ class Dungeons
         return $this;
     }
 
+    public function getSpell1ImageUrl(): ?string
+    {
+        return $this->spell1ImageUrl;
+    }
+
+    public function setSpell1ImageUrl(?string $spell1ImageUrl): static
+    {
+        $this->spell1ImageUrl = $spell1ImageUrl;
+        return $this;
+    }
+
     public function getSpell2Name(): ?string
     {
         return $this->spell2Name;
@@ -177,6 +201,17 @@ class Dungeons
     public function setSpell2Cooldown(?int $spell2Cooldown): static
     {
         $this->spell2Cooldown = $spell2Cooldown;
+        return $this;
+    }
+
+    public function getSpell2ImageUrl(): ?string
+    {
+        return $this->spell2ImageUrl;
+    }
+
+    public function setSpell2ImageUrl(?string $spell2ImageUrl): static
+    {
+        $this->spell2ImageUrl = $spell2ImageUrl;
         return $this;
     }
 
@@ -211,6 +246,33 @@ class Dungeons
     {
         $this->spell3Cooldown = $spell3Cooldown;
         return $this;
+    }
+
+    public function getSpell3ImageUrl(): ?string
+    {
+        return $this->spell3ImageUrl;
+    }
+
+    public function setSpell3ImageUrl(?string $spell3ImageUrl): static
+    {
+        $this->spell3ImageUrl = $spell3ImageUrl;
+        return $this;
+    }
+
+    public function getRewardsJson(): ?string
+    {
+        return $this->rewardsJson;
+    }
+
+    public function setRewardsJson(?string $rewardsJson): static
+    {
+        $this->rewardsJson = $rewardsJson;
+        return $this;
+    }
+
+    public function getRewards(): array
+    {
+        return $this->rewardsJson ? (json_decode($this->rewardsJson, true) ?? []) : [];
     }
 
     /**

@@ -438,14 +438,84 @@
         }
 
         .spell-body {
-            padding: 30px;
+            padding: 20px 30px 30px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .spell-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
         }
 
         .spell-description {
             color: rgba(255, 255, 255, 0.9);
             line-height: 1.8;
             font-size: 1.05rem;
+            flex: 1;
         }
+
+        /* Effect badges (same as skill-effects.css) */
+        .skill-effect { font-weight:700; padding:2px 6px; border-radius:4px; cursor:help; transition:all .2s; display:inline-block; border:1px solid; }
+        .skill-effect.effect-buff    { color:#10b981; background:rgba(16,185,129,.1); border-color:rgba(16,185,129,.3); }
+        .skill-effect.effect-buff:hover    { background:rgba(16,185,129,.2); border-color:#10b981; transform:translateY(-1px); }
+        .skill-effect.effect-debuff  { color:#ef4444; background:rgba(239,68,68,.1);  border-color:rgba(239,68,68,.3); }
+        .skill-effect.effect-debuff:hover  { background:rgba(239,68,68,.2); border-color:#ef4444; transform:translateY(-1px); }
+        .skill-effect.effect-disable { color:#f59e0b; background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.3); }
+        .skill-effect.effect-disable:hover { background:rgba(245,158,11,.2); border-color:#f59e0b; transform:translateY(-1px); }
+        .skill-tooltip { position:fixed; width:280px; background:linear-gradient(135deg,rgba(10,14,39,.98),rgba(26,31,58,.98)); backdrop-filter:blur(20px); border-radius:10px; box-shadow:0 10px 40px rgba(0,0,0,.8); z-index:10000; pointer-events:none; overflow:hidden; border:2px solid; display:none; }
+        .skill-tooltip-header { padding:10px 15px; font-weight:700; font-size:.95rem; text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,.1); }
+        .skill-tooltip-header.buff,.skill-tooltip.buff   { border-color:#10b981; background:rgba(16,185,129,.2); color:#10b981; }
+        .skill-tooltip-header.debuff,.skill-tooltip.debuff { border-color:#ef4444; background:rgba(239,68,68,.2); color:#ef4444; }
+        .skill-tooltip-header.disable,.skill-tooltip.disable { border-color:#f59e0b; background:rgba(245,158,11,.2); color:#f59e0b; }
+        .skill-tooltip-body { padding:12px 15px; font-size:.9rem; color:rgba(255,255,255,.85); line-height:1.5; }
+
+        /* Rewards */
+        .rewards-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:14px; margin-top:20px; }
+        .reward-card { background:rgba(255,255,255,.03); border:1px solid rgba(255,200,0,.25); border-radius:14px; padding:16px 12px; text-align:center; transition:all .2s; }
+        .reward-card:hover { border-color:rgba(255,200,0,.5); background:rgba(255,200,0,.05); transform:translateY(-2px); }
+        .reward-slot { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:rgba(255,255,255,.4); margin-bottom:6px; }
+        .reward-name { font-size:.88rem; font-weight:700; color:#ffd700; line-height:1.3; }
+        .reward-card.material { border-color:rgba(0,200,255,.25); }
+        .reward-card.material:hover { border-color:rgba(0,200,255,.5); background:rgba(0,200,255,.05); }
+        .reward-card.material .reward-name { color:#00ccff; }
+        .reward-card.set { border-color:rgba(168,85,247,.35); }
+        .reward-card.set:hover { border-color:rgba(168,85,247,.6); background:rgba(168,85,247,.07); }
+        .reward-card.set .reward-name { color:#c084fc; }
+        .reward-icon { width:52px; height:52px; object-fit:contain; margin-bottom:8px; }
+        .reward-qty { font-size:.75rem; color:rgba(255,255,255,.5); margin-top:4px; }
+        .passive-icon { width:52px; height:52px; border-radius:10px; object-fit:cover; flex-shrink:0; border:1px solid rgba(255,215,0,.3); }
+        /* Stage rewards */
+        .gear-pool-section { margin-bottom:24px; }
+        .gear-pool-title { font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,.4); margin-bottom:12px; }
+        .stage-rewards-section { margin-top:10px; }
+        .stage-selector-bar { display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:16px; }
+        .stage-label { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:rgba(255,255,255,.38); margin-right:4px; }
+        .stage-btn { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.13); border-radius:7px; color:rgba(255,255,255,.55); font-size:.8rem; font-weight:700; padding:4px 9px; cursor:pointer; transition:all .2s; }
+        .stage-btn:hover { border-color:rgba(0,255,136,.4); color:#00ff88; }
+        .stage-btn.active { background:rgba(0,255,136,.13); border-color:#00ff88; color:#00ff88; }
+        .stage-data.hidden { display:none; }
+        .stage-stats-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:10px; margin-bottom:12px; }
+        .stage-stat { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:10px; padding:12px 8px; text-align:center; }
+        .stat-icon { display:block; font-size:1.3rem; margin-bottom:3px; }
+        .stat-label { display:block; font-size:.68rem; text-transform:uppercase; letter-spacing:.5px; color:rgba(255,255,255,.38); margin-bottom:3px; }
+        .stat-value { display:block; font-size:1.05rem; font-weight:700; color:#ffd700; }
+        .drop-table { margin-top:12px; }
+        .drop-table-title { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:rgba(255,255,255,.35); margin-bottom:8px; }
+        .drop-row { display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+        .drop-row:last-child { border-bottom:none; }
+        .drop-icon { width:26px; height:26px; object-fit:contain; flex-shrink:0; }
+        .drop-name { flex:1; font-size:.85rem; color:rgba(255,255,255,.82); }
+        .drop-qty { font-size:.8rem; font-weight:700; color:#ffd700; min-width:28px; text-align:right; }
+        .drop-bar-wrap { width:90px; background:rgba(255,255,255,.07); border-radius:4px; height:6px; flex-shrink:0; }
+        .drop-bar { height:6px; border-radius:4px; background:linear-gradient(90deg,#00ff88,#00ccff); transition:width .3s; }
+        .drop-rate { font-size:.78rem; font-weight:700; color:rgba(255,255,255,.55); min-width:38px; text-align:right; }
 
         /* Passive Cards */
         .passive-card {
@@ -932,7 +1002,10 @@
                             </div>
                             {% if dungeon.spell1Description %}
                                 <div class="spell-body">
-                                    <p class="spell-description">{{ dungeon.spell1Description }}</p>
+                                    {% if dungeon.spell1ImageUrl %}
+                                        <img src="{{ dungeon.spell1ImageUrl }}" alt="{{ dungeon.spell1Name }}" class="spell-icon" onerror="this.style.display='none'">
+                                    {% endif %}
+                                    <p class="spell-description">{{ dungeon.spell1Description|parse_effects|raw }}</p>
                                 </div>
                             {% endif %}
                         </div>
@@ -949,7 +1022,10 @@
                             </div>
                             {% if dungeon.spell2Description %}
                                 <div class="spell-body">
-                                    <p class="spell-description">{{ dungeon.spell2Description }}</p>
+                                    {% if dungeon.spell2ImageUrl %}
+                                        <img src="{{ dungeon.spell2ImageUrl }}" alt="{{ dungeon.spell2Name }}" class="spell-icon" onerror="this.style.display='none'">
+                                    {% endif %}
+                                    <p class="spell-description">{{ dungeon.spell2Description|parse_effects|raw }}</p>
                                 </div>
                             {% endif %}
                         </div>
@@ -966,7 +1042,10 @@
                             </div>
                             {% if dungeon.spell3Description %}
                                 <div class="spell-body">
-                                    <p class="spell-description">{{ dungeon.spell3Description }}</p>
+                                    {% if dungeon.spell3ImageUrl %}
+                                        <img src="{{ dungeon.spell3ImageUrl }}" alt="{{ dungeon.spell3Name }}" class="spell-icon" onerror="this.style.display='none'">
+                                    {% endif %}
+                                    <p class="spell-description">{{ dungeon.spell3Description|parse_effects|raw }}</p>
                                 </div>
                             {% endif %}
                         </div>
@@ -979,11 +1058,15 @@
                         {% for passive in dungeon.passives %}
                             <div class="passive-card">
                                 <div class="passive-header">
-                                    <span class="passive-badge">💫</span>
+                                    {% if passive.imageUrl %}
+                                        <img src="{{ passive.imageUrl }}" alt="{{ passive.name }}" class="passive-icon" onerror="this.style.display='none'">
+                                    {% else %}
+                                        <span class="passive-badge">💫</span>
+                                    {% endif %}
                                     <h4 class="passive-name">{{ passive.name }}</h4>
                                 </div>
                                 {% if passive.description %}
-                                    <p class="passive-description">{{ passive.description }}</p>
+                                    <p class="passive-description">{{ passive.description|parse_effects|raw }}</p>
                                 {% endif %}
                             </div>
                         {% endfor %}
@@ -1013,7 +1096,10 @@
                                                 </div>
                                                 {% if phase.spell1DescriptionOverride %}
                                                     <div class="spell-body">
-                                                        <p class="spell-description">{{ phase.spell1DescriptionOverride }}</p>
+                                                        {% if phase.spell1ImageOverride %}
+                                                            <img src="{{ phase.spell1ImageOverride }}" alt="{{ phase.spell1NameOverride }}" class="spell-icon" onerror="this.style.display='none'">
+                                                        {% endif %}
+                                                        <p class="spell-description">{{ phase.spell1DescriptionOverride|parse_effects|raw }}</p>
                                                     </div>
                                                 {% endif %}
                                             </div>
@@ -1030,7 +1116,10 @@
                                                 </div>
                                                 {% if phase.spell2DescriptionOverride %}
                                                     <div class="spell-body">
-                                                        <p class="spell-description">{{ phase.spell2DescriptionOverride }}</p>
+                                                        {% if phase.spell2ImageOverride %}
+                                                            <img src="{{ phase.spell2ImageOverride }}" alt="{{ phase.spell2NameOverride }}" class="spell-icon" onerror="this.style.display='none'">
+                                                        {% endif %}
+                                                        <p class="spell-description">{{ phase.spell2DescriptionOverride|parse_effects|raw }}</p>
                                                     </div>
                                                 {% endif %}
                                             </div>
@@ -1047,7 +1136,10 @@
                                                 </div>
                                                 {% if phase.spell3DescriptionOverride %}
                                                     <div class="spell-body">
-                                                        <p class="spell-description">{{ phase.spell3DescriptionOverride }}</p>
+                                                        {% if phase.spell3ImageOverride %}
+                                                            <img src="{{ phase.spell3ImageOverride }}" alt="{{ phase.spell3NameOverride }}" class="spell-icon" onerror="this.style.display='none'">
+                                                        {% endif %}
+                                                        <p class="spell-description">{{ phase.spell3DescriptionOverride|parse_effects|raw }}</p>
                                                     </div>
                                                 {% endif %}
                                             </div>
@@ -1061,11 +1153,15 @@
                                         {% for passive in phase.passives %}
                                             <div class="passive-card">
                                                 <div class="passive-header">
-                                                    <span class="passive-badge">💫</span>
+                                                    {% if passive.imageUrl %}
+                                                        <img src="{{ passive.imageUrl }}" alt="{{ passive.name }}" class="passive-icon" onerror="this.style.display='none'">
+                                                    {% else %}
+                                                        <span class="passive-badge">💫</span>
+                                                    {% endif %}
                                                     <h4 class="passive-name">{{ passive.name }}</h4>
                                                 </div>
                                                 {% if passive.description %}
-                                                    <p class="passive-description">{{ passive.description }}</p>
+                                                    <p class="passive-description">{{ passive.description|parse_effects|raw }}</p>
                                                 {% endif %}
                                             </div>
                                         {% endfor %}
@@ -1079,6 +1175,111 @@
                                 </div>
                             </div>
                         {% endfor %}
+                    {% endif %}
+
+                    <!-- POSSIBLE REWARDS -->
+                    {% set rewards = dungeon.rewards %}
+                    {% if rewards|length > 0 %}
+                        <h2 class="section-divider">🏆 Possible Rewards</h2>
+
+                        {% if rewards.gearPool is defined or rewards.stages is defined %}
+
+                            {% if rewards.gearPool is defined and rewards.gearPool|length > 0 %}
+                                <div class="gear-pool-section">
+                                    <div class="gear-pool-title">Armor Sets</div>
+                                    <div class="rewards-grid">
+                                        {% for item in rewards.gearPool %}
+                                            <div class="reward-card set">
+                                                {% if item.imageUrl is defined and item.imageUrl %}
+                                                    <img src="{{ item.imageUrl }}" alt="{{ item.name }}" class="reward-icon" onerror="this.style.display='none'">
+                                                {% endif %}
+                                                <div class="reward-name">{{ item.name }}</div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if rewards.stages is defined and rewards.stages|length > 0 %}
+                                <div class="stage-rewards-section">
+                                    <div class="stage-selector-bar">
+                                        <span class="stage-label">Stage:</span>
+                                        {% for stage in rewards.stages %}
+                                            <button class="stage-btn{% if loop.first %} active{% endif %}" data-stage="{{ stage.s }}">{{ stage.s }}</button>
+                                        {% endfor %}
+                                    </div>
+                                    {% for stage in rewards.stages %}
+                                        <div class="stage-data{% if not loop.first %} hidden{% endif %}" id="stage-{{ stage.s }}">
+                                            <div class="stage-stats-grid">
+                                                <div class="stage-stat">
+                                                    <span class="stat-icon">⚡</span>
+                                                    <span class="stat-label">Energy</span>
+                                                    <span class="stat-value">{{ stage.energy }}</span>
+                                                </div>
+                                                <div class="stage-stat">
+                                                    <span class="stat-icon">🪙</span>
+                                                    <span class="stat-label">Gold</span>
+                                                    <span class="stat-value">{{ stage.gold }}</span>
+                                                </div>
+                                                <div class="stage-stat">
+                                                    <span class="stat-icon">📜</span>
+                                                    <span class="stat-label">Tomes</span>
+                                                    <span class="stat-value">{{ stage.tov }}</span>
+                                                </div>
+                                                <div class="stage-stat">
+                                                    <span class="stat-icon">⭐</span>
+                                                    <span class="stat-label">XP</span>
+                                                    <span class="stat-value">{{ stage.xp }}</span>
+                                                </div>
+                                                {% if stage.whetstone is defined %}
+                                                    <div class="stage-stat">
+                                                        <span class="stat-icon">🪨</span>
+                                                        <span class="stat-label">Whetstone</span>
+                                                        <span class="stat-value">{{ stage.whetstone }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            {% if stage.drops is defined and stage.drops|length > 0 %}
+                                                <div class="drop-table">
+                                                    <div class="drop-table-title">Bonus Drop — one of the following</div>
+                                                    {% for drop in stage.drops %}
+                                                        <div class="drop-row">
+                                                            {% if drop.imageUrl is defined and drop.imageUrl %}
+                                                                <img src="{{ drop.imageUrl }}" alt="{{ drop.name }}" class="drop-icon" onerror="this.style.display='none'">
+                                                            {% else %}
+                                                                <span style="width:26px;flex-shrink:0"></span>
+                                                            {% endif %}
+                                                            <span class="drop-name">{{ drop.name }}</span>
+                                                            <span class="drop-qty">×{{ drop.qty }}</span>
+                                                            <div class="drop-bar-wrap">
+                                                                <div class="drop-bar" style="width:{{ min(drop.rate, 100) }}%"></div>
+                                                            </div>
+                                                            <span class="drop-rate">{{ drop.rate }}%</span>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                        {% else %}
+                            {# Legacy flat format #}
+                            <div class="rewards-grid">
+                                {% for reward in rewards %}
+                                    <div class="reward-card {{ reward.type ?? '' }}">
+                                        {% if reward.imageUrl is defined and reward.imageUrl %}
+                                            <img src="{{ reward.imageUrl }}" alt="{{ reward.name }}" class="reward-icon" onerror="this.style.display='none'">
+                                        {% endif %}
+                                        <div class="reward-name">{{ reward.name }}</div>
+                                        {% if reward.qty is defined and reward.qty %}
+                                            <div class="reward-qty">x{{ reward.qty }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     {% endif %}
 
                     <!-- TEAM SUGGESTIONS -->
@@ -1161,5 +1362,66 @@
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
+{{ parent() }}
+<div class="skill-tooltip" id="dungeonTooltip">
+    <div class="skill-tooltip-header" id="dungeonTooltipHeader"></div>
+    <div class="skill-tooltip-body"   id="dungeonTooltipBody"></div>
+</div>
+<script>
+(function () {
+    const tooltip       = document.getElementById('dungeonTooltip');
+    const tooltipHeader = document.getElementById('dungeonTooltipHeader');
+    const tooltipBody   = document.getElementById('dungeonTooltipBody');
+
+    const getType = el => {
+        if (el.classList.contains('effect-debuff'))  return 'debuff';
+        if (el.classList.contains('effect-disable')) return 'disable';
+        return 'buff';
+    };
+
+    const position = (e) => {
+        const tw = 300, th = tooltip.getBoundingClientRect().height || 120;
+        let x = e.clientX - tw / 2, y = e.clientY - th - 12;
+        if (x < 10) x = 10;
+        if (x + tw > window.innerWidth - 10) x = window.innerWidth - tw - 10;
+        if (y < 10) y = e.clientY + 12;
+        tooltip.style.left = x + 'px';
+        tooltip.style.top  = y + 'px';
+    };
+
+    document.addEventListener('mouseover', e => {
+        const el = e.target.closest('.skill-effect');
+        if (!el) return;
+        const type = getType(el);
+        tooltipHeader.textContent   = el.dataset.effect  || '';
+        tooltipHeader.className     = `skill-tooltip-header ${type}`;
+        tooltipBody.textContent     = el.dataset.description || '';
+        tooltip.className           = `skill-tooltip ${type}`;
+        tooltip.style.display       = 'block';
+        position(e);
+    });
+
+    document.addEventListener('mousemove', e => {
+        if (tooltip.style.display === 'block') position(e);
+    });
+
+    document.addEventListener('mouseout', e => {
+        if (e.target.closest('.skill-effect')) tooltip.style.display = 'none';
+    });
+})();
+</script>
+<script>
+document.querySelectorAll('.stage-selector-bar').forEach(bar => {
+    bar.querySelectorAll('.stage-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const section = this.closest('.stage-rewards-section');
+            const s = this.dataset.stage;
+            section.querySelectorAll('.stage-data').forEach(d => d.classList.add('hidden'));
+            section.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+            section.querySelector('#stage-' + s).classList.remove('hidden');
+            this.classList.add('active');
+        });
+    });
+});
+</script>
 {% endblock %}

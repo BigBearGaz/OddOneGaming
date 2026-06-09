@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\HeroTierList;
+use App\Entity\TierListMode;
 use App\Repository\HeroTierListRepository;
 use App\Repository\HeroesRepository;
+use App\Repository\TierListModeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,194 +17,151 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/tier-list')]
 class TierListController extends AbstractController
 {
-    // INDEX - Liste toutes les catégories de tier lists
+    private const TIERS       = ['SSS', 'SS', 'S', 'A', 'B', 'C', 'D'];
+    private const TIER_SCORES = ['SSS' => 7, 'SS' => 6, 'S' => 5, 'A' => 4, 'B' => 3, 'C' => 2, 'D' => 1];
+
+    // INDEX → classement par score cumulé (héros × modes)
     #[Route('/', name: 'app_tier_list_index')]
-    public function index(HeroTierListRepository $tierListRepo): Response
+    public function index(HeroTierListRepository $tierListRepo, TierListModeRepository $modeRepo): Response
     {
-        // Récupérer toutes les catégories avec le nombre de héros
-        $categories = $tierListRepo->createQueryBuilder('t')
-            ->select('t.category, COUNT(t.id) as heroCount')
-            ->groupBy('t.category')
-            ->orderBy('t.category', 'ASC')
-            ->getQuery()
-            ->getResult();
+        $modes    = $modeRepo->findBy([], ['sortOrder' => 'ASC']);
+        $entries  = $tierListRepo->findAllWithHeroes();
+        $maxScore = count($modes) * max(self::TIER_SCORES);
 
-        return $this->render('tier_list/index.html.twig', [
-            'categories' => $categories,
-        ]);
-    }
-
-    // SHOW - Affichage public d'une tier list
-    #[Route('/{category}', name: 'app_tier_list_show', methods: ['GET'])]
-    public function show(string $category, HeroTierListRepository $tierListRepo): Response
-    {
-        // Récupérer toutes les catégories pour la navigation
-        $allCategories = $tierListRepo->createQueryBuilder('t')
-            ->select('DISTINCT t.category')
-            ->orderBy('t.category', 'ASC')
-            ->getQuery()
-            ->getSingleColumnResult();
-
-        // Récupérer les héros de cette catégorie
-        $tierListEntries = $tierListRepo->findBy(
-            ['category' => $category],
-            ['tier' => 'ASC', 'rankingOrder' => 'ASC']
-        );
-
-        // Organiser par tier
-        $tierData = [
-            'S' => [],
-            'A' => [],
-            'B' => [],
-            'C' => [],
-            'D' => [],
-            'F' => [],
-        ];
-
-        foreach ($tierListEntries as $entry) {
-            $tier = $entry->getTier();
-            if (isset($tierData[$tier])) {
-                $tierData[$tier][] = $entry;
+        $matrix = [];
+        foreach ($entries as $entry) {
+            $hero = $entry->getHero();
+            $id   = $hero->getId();
+            if (!isset($matrix[$id])) {
+                $matrix[$id] = ['hero' => $hero, 'grades' => [], 'score' => 0];
             }
+            $slug  = $entry->getCategory();
+            $tier  = $entry->getTier();
+            $matrix[$id]['grades'][$slug]  = $tier;
+            $matrix[$id]['score']         += self::TIER_SCORES[$tier] ?? 0;
         }
 
-        return $this->render('tier_list/show.html.twig', [
-            'category' => $category,
-            'allCategories' => $allCategories,
-            'tierData' => $tierData,
-        ]);
-    }
-
-    // NEW - Créer une nouvelle tier list (catégorie)
-    #[Route('/new/create', name: 'app_tier_list_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        if ($request->isMethod('POST')) {
-            $categoryName = $request->request->get('categoryName');
-            
-            if ($categoryName) {
-                $this->addFlash('success', "Category '$categoryName' created successfully!");
-                return $this->redirectToRoute('app_tier_list_edit', ['category' => $categoryName]);
-            } else {
-                $this->addFlash('error', 'Please enter a category name.');
-            }
-        }
-
-        return $this->render('tier_list/new.html.twig');
-    }
-
-    // EDIT - Éditer une tier list avec drag & drop
-    #[Route('/{category}/edit', name: 'app_tier_list_edit', methods: ['GET'])]
-    public function edit(
-        string $category, 
-        HeroTierListRepository $tierListRepo,
-        HeroesRepository $heroesRepo
-    ): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        // Récupérer toutes les catégories
-        $allCategories = $tierListRepo->createQueryBuilder('t')
-            ->select('DISTINCT t.category')
-            ->orderBy('t.category', 'ASC')
-            ->getQuery()
-            ->getSingleColumnResult();
-
-        // Récupérer tous les héros
-        $allHeroes = $heroesRepo->findAll();
-
-        // Récupérer les héros déjà dans la tier list
-        $tierListEntries = $tierListRepo->findBy(
-            ['category' => $category],
-            ['tier' => 'ASC', 'rankingOrder' => 'ASC']
-        );
-
-        // Organiser par tier
-        $tierData = [
-            'S' => [],
-            'A' => [],
-            'B' => [],
-            'C' => [],
-            'D' => [],
-            'F' => [],
-        ];
-
-        $heroesInTierList = [];
-        foreach ($tierListEntries as $entry) {
-            $tier = $entry->getTier();
-            if (isset($tierData[$tier])) {
-                $tierData[$tier][] = $entry;
-            }
-            $heroesInTierList[] = $entry->getHero()->getId();
-        }
-
-        // Héros non classés
-        $unrankedHeroes = array_filter($allHeroes, function($hero) use ($heroesInTierList) {
-            return !in_array($hero->getId(), $heroesInTierList);
+        // Tri décroissant par score, puis alphabétique à égalité
+        usort($matrix, function ($a, $b) {
+            if ($b['score'] !== $a['score']) return $b['score'] - $a['score'];
+            return strcmp($a['hero']->getName(), $b['hero']->getName());
         });
 
-        return $this->render('tier_list/edit.html.twig', [
-            'category' => $category,
-            'allCategories' => $allCategories,
-            'tierData' => $tierData,
-            'unrankedHeroes' => $unrankedHeroes,
+        foreach ($matrix as &$row) {
+            $row['grade'] = $this->scoreToGrade($row['score'], $maxScore);
+        }
+        unset($row);
+
+        return $this->render('tier_list/matrix.html.twig', [
+            'modes'    => $modes,
+            'matrix'   => $matrix,
+            'maxScore' => $maxScore,
         ]);
     }
 
-    // RENAME - Renommer une catégorie
-    #[Route('/{category}/rename', name: 'app_tier_list_rename', methods: ['POST'])]
-    public function rename(string $category, Request $request, EntityManagerInterface $em, HeroTierListRepository $repo): Response
+    private function scoreToGrade(int $score, int $maxScore): string
+    {
+        if ($maxScore === 0) return 'D';
+        $pct = $score / $maxScore;
+        if ($pct >= 0.86) return 'SSS';
+        if ($pct >= 0.72) return 'SS';
+        if ($pct >= 0.57) return 'S';
+        if ($pct >= 0.43) return 'A';
+        if ($pct >= 0.29) return 'B';
+        if ($pct >= 0.14) return 'C';
+        return 'D';
+    }
+
+    // MATRIX EDIT — grille cliquable admin (toutes les heroes × tous les modes)
+    #[Route('/edit', name: 'app_tier_list_matrix_edit', methods: ['GET'])]
+    public function matrixEdit(
+        HeroTierListRepository $tierListRepo,
+        HeroesRepository $heroesRepo,
+        TierListModeRepository $modeRepo
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $modes   = $modeRepo->findBy([], ['sortOrder' => 'ASC']);
+        $entries = $tierListRepo->findAllWithHeroes();
+        $heroes  = $heroesRepo->findAll();
+
+        // entryMap[heroId][modeSlug] = ['tier' => ..., 'entryId' => ...]
+        $entryMap = [];
+        foreach ($entries as $entry) {
+            $hid  = $entry->getHero()->getId();
+            $slug = $entry->getCategory();
+            $entryMap[$hid][$slug] = ['tier' => $entry->getTier(), 'entryId' => $entry->getId()];
+        }
+
+        usort($heroes, fn($a, $b) => strcmp($a->getName() ?? '', $b->getName() ?? ''));
+
+        return $this->render('tier_list/matrix_edit.html.twig', [
+            'modes'    => $modes,
+            'heroes'   => $heroes,
+            'entryMap' => $entryMap,
+        ]);
+    }
+
+    // SHOW — vue par mode (bouton "Voir" depuis edit)
+    #[Route('/{slug}', name: 'app_tier_list_show', methods: ['GET'])]
+    public function show(string $slug, HeroTierListRepository $tierListRepo, TierListModeRepository $modeRepo): Response
+    {
+        $mode = $modeRepo->findOneBy(['slug' => $slug]);
+        if (!$mode) {
+            throw $this->createNotFoundException("Mode '$slug' introuvable.");
+        }
+
+        $groupedModes = $modeRepo->findAllGrouped();
+        $tierData     = $this->buildTierData($tierListRepo, $slug);
+
+        return $this->render('tier_list/show.html.twig', [
+            'mode'         => $mode,
+            'groupedModes' => $groupedModes,
+            'tierData'     => $tierData,
+        ]);
+    }
+
+    // EDIT — admin drag & drop pour un mode
+    #[Route('/{slug}/edit', name: 'app_tier_list_edit', methods: ['GET'])]
+    public function edit(string $slug, HeroTierListRepository $tierListRepo, HeroesRepository $heroesRepo, TierListModeRepository $modeRepo): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $newName = trim($request->request->get('newName', ''));
-
-        if ($newName && $newName !== $category) {
-            $entries = $repo->findBy(['category' => $category]);
-            foreach ($entries as $entry) {
-                $entry->setCategory($newName);
-            }
-            $em->flush();
-            $this->addFlash('success', "Tier list renamed to '$newName'.");
-            return $this->redirectToRoute('app_tier_list_edit', ['category' => $newName]);
+        $mode = $modeRepo->findOneBy(['slug' => $slug]);
+        if (!$mode) {
+            throw $this->createNotFoundException("Mode '$slug' introuvable.");
         }
 
-        return $this->redirectToRoute('app_tier_list_edit', ['category' => $category]);
-    }
+        $groupedModes = $modeRepo->findAllGrouped();
+        $tierData     = $this->buildTierData($tierListRepo, $slug);
 
-    // DELETE - Supprimer une catégorie entière
-    #[Route('/{category}/delete', name: 'app_tier_list_delete', methods: ['POST'])]
-    public function delete(string $category, Request $request, EntityManagerInterface $em, HeroTierListRepository $repo): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        if ($this->isCsrfTokenValid('delete'.$category, $request->request->get('_token'))) {
-            $entries = $repo->findBy(['category' => $category]);
-            
-            foreach ($entries as $entry) {
-                $em->remove($entry);
+        $heroesInTierList = [];
+        foreach ($tierData as $heroes) {
+            foreach ($heroes as $entry) {
+                $heroesInTierList[] = $entry->getHero()->getId();
             }
-            
-            $em->flush();
-
-            $this->addFlash('success', "Tier list '$category' deleted successfully!");
         }
 
-        return $this->redirectToRoute('app_tier_list_index');
+        $allHeroes      = $heroesRepo->findAll();
+        $unrankedHeroes = array_filter($allHeroes, fn($h) => !in_array($h->getId(), $heroesInTierList));
+
+        return $this->render('tier_list/edit.html.twig', [
+            'mode'          => $mode,
+            'groupedModes'  => $groupedModes,
+            'tierData'      => $tierData,
+            'unrankedHeroes'=> array_values($unrankedHeroes),
+        ]);
     }
 
-    // API - Ajouter un héros à une tier list
+    // API — Ajouter un héros à un mode
     #[Route('/api/add-hero', name: 'app_tier_list_api_add', methods: ['POST'])]
     public function addHero(Request $request, EntityManagerInterface $em, HeroesRepository $heroesRepo): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $data = json_decode($request->getContent(), true);
-        
-        $heroId = $data['heroId'] ?? null;
-        $tier = $data['tier'] ?? null;
+        $data     = json_decode($request->getContent(), true);
+        $heroId   = $data['heroId']   ?? null;
+        $tier     = $data['tier']     ?? null;
         $category = $data['category'] ?? null;
 
         if (!$heroId || !$tier || !$category) {
@@ -227,26 +186,23 @@ class TierListController extends AbstractController
         return $this->json(['success' => true, 'entryId' => $entry->getId()]);
     }
 
-    // API - Retirer un héros
+    // API — Retirer un héros
     #[Route('/api/remove-hero/{id}', name: 'app_tier_list_api_remove', methods: ['DELETE'])]
     public function removeHero(HeroTierList $entry, EntityManagerInterface $em): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         $em->remove($entry);
         $em->flush();
-
         return $this->json(['success' => true]);
     }
 
-    // API - Mettre à jour l'ordre
+    // API — Mettre à jour l'ordre / tier
     #[Route('/api/update-order', name: 'app_tier_list_api_update_order', methods: ['POST'])]
     public function updateOrder(Request $request, EntityManagerInterface $em, HeroTierListRepository $repo): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $data = json_decode($request->getContent(), true);
-        
         foreach ($data as $update) {
             $entry = $repo->find($update['id']);
             if ($entry) {
@@ -255,9 +211,21 @@ class TierListController extends AbstractController
                 $entry->setUpdatedAt(new \DateTime());
             }
         }
-
         $em->flush();
-
         return $this->json(['success' => true]);
+    }
+
+    // ───────────────────────────────────────────────
+    private function buildTierData(HeroTierListRepository $repo, string $slug): array
+    {
+        $tierData = array_fill_keys(self::TIERS, []);
+        $entries  = $repo->findBy(['category' => $slug], ['tier' => 'ASC', 'rankingOrder' => 'ASC']);
+        foreach ($entries as $entry) {
+            $t = $entry->getTier();
+            if (isset($tierData[$t])) {
+                $tierData[$t][] = $entry;
+            }
+        }
+        return $tierData;
     }
 }

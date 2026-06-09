@@ -33,6 +33,9 @@ class DungeonPhase
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $spell1DescriptionOverride = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $spell1ImageOverride = null;
+
     // SPELL 2 OVERRIDE
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $spell2NameOverride = null;
@@ -43,6 +46,9 @@ class DungeonPhase
     #[ORM\Column(nullable: true)]
     private ?int $spell2CooldownOverride = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $spell2ImageOverride = null;
+
     // SPELL 3 OVERRIDE
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $spell3NameOverride = null;
@@ -52,6 +58,9 @@ class DungeonPhase
 
     #[ORM\Column(nullable: true)]
     private ?int $spell3CooldownOverride = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $spell3ImageOverride = null;
 
     // PASSIVES DE CETTE PHASE
     #[ORM\OneToMany(targetEntity: DungeonPassive::class, mappedBy: 'phase', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -123,6 +132,9 @@ class DungeonPhase
         return $this;
     }
 
+    public function getSpell1ImageOverride(): ?string { return $this->spell1ImageOverride; }
+    public function setSpell1ImageOverride(?string $v): static { $this->spell1ImageOverride = $v; return $this; }
+
     public function getSpell2NameOverride(): ?string
     {
         return $this->spell2NameOverride;
@@ -156,6 +168,9 @@ class DungeonPhase
         return $this;
     }
 
+    public function getSpell2ImageOverride(): ?string { return $this->spell2ImageOverride; }
+    public function setSpell2ImageOverride(?string $v): static { $this->spell2ImageOverride = $v; return $this; }
+
     public function getSpell3NameOverride(): ?string
     {
         return $this->spell3NameOverride;
@@ -188,6 +203,9 @@ class DungeonPhase
         $this->spell3CooldownOverride = $spell3CooldownOverride;
         return $this;
     }
+
+    public function getSpell3ImageOverride(): ?string { return $this->spell3ImageOverride; }
+    public function setSpell3ImageOverride(?string $v): static { $this->spell3ImageOverride = $v; return $this; }
 
     public function getPassives(): Collection
     {

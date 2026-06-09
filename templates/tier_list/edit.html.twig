@@ -1,8 +1,7 @@
 {% extends 'base.html.twig' %}
+{% block title %}Éditer — {{ mode.name }}{% endblock %}
 
-{% block title %}Edit {{ category }} Tier List{% endblock %}
-
-{# Collect unique filter values from unranked heroes #}
+{# Collect filter values from unranked heroes #}
 {% set rarities = [] %}
 {% set factions = [] %}
 {% set types = [] %}
@@ -25,60 +24,102 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-body {
-    background: linear-gradient(135deg, rgba(8,11,30,0.97) 0%, rgba(18,22,50,0.97) 100%);
-    min-height: 100vh;
-    padding: 120px 16px 230px;
-}
-.page-wrap { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+/* ── Layout global ── */
+.tl-wrapper { display: flex; min-height: calc(100vh - 110px); }
 
-/* ── TOP BAR ── */
-.top-bar {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    background: rgba(0,0,0,0.45);
-    border: 1px solid rgba(0,255,136,0.2);
-    border-radius: 10px;
-    padding: 10px 16px;
+/* ── Sidebar ── */
+.tl-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.55);
+    border-right: 1px solid rgba(255,255,255,0.07);
+    padding: 20px 0;
+    position: sticky;
+    top: 110px;
+    height: calc(100vh - 110px);
+    overflow-y: auto;
 }
-.top-bar select {
-    height: 34px; padding: 0 10px;
-    background: rgba(10,14,39,0.9);
-    border: 1px solid rgba(0,255,136,0.4);
-    border-radius: 7px; color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+.tl-sidebar::-webkit-scrollbar { width: 4px; }
+.tl-sidebar::-webkit-scrollbar-thumb { background: rgba(0,255,136,0.3); border-radius: 2px; }
+
+.tl-group-label {
+    font-size: 0.62rem;
+    font-weight: 900;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 14px 16px 5px;
 }
-.top-bar select:focus { outline: none; border-color: #00ff88; }
-.tb-label { color: rgba(0,255,136,0.6); font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
-.tb-spacer { flex: 1; }
-.btn-tb {
-    height: 34px; padding: 0 16px; border-radius: 7px; border: none;
-    font-weight: 700; font-size: 0.82rem; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 6px;
-    text-decoration: none; transition: filter 0.2s, transform 0.15s; white-space: nowrap;
+.tl-mode-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    border-left: 3px solid transparent;
 }
-.btn-tb:hover { filter: brightness(1.15); transform: translateY(-1px); }
-.btn-new  { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid rgba(0,255,136,0.35); }
+.tl-mode-link:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.tl-mode-link.active {
+    color: #00ff88;
+    border-left-color: #00ff88;
+    background: rgba(0,255,136,0.07);
+    font-weight: 700;
+}
+.tl-mode-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    flex-shrink: 0;
+}
+.tl-mode-link.active .tl-mode-dot { background: #00ff88; }
+
+/* ── Contenu ── */
+.tl-main { flex: 1; padding: 24px 28px 220px; min-width: 0; }
+
+/* ── Header ── */
+.edit-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-wrap: wrap;
+}
+.edit-mode-title { font-size: 1.4rem; font-weight: 900; color: #00ff88; flex: 1; }
+.btn-eh {
+    height: 34px; padding: 0 16px;
+    border-radius: 7px; border: none;
+    font-weight: 700; font-size: 0.82rem;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    text-decoration: none; transition: filter 0.18s, transform 0.14s;
+    white-space: nowrap;
+}
+.btn-eh:hover { filter: brightness(1.15); transform: translateY(-1px); }
 .btn-view { background: rgba(255,255,255,0.08); color: #ccc; border: 1px solid rgba(255,255,255,0.2); }
 .btn-save { background: linear-gradient(135deg, #00ff88, #00ccff); color: #04081e; font-weight: 900; }
-.btn-del    { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; }
-.btn-rename { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.35); }
 
-/* ── TIER TABLE ── */
+/* ── Tier table ── */
 .tier-table { border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3); }
 .tier-row { display: flex; align-items: stretch; min-height: 90px; border-bottom: 1px solid rgba(255,255,255,0.06); }
 .tier-row:last-child { border-bottom: none; }
 .tier-label {
-    width: 72px; flex-shrink: 0;
+    width: 80px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 2.4rem; font-weight: 900;
+    font-size: 2.2rem; font-weight: 900;
     border-right: 1px solid rgba(255,255,255,0.08);
-    user-select: none;
+    user-select: none; letter-spacing: -1px;
 }
-.tier-S { border-left: 4px solid #ff1744; } .tier-S .tier-label { background: rgba(255,23,68,0.2);   color: #ff1744; }
-.tier-A { border-left: 4px solid #ff9100; } .tier-A .tier-label { background: rgba(255,145,0,0.2);  color: #ff9100; }
-.tier-B { border-left: 4px solid #ffd600; } .tier-B .tier-label { background: rgba(255,214,0,0.18); color: #ffd600; }
-.tier-C { border-left: 4px solid #00e676; } .tier-C .tier-label { background: rgba(0,230,118,0.18); color: #00e676; }
-.tier-D { border-left: 4px solid #2979ff; } .tier-D .tier-label { background: rgba(41,121,255,0.2); color: #2979ff; }
-.tier-F { border-left: 4px solid #6b7280; } .tier-F .tier-label { background: rgba(107,114,128,0.18); color: #9ca3af; }
+.tier-SSS .tier-label, .tier-SS .tier-label { font-size: 1.5rem; letter-spacing: -2px; }
+.tier-SSS { border-left: 4px solid #fff5c0; } .tier-SSS .tier-label { background: rgba(255,245,192,0.12); color: #fff5c0; text-shadow: 0 0 12px rgba(255,245,192,0.6); }
+.tier-SS  { border-left: 4px solid #f6c90e; } .tier-SS  .tier-label { background: rgba(246,201,14,0.15);  color: #f6c90e; text-shadow: 0 0 10px rgba(246,201,14,0.5); }
+.tier-S   { border-left: 4px solid #fb8c00; } .tier-S   .tier-label { background: rgba(251,140,0,0.15);   color: #fb8c00; }
+.tier-A   { border-left: 4px solid #ea580c; } .tier-A   .tier-label { background: rgba(234,88,12,0.18);   color: #ea580c; }
+.tier-B   { border-left: 4px solid #ca8a04; } .tier-B   .tier-label { background: rgba(202,138,4,0.15);   color: #ca8a04; }
+.tier-C   { border-left: 4px solid #16a34a; } .tier-C   .tier-label { background: rgba(22,163,74,0.15);   color: #16a34a; }
+.tier-D   { border-left: 4px solid #2563eb; } .tier-D   .tier-label { background: rgba(37,99,235,0.18);   color: #2563eb; }
 
 .heroes-zone {
     flex: 1; display: flex; flex-wrap: wrap;
@@ -88,7 +129,7 @@ body {
 }
 .heroes-zone.over { background: rgba(0,255,136,0.07); }
 
-/* ── HERO CARDS ── */
+/* ── Hero cards ── */
 .hero-card {
     position: relative; width: 64px; height: 82px;
     border-radius: 7px; overflow: hidden;
@@ -97,7 +138,6 @@ body {
     transition: transform 0.15s, box-shadow 0.15s;
     user-select: none;
 }
-.hero-card.is-dragging { cursor: grabbing; }
 .hero-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; display: block; }
 .hero-card .hname {
     position: absolute; bottom: 0; left: 0; right: 0;
@@ -118,41 +158,25 @@ body {
 .rarity-uncommon { border-color: #10b981 !important; }
 .rarity-common   { border-color: #6b7280 !important; }
 
-/* ── HERO MODAL ── */
+/* ── Hero modal ── */
 #hero-modal .modal-dialog { max-width: 860px; }
 #hero-modal .modal-content {
     background: rgba(8,11,30,0.99);
     border: 1px solid rgba(0,255,136,0.25);
-    border-radius: 14px;
-    overflow: hidden;
-    color: #fff;
-    max-height: 88vh;
-    display: flex;
-    flex-direction: column;
+    border-radius: 14px; overflow: hidden; color: #fff;
+    max-height: 88vh; display: flex; flex-direction: column;
 }
-#hero-modal .modal-header {
-    padding: 10px 16px;
-    background: rgba(0,0,0,0.4);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    flex-shrink: 0;
-}
+#hero-modal .modal-header { padding: 10px 16px; background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
 #hero-modal .modal-title { color: #00ff88; font-weight: 800; font-size: 0.9rem; }
 #hero-modal .btn-close { filter: invert(1); opacity: 0.6; }
-#hero-modal .modal-body {
-    padding: 0;
-    overflow-y: auto;
-    flex: 1;
-}
+#hero-modal .modal-body { padding: 0; overflow-y: auto; flex: 1; }
 #hero-modal .modal-body::-webkit-scrollbar { width: 6px; }
 #hero-modal .modal-body::-webkit-scrollbar-thumb { background: rgba(0,255,136,0.3); border-radius: 3px; }
-.modal-loading {
-    display: flex; align-items: center; justify-content: center;
-    height: 200px; color: rgba(255,255,255,0.4); font-size: 0.9rem; gap: 10px;
-}
+.modal-loading { display: flex; align-items: center; justify-content: center; height: 200px; color: rgba(255,255,255,0.4); font-size: 0.9rem; gap: 10px; }
 
-/* ── FIXED HERO POOL ── */
+/* ── Fixed hero pool ── */
 .hero-pool {
-    position: fixed; bottom: 0; left: 0; right: 0;
+    position: fixed; bottom: 0; left: 220px; right: 0;
     z-index: 1000;
     background: rgba(4,6,20,0.97);
     border-top: 2px solid rgba(0,255,136,0.3);
@@ -190,73 +214,68 @@ body {
 .pool-empty-msg { color: rgba(255,255,255,0.25); font-size: 0.82rem; font-style: italic; align-self: center; white-space: nowrap; }
 .hero-pool.collapsed .pool-cards { display: none; }
 .hero-pool.collapsed { height: auto; }
-
-@media (max-width: 768px) {
-    .tier-label { width: 52px; font-size: 1.8rem; }
-    .hero-card { width: 54px; height: 68px; }
-    #grid-pool .hero-card { width: 58px; height: 73px; }
-    .pool-cards { height: 120px; }
-}
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="page-wrap">
+<div class="tl-wrapper">
 
-    {# ── TOP BAR ── #}
-    <div class="top-bar">
-        <span class="tb-label">Category</span>
-        <select onchange="location.href='{{ path('app_tier_list_edit', {category:'PLACEHOLDER'}) }}'.replace('PLACEHOLDER', this.value)">
-            {% for cat in allCategories %}
-                <option value="{{ cat }}" {{ cat == category ? 'selected' : '' }}>{{ cat }}</option>
+    {# ── SIDEBAR ── #}
+    <nav class="tl-sidebar">
+        {% for groupName, modes in groupedModes %}
+            <div class="tl-group-label">{{ groupName }}</div>
+            {% for m in modes %}
+                <a href="{{ path('app_tier_list_edit', {slug: m.slug}) }}"
+                   class="tl-mode-link {{ m.slug == mode.slug ? 'active' : '' }}">
+                    <span class="tl-mode-dot"></span>
+                    {{ m.name }}
+                </a>
             {% endfor %}
-        </select>
-        <button class="btn-tb btn-new" onclick="location.href='{{ path('app_tier_list_new') }}'">+ New</button>
-        <div class="tb-spacer"></div>
-        <a href="{{ path('app_tier_list_show', {category: category}) }}" class="btn-tb btn-view">View</a>
-        <button class="btn-tb btn-rename" onclick="toggleRename()">Rename</button>
-        <button id="save-btn" class="btn-tb btn-save">Save</button>
-        <button class="btn-tb btn-del" onclick="if(confirm('Delete this tier list?')) document.getElementById('del-form').submit()">Delete</button>
-        <form id="del-form" method="post" action="{{ path('app_tier_list_delete', {category: category}) }}" style="display:none">
-            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category) }}">
-        </form>
-        <form id="rename-form" method="post" action="{{ path('app_tier_list_rename', {category: category}) }}"
-              style="display:none; align-items:center; gap:6px;" onsubmit="return validateRename()">
-            <input type="text" name="newName" id="rename-input" value="{{ category }}"
-                   style="height:34px; padding:0 10px; background:rgba(10,14,39,0.9); border:1px solid rgba(0,255,136,0.5); border-radius:7px; color:#fff; font-weight:700; font-size:0.85rem; min-width:180px;">
-            <button type="submit" class="btn-tb btn-save" style="padding:0 12px;">OK</button>
-            <button type="button" class="btn-tb btn-view" style="padding:0 10px;" onclick="toggleRename()">✕</button>
-        </form>
-    </div>
-
-    {# ── TIER TABLE ── #}
-    <div class="tier-table">
-        {% for tier in ['S','A','B','C','D','F'] %}
-        <div class="tier-row tier-{{ tier }}">
-            <div class="tier-label">{{ tier }}</div>
-            <div class="heroes-zone" id="grid-{{ tier }}" data-tier="{{ tier }}">
-                {% for entry in tierData[tier] %}
-                    <div class="hero-card {% if entry.hero.rarityEntity %}rarity-{{ entry.hero.rarityEntity.name|lower }}{% endif %}"
-                         data-hero-id="{{ entry.hero.id }}"
-                         data-entry-id="{{ entry.id }}"
-                         data-slug="{{ entry.hero.slug }}"
-                         data-rarity="{{ entry.hero.rarityEntity ? entry.hero.rarityEntity.name : '' }}"
-                         data-faction="{{ entry.hero.factionEntity ? entry.hero.factionEntity.name : '' }}"
-                         data-type="{{ entry.hero.typeEntity ? entry.hero.typeEntity.name : '' }}"
-                         data-affinity="{{ entry.hero.affinityEntity ? entry.hero.affinityEntity.name : '' }}"
-                         title="{{ entry.hero.name }}">
-                        <img src="{{ entry.hero.imageUrl }}" alt="{{ entry.hero.name }}">
-                        <div class="hname">{{ entry.hero.name }}</div>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
         {% endfor %}
-    </div>
+    </nav>
 
-</div>{# end .page-wrap #}
+    {# ── CONTENU ── #}
+    <div class="tl-main">
 
-{# ── HERO MODAL ── #}
+        <div class="edit-header">
+            <div class="edit-mode-title">{{ mode.name }}</div>
+            <a href="{{ path('app_tier_list_show', {slug: mode.slug}) }}" class="btn-eh btn-view">
+                <i class="fas fa-eye"></i> Voir
+            </a>
+            <button id="save-btn" class="btn-eh btn-save">
+                <i class="fas fa-save"></i> Sauvegarder
+            </button>
+        </div>
+
+        {# ── TIER TABLE ── #}
+        <div class="tier-table">
+            {% for tier in ['SSS','SS','S','A','B','C','D'] %}
+            <div class="tier-row tier-{{ tier }}">
+                <div class="tier-label">{{ tier }}</div>
+                <div class="heroes-zone" id="grid-{{ tier }}" data-tier="{{ tier }}">
+                    {% for entry in tierData[tier] %}
+                        <div class="hero-card {% if entry.hero.rarityEntity %}rarity-{{ entry.hero.rarityEntity.name|lower }}{% endif %}"
+                             data-hero-id="{{ entry.hero.id }}"
+                             data-entry-id="{{ entry.id }}"
+                             data-slug="{{ entry.hero.slug }}"
+                             data-rarity="{{ entry.hero.rarityEntity ? entry.hero.rarityEntity.name : '' }}"
+                             data-faction="{{ entry.hero.factionEntity ? entry.hero.factionEntity.name : '' }}"
+                             data-type="{{ entry.hero.typeEntity ? entry.hero.typeEntity.name : '' }}"
+                             data-affinity="{{ entry.hero.affinityEntity ? entry.hero.affinityEntity.name : '' }}"
+                             title="{{ entry.hero.name }}">
+                            <img src="{{ entry.hero.imageUrl }}" alt="{{ entry.hero.name }}">
+                            <div class="hname">{{ entry.hero.name }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>{# /tl-main #}
+</div>{# /tl-wrapper #}
+
+{# ── Hero modal ── #}
 <div class="modal fade" id="hero-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -265,54 +284,52 @@ body {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="modal-body">
-                <div class="modal-loading">
-                    <i class="fas fa-spinner fa-spin"></i> Loading…
-                </div>
+                <div class="modal-loading"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
             </div>
         </div>
     </div>
 </div>
 
-{# ── FIXED HERO POOL ── #}
+{# ── Fixed hero pool (décalé de la largeur de la sidebar) ── #}
 <div class="hero-pool" id="hero-pool">
     <div class="pool-top">
         <div class="pool-title" onclick="togglePool()">
             Bank <span class="pool-badge" id="pool-count">{{ unrankedHeroes|length }}</span>
         </div>
         <div class="pool-filters">
-            <input type="text" id="f-name" placeholder="Search name…" oninput="applyFilters()">
+            <input type="text" id="f-name" placeholder="Rechercher…" oninput="applyFilters()">
             {% if rarities|length > 0 %}
             <select id="f-rarity" onchange="applyFilters()">
-                <option value="">All Rarities</option>
+                <option value="">Toutes raretés</option>
                 {% for r in rarities|sort %}<option value="{{ r|lower }}">{{ r }}</option>{% endfor %}
             </select>
             {% endif %}
             {% if factions|length > 0 %}
             <select id="f-faction" onchange="applyFilters()">
-                <option value="">All Factions</option>
+                <option value="">Toutes factions</option>
                 {% for f in factions|sort %}<option value="{{ f|lower }}">{{ f }}</option>{% endfor %}
             </select>
             {% endif %}
             {% if types|length > 0 %}
             <select id="f-type" onchange="applyFilters()">
-                <option value="">All Types</option>
+                <option value="">Tous types</option>
                 {% for t in types|sort %}<option value="{{ t|lower }}">{{ t }}</option>{% endfor %}
             </select>
             {% endif %}
             {% if affinities|length > 0 %}
             <select id="f-affinity" onchange="applyFilters()">
-                <option value="">All Affinities</option>
+                <option value="">Toutes affinités</option>
                 {% for a in affinities|sort %}<option value="{{ a|lower }}">{{ a }}</option>{% endfor %}
             </select>
             {% endif %}
             <button class="btn-reset" onclick="resetFilters()">Reset</button>
         </div>
-        <button class="btn-toggle-pool" id="pool-toggle" onclick="togglePool()">Hide</button>
+        <button class="btn-toggle-pool" id="pool-toggle" onclick="togglePool()">Masquer</button>
     </div>
     <div class="pool-cards">
         <div id="grid-pool" data-tier="pool">
             {% if unrankedHeroes|length == 0 %}
-                <span class="pool-empty-msg">All heroes are ranked!</span>
+                <span class="pool-empty-msg">Tous les héros sont classés !</span>
             {% else %}
                 {% for hero in unrankedHeroes %}
                     <div class="hero-card {% if hero.rarityEntity %}rarity-{{ hero.rarityEntity.name|lower }}{% endif %}"
@@ -335,20 +352,7 @@ body {
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-const category = '{{ category }}';
-
-/* ── Rename ── */
-function toggleRename() {
-    const form = document.getElementById('rename-form');
-    const visible = form.style.display === 'none';
-    form.style.display = visible ? 'flex' : 'none';
-    if (visible) { document.getElementById('rename-input').select(); }
-}
-function validateRename() {
-    const val = document.getElementById('rename-input').value.trim();
-    if (!val) { alert('Please enter a name.'); return false; }
-    return true;
-}
+const modeSlug = '{{ mode.slug }}';
 
 /* ── Drag detection ── */
 let dragHappened = false;
@@ -365,10 +369,10 @@ function makeSortable(el, extra = {}) {
     });
 }
 
-['S','A','B','C','D','F'].forEach(t => makeSortable(document.getElementById('grid-' + t)));
+['SSS','SS','S','A','B','C','D'].forEach(t => makeSortable(document.getElementById('grid-' + t)));
 makeSortable(document.getElementById('grid-pool'));
 
-/* ── Click → modal (si pas un drag) ── */
+/* ── Click → modal ── */
 const heroCache = {};
 
 document.addEventListener('click', async e => {
@@ -385,24 +389,17 @@ document.addEventListener('click', async e => {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('hero-modal')).show();
 
     if (!slug) {
-        document.getElementById('modal-body').innerHTML =
-            '<div class="modal-loading">No hero page available.</div>';
+        document.getElementById('modal-body').innerHTML = '<div class="modal-loading">No hero page available.</div>';
         return;
     }
-
-    if (heroCache[slug]) {
-        document.getElementById('modal-body').innerHTML = heroCache[slug];
-        return;
-    }
+    if (heroCache[slug]) { document.getElementById('modal-body').innerHTML = heroCache[slug]; return; }
 
     try {
         const res  = await fetch('/heroes/' + slug + '/modal');
-        const html = await res.text();
-        heroCache[slug] = html;
-        document.getElementById('modal-body').innerHTML = html;
+        heroCache[slug] = await res.text();
+        document.getElementById('modal-body').innerHTML = heroCache[slug];
     } catch {
-        document.getElementById('modal-body').innerHTML =
-            '<div class="modal-loading">Failed to load hero data.</div>';
+        document.getElementById('modal-body').innerHTML = '<div class="modal-loading">Failed to load hero data.</div>';
     }
 }, true);
 
@@ -411,17 +408,17 @@ function togglePool() {
     const pool = document.getElementById('hero-pool');
     const btn  = document.getElementById('pool-toggle');
     pool.classList.toggle('collapsed');
-    btn.textContent = pool.classList.contains('collapsed') ? 'Show' : 'Hide';
+    btn.textContent = pool.classList.contains('collapsed') ? 'Afficher' : 'Masquer';
 }
 
 function updateCount() {
-    const all    = document.querySelectorAll('#grid-pool .hero-card');
-    const vis    = [...all].filter(c => c.style.display !== 'none');
+    const all   = document.querySelectorAll('#grid-pool .hero-card');
+    const vis   = [...all].filter(c => c.style.display !== 'none');
     document.getElementById('pool-count').textContent = vis.length;
-    const empty  = document.querySelector('#grid-pool .pool-empty-msg');
+    const empty = document.querySelector('#grid-pool .pool-empty-msg');
     if (all.length === 0 && !empty) {
         const s = document.createElement('span');
-        s.className = 'pool-empty-msg'; s.textContent = 'All heroes are ranked!';
+        s.className = 'pool-empty-msg'; s.textContent = 'Tous les héros sont classés !';
         document.getElementById('grid-pool').appendChild(s);
     } else if (all.length > 0 && empty) { empty.remove(); }
 }
@@ -459,12 +456,12 @@ function resetFilters() {
 
 /* ── Save ── */
 document.getElementById('save-btn').addEventListener('click', async function () {
-    this.disabled = true; this.textContent = 'Saving…';
+    this.disabled = true; this.textContent = 'Sauvegarde…';
     const updates = [], toDelete = [];
 
-    ['S','A','B','C','D','F'].forEach(tier => {
+    ['SSS','SS','S','A','B','C','D'].forEach(tier => {
         document.querySelectorAll('#grid-' + tier + ' .hero-card').forEach((card, i) => {
-            updates.push({ id: card.dataset.entryId || null, heroId: card.dataset.heroId, tier, order: i, category });
+            updates.push({ id: card.dataset.entryId || null, heroId: card.dataset.heroId, tier, order: i, category: modeSlug });
         });
     });
     document.querySelectorAll('#grid-pool .hero-card').forEach(card => {
@@ -479,24 +476,26 @@ document.getElementById('save-btn').addEventListener('click', async function () 
             if (!u.id) {
                 const r = await fetch('{{ path('app_tier_list_api_add') }}', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ heroId: u.heroId, tier: u.tier, category })
+                    body: JSON.stringify({ heroId: u.heroId, tier: u.tier, category: modeSlug })
                 });
                 const d = await r.json();
                 if (d.entryId) u.id = d.entryId;
             }
         }
+
         const existing = updates.filter(u => u.id);
-        if (existing.length)
+        if (existing.length) {
             await fetch('{{ path('app_tier_list_api_update_order') }}', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(existing)
             });
+        }
 
-        alert('Saved!');
-        location.reload();
+        this.textContent = 'Sauvegardé !';
+        setTimeout(() => location.reload(), 800);
     } catch (e) {
-        console.error(e); alert('Save failed.');
-        this.disabled = false; this.textContent = 'Save';
+        console.error(e); alert('Erreur lors de la sauvegarde.');
+        this.disabled = false; this.textContent = 'Sauvegarder';
     }
 });
 </script>

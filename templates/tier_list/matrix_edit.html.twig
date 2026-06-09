@@ -1,0 +1,450 @@
+{% extends 'base.html.twig' %}
+{% block title %}Admin — Tier List{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* ═══════════════════════════════════
+   BASE
+═══════════════════════════════════ */
+.me-page {
+    min-height: calc(100vh - 110px);
+    background: #0b0d18;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    padding-bottom: 60px;
+}
+
+/* ═══════════════════════════════════
+   HEADER
+═══════════════════════════════════ */
+.me-header {
+    position: sticky; top: 110px; z-index: 40;
+    background: #0e1022;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 12px 32px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.me-title { font-size: 1rem; font-weight: 900; color: #fff; }
+.me-badge {
+    font-size: 0.68rem; font-weight: 700; padding: 3px 10px;
+    background: rgba(91,124,255,0.15); border: 1px solid rgba(91,124,255,0.35);
+    color: #7a9bff; border-radius: 20px;
+}
+.me-search {
+    height: 32px; padding: 0 12px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px; color: #fff; font-size: 0.78rem; outline: none;
+    min-width: 180px; transition: border-color 0.15s;
+}
+.me-search::placeholder { color: rgba(255,255,255,0.22); }
+.me-search:focus { border-color: rgba(91,124,255,0.5); }
+
+/* Filtres faction */
+.me-fac-btn {
+    height: 32px; padding: 0 12px;
+    border-radius: 7px; border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.45);
+    font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: all 0.13s;
+}
+.me-fac-btn:hover  { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+.me-fac-btn.active { background: rgba(91,124,255,0.18); border-color: rgba(91,124,255,0.45); color: #a0b8ff; }
+
+.me-spacer { flex: 1; }
+.me-info { font-size: 0.7rem; color: rgba(255,255,255,0.25); }
+.me-info b { color: rgba(255,255,255,0.6); }
+.me-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 32px; padding: 0 14px; border-radius: 7px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 700;
+    text-decoration: none; transition: all 0.15s;
+}
+.me-back:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+/* ═══════════════════════════════════
+   TABLE (scroll horizontal + vertical)
+═══════════════════════════════════ */
+.me-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: calc(100vh - 166px);
+    min-height: 400px;
+    padding: 0 32px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.me-wrap::-webkit-scrollbar { height: 5px; width: 5px; }
+.me-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+.me-table {
+    width: 100%; border-collapse: separate;
+    border-spacing: 0 2px; min-width: max-content;
+}
+
+/* En-têtes */
+.me-table thead th {
+    position: sticky; top: 0; z-index: 20;
+    background: #0b0d18; border-bottom: 1px solid rgba(255,255,255,0.07);
+    padding: 0;
+}
+.th-rank  { width: 44px; text-align: center; padding: 10px 6px !important; position: sticky; left: 0; z-index: 25 !important; }
+.th-hero  { min-width: 170px; text-align: left; padding: 10px 14px !important; position: sticky; left: 44px; z-index: 25 !important; }
+.th-label { font-size: 0.58rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.2); }
+.th-mode  { min-width: 80px; width: 80px; text-align: center; padding: 8px 4px !important; border-left: 1px solid rgba(255,255,255,0.04); cursor: default; }
+.th-mode-group { font-size: 0.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.18); display: block; }
+.th-mode-name  { font-size: 0.62rem; font-weight: 700; color: rgba(255,255,255,0.4); display: block; line-height: 1.25; }
+
+/* Lignes */
+.me-row { background: #0f1226; border-radius: 6px; transition: background 0.12s; }
+.me-row:hover { background: #141832; }
+.me-row.hidden { display: none; }
+
+/* Rang */
+.td-rank {
+    position: sticky; left: 0; z-index: 5;
+    width: 44px; text-align: center; padding: 0 6px;
+    background: inherit; border-radius: 6px 0 0 6px;
+    font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.2);
+}
+
+/* Héros sticky */
+.td-hero {
+    position: sticky; left: 44px; z-index: 5;
+    min-width: 170px; background: inherit;
+    border-right: 1px solid rgba(255,255,255,0.05);
+}
+.hero-inner-edit {
+    display: flex; align-items: center; gap: 9px;
+    padding: 5px 12px;
+}
+.hero-img-sm {
+    width: 36px; height: 48px; border-radius: 5px; object-fit: cover;
+    border: 1.5px solid rgba(255,255,255,0.1); flex-shrink: 0;
+}
+.rar-legendary  .hero-img-sm, .rar-légendaire .hero-img-sm { border-color: rgba(246,201,14,0.5); }
+.rar-epic  .hero-img-sm { border-color: rgba(139,92,246,0.5); }
+.rar-rare  .hero-img-sm { border-color: rgba(59,130,246,0.45); }
+.rar-uncommon .hero-img-sm { border-color: rgba(16,185,129,0.45); }
+.hero-name-sm  { font-size: 0.76rem; font-weight: 700; color: #e8eaf6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+.hero-fac-sm   { font-size: 0.58rem; color: rgba(255,255,255,0.25); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+
+/* Cellules grade — CLIQUABLES */
+.grade-cell {
+    width: 80px; text-align: center; vertical-align: middle;
+    border-left: 1px solid rgba(255,255,255,0.04); padding: 0;
+    cursor: pointer; transition: background 0.12s;
+}
+.grade-cell:hover { background: rgba(255,255,255,0.05); }
+.grade-cell:last-child { border-radius: 0 6px 6px 0; }
+
+.grade-box {
+    display: flex; align-items: center; justify-content: center;
+    height: 58px; font-size: 1.1rem; font-weight: 900;
+    letter-spacing: -1px; border-radius: 4px; margin: 2px;
+    transition: all 0.12s; user-select: none;
+}
+.grade-box:hover { transform: scale(1.05); }
+
+/* Couleurs des grades */
+.grade-sss { color: #fff5c0; text-shadow: 0 0 16px rgba(255,245,192,0.7); font-size: 0.85rem; letter-spacing: -2px; }
+.grade-ss  { color: #f6c90e; text-shadow: 0 0 14px rgba(246,201,14,0.6); font-size: 0.95rem; letter-spacing: -1px; }
+.grade-s   { color: #fb8c00; text-shadow: 0 0 12px rgba(251,140,0,0.5); }
+.grade-a   { color: #fb923c; text-shadow: 0 0 10px rgba(249,115,22,0.45); }
+.grade-b   { color: #facc15; text-shadow: 0 0 10px rgba(234,179,8,0.4); }
+.grade-c   { color: #4ade80; text-shadow: 0 0 10px rgba(34,197,94,0.35); }
+.grade-d   { color: #93c5fd; text-shadow: 0 0 8px rgba(96,165,250,0.35); }
+.grade-empty { color: rgba(255,255,255,0.1); font-size: 0.8rem; letter-spacing: 0; }
+
+/* Cellule en cours de sauvegarde */
+.grade-cell.saving .grade-box { opacity: 0.5; }
+.grade-cell.saved  .grade-box { outline: 2px solid rgba(0,255,136,0.4); border-radius: 5px; }
+
+/* ═══════════════════════════════════
+   GRADE PICKER (popup)
+═══════════════════════════════════ */
+#grade-picker {
+    position: fixed; z-index: 9999;
+    background: #1a1d2e; border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+    display: none; flex-direction: column; gap: 5px; min-width: 120px;
+}
+.picker-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
+.grade-opt {
+    padding: 9px 6px; border-radius: 7px; text-align: center;
+    font-weight: 900; cursor: pointer; font-size: 0.95rem;
+    transition: all 0.1s; border: 1px solid transparent;
+    user-select: none;
+}
+.grade-opt:hover { transform: scale(1.08); border-color: rgba(255,255,255,0.2); }
+.go-sss { color: #fff5c0; background: rgba(255,245,192,0.1); font-size: 0.75rem; letter-spacing: -1px; }
+.go-ss  { color: #f6c90e; background: rgba(246,201,14,0.1); font-size: 0.82rem; }
+.go-s   { color: #fb8c00; background: rgba(251,140,0,0.1); }
+.go-a   { color: #fb923c; background: rgba(249,115,22,0.1); }
+.go-b   { color: #facc15; background: rgba(234,179,8,0.1); }
+.go-c   { color: #4ade80; background: rgba(34,197,94,0.1); }
+.go-d   { color: #93c5fd; background: rgba(59,130,246,0.1); }
+.go-sss:hover { background: rgba(255,245,192,0.2); }
+.go-ss:hover  { background: rgba(246,201,14,0.2); }
+.go-s:hover   { background: rgba(251,140,0,0.2); }
+.go-a:hover   { background: rgba(249,115,22,0.2); }
+.go-b:hover   { background: rgba(234,179,8,0.2); }
+.go-c:hover   { background: rgba(34,197,94,0.2); }
+.go-d:hover   { background: rgba(59,130,246,0.2); }
+.go-remove {
+    grid-column: 1 / -1; padding: 7px; border-radius: 7px; text-align: center;
+    font-size: 0.72rem; font-weight: 700; cursor: pointer;
+    color: rgba(255,100,100,0.7); background: rgba(255,100,100,0.07);
+    border: 1px solid rgba(255,100,100,0.2); transition: all 0.1s;
+}
+.go-remove:hover { background: rgba(255,100,100,0.15); color: #ff8080; }
+.picker-current {
+    font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.3);
+    text-align: center; text-transform: uppercase; letter-spacing: 1px;
+    padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 2px;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="me-page">
+
+    {# ── Header sticky ── #}
+    <div class="me-header">
+        <span class="me-title">Tier List — Admin</span>
+        <span class="me-badge">{{ heroes|length }} héros · {{ modes|length }} modes</span>
+        <input type="text" class="me-search" id="me-search" placeholder="Rechercher un héros…">
+
+        {# Faction tabs #}
+        {% set factions = [] %}
+        {% for hero in heroes %}
+            {% if hero.factionEntity and hero.factionEntity.name not in factions %}
+                {% set factions = factions|merge([hero.factionEntity.name]) %}
+            {% endif %}
+        {% endfor %}
+        {% if factions|length > 0 %}
+            <button class="me-fac-btn active" data-faction="">Tous</button>
+            {% for faction in factions|sort %}
+                <button class="me-fac-btn" data-faction="{{ faction|lower }}">{{ faction }}</button>
+            {% endfor %}
+        {% endif %}
+
+        <div class="me-spacer"></div>
+        <div class="me-info">Clic sur une cellule pour assigner une note · <b>Sauvegarde instantanée</b></div>
+        <a href="{{ path('app_tier_list_index') }}" class="me-back">
+            <i class="fas fa-eye"></i> Vue publique
+        </a>
+    </div>
+
+    {# ── Table ── #}
+    <div class="me-wrap">
+        <table class="me-table" id="me-table">
+            <thead>
+                <tr>
+                    <th class="th-rank"><span class="th-label">#</span></th>
+                    <th class="th-hero"><span class="th-label">Héros</span></th>
+                    {% for mode in modes %}
+                        <th class="th-mode">
+                            <span class="th-mode-group">{{ mode.groupName }}</span>
+                            <span class="th-mode-name">{{ mode.name }}</span>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody id="me-body">
+                {% for i, hero in heroes %}
+                    {% set rarity  = hero.rarityEntity  ? hero.rarityEntity.name|lower  : '' %}
+                    {% set faction = hero.factionEntity ? hero.factionEntity.name|lower : '' %}
+                    <tr class="me-row rar-{{ rarity }}"
+                        data-name="{{ hero.name|lower }}"
+                        data-faction="{{ faction }}">
+
+                        <td class="td-rank">{{ i + 1 }}</td>
+
+                        <td class="td-hero">
+                            <div class="hero-inner-edit">
+                                <img src="{{ hero.imageUrl }}" alt="{{ hero.name }}" class="hero-img-sm"
+                                     onerror="this.src='/images/OddOneGaming_Logo.png'">
+                                <div>
+                                    <div class="hero-name-sm">{{ hero.name }}</div>
+                                    {% if hero.factionEntity %}
+                                        <div class="hero-fac-sm">{{ hero.factionEntity.name }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        {% for mode in modes %}
+                            {% set entry    = entryMap[hero.id][mode.slug] ?? null %}
+                            {% set tier     = entry ? entry.tier     : '' %}
+                            {% set entryId  = entry ? entry.entryId  : '' %}
+                            <td class="grade-cell"
+                                data-hero-id="{{ hero.id }}"
+                                data-mode="{{ mode.slug }}"
+                                data-entry-id="{{ entryId }}"
+                                data-current="{{ tier }}">
+                                <div class="grade-box grade-{{ tier|lower ?: 'empty' }}">
+                                    {{ tier ?: '—' }}
+                                </div>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {# Grade picker popup #}
+    <div id="grade-picker">
+        <div class="picker-current" id="picker-label">Note actuelle : —</div>
+        <div class="picker-row">
+            <div class="grade-opt go-sss" data-grade="SSS">SSS</div>
+            <div class="grade-opt go-ss"  data-grade="SS">SS</div>
+            <div class="grade-opt go-s"   data-grade="S">S</div>
+            <div class="grade-opt go-a"   data-grade="A">A</div>
+            <div class="grade-opt go-b"   data-grade="B">B</div>
+            <div class="grade-opt go-c"   data-grade="C">C</div>
+            <div class="grade-opt go-d"   data-grade="D">D</div>
+            <div class="grade-opt go-remove" data-grade="">✕ Retirer</div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+let activeCell = null;
+const picker   = document.getElementById('grade-picker');
+
+/* ── Event delegation : clic sur n'importe quelle cellule grade ── */
+document.getElementById('me-table').addEventListener('click', e => {
+    const cell = e.target.closest('.grade-cell');
+    if (!cell) return;
+    e.stopPropagation();   // empêche le listener document de fermer le picker
+    openPicker(cell);
+});
+
+/* ── Ouvrir picker ── */
+function openPicker(cellEl) {
+    activeCell = cellEl;
+    const rect = cellEl.getBoundingClientRect();
+    const current = cellEl.dataset.current || '—';
+    document.getElementById('picker-label').textContent = 'Note actuelle : ' + current;
+
+    picker.style.display = 'flex';
+
+    // position:fixed utilise les coordonnées viewport (pas besoin de scrollY)
+    let top  = rect.bottom + 6;
+    let left = rect.left;
+    picker.style.top  = top + 'px';
+    picker.style.left = left + 'px';
+
+    // Recaler si dépasse à droite ou en bas
+    requestAnimationFrame(() => {
+        const pw = picker.offsetWidth;
+        const ph = picker.offsetHeight;
+        if (left + pw > window.innerWidth - 10) {
+            left = Math.max(10, window.innerWidth - pw - 10);
+            picker.style.left = left + 'px';
+        }
+        if (top + ph > window.innerHeight - 10) {
+            picker.style.top = (rect.top - ph - 6) + 'px';
+        }
+    });
+}
+
+/* ── Sélection d'un grade ── */
+picker.addEventListener('click', async e => {
+    e.stopPropagation();   // ne pas remonter au listener document
+    const opt = e.target.closest('.grade-opt');
+    if (!opt || !activeCell) return;
+
+    const grade   = opt.dataset.grade;
+    const heroId  = activeCell.dataset.heroId;
+    const mode    = activeCell.dataset.mode;
+    const entryId = activeCell.dataset.entryId;
+
+    picker.style.display = 'none';
+    activeCell.classList.add('saving');
+
+    try {
+        if (!grade) {
+            // Retirer la note
+            if (entryId) {
+                await fetch('/tier-list/api/remove-hero/' + entryId, { method: 'DELETE' });
+            }
+            activeCell.dataset.entryId = '';
+            activeCell.dataset.current = '';
+            updateCell(activeCell, '');
+        } else if (entryId) {
+            // Mettre à jour la note existante
+            await fetch('{{ path('app_tier_list_api_update_order') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify([{ id: entryId, tier: grade, order: 0 }])
+            });
+            activeCell.dataset.current = grade;
+            updateCell(activeCell, grade);
+        } else {
+            // Créer une nouvelle entrée
+            const r = await fetch('{{ path('app_tier_list_api_add') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ heroId, tier: grade, category: mode })
+            });
+            const d = await r.json();
+            if (d.entryId) activeCell.dataset.entryId = d.entryId;
+            activeCell.dataset.current = grade;
+            updateCell(activeCell, grade);
+        }
+
+        // Flash vert de confirmation
+        activeCell.classList.remove('saving');
+        activeCell.classList.add('saved');
+        setTimeout(() => activeCell?.classList.remove('saved'), 800);
+    } catch (err) {
+        console.error(err);
+        activeCell.classList.remove('saving');
+        alert('Erreur lors de la sauvegarde.');
+    }
+
+    activeCell = null;
+});
+
+function updateCell(cell, grade) {
+    const box = cell.querySelector('.grade-box');
+    box.className = 'grade-box grade-' + (grade ? grade.toLowerCase() : 'empty');
+    box.textContent = grade || '—';
+}
+
+/* ── Fermer en cliquant ailleurs (stopPropagation sur cells+picker évite les faux positifs) ── */
+document.addEventListener('click', () => {
+    picker.style.display = 'none';
+    activeCell = null;
+});
+
+/* ── Recherche ── */
+let activeFaction = '';
+document.getElementById('me-search').addEventListener('input', e => applyFilters(e.target.value.toLowerCase().trim()));
+
+document.querySelectorAll('.me-fac-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.me-fac-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFaction = btn.dataset.faction;
+        applyFilters(document.getElementById('me-search').value.toLowerCase().trim());
+    });
+});
+
+function applyFilters(search) {
+    document.querySelectorAll('.me-row').forEach((row, idx) => {
+        const nameOk    = !search       || row.dataset.name.includes(search);
+        const factionOk = !activeFaction || row.dataset.faction === activeFaction;
+        row.classList.toggle('hidden', !nameOk || !factionOk);
+    });
+}
+</script>
+{% endblock %}

@@ -1,274 +1,464 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}{{ category }} Tier List{% endblock %}
+{% block title %}Tier List — {{ mode.name }}{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        /* --- CONFIGURATION GLOBALE --- */
-        body {
-            background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
-            min-height: 100vh;
-            margin: 0;
-            overflow-y: auto; 
-            color: #fff;
-            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-        }
+{{ parent() }}
+<style>
+/* ═══════════════════════════════════════════════
+   PAGE BASE
+════════════════════════════════════════════════ */
+.tl-page {
+    display: flex;
+    min-height: calc(100vh - 70px);
+    background: #0b0d18;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
 
-        .tier-container {
-            max-width: 1800px;
-            margin: 0 auto;
-            padding: 80px 15px 40px;
-            display: flex;
-            flex-direction: column;
-        }
+/* ═══════════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════════════ */
+.tl-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: #0e1022;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 24px 0 40px;
+    position: sticky;
+    top: 110px;
+    height: calc(100vh - 110px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+.tl-sidebar::-webkit-scrollbar { width: 3px; }
+.tl-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-        /* --- HEADER & NAV --- */
-        .tier-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+.sidebar-top {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 8px;
+}
+.sidebar-brand {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+}
 
-        .tier-title {
-            color: #00ff88;
-            font-size: clamp(1.8rem, 6vw, 2.8rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: -1px;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
-            margin: 10px 0;
-        }
+.tl-group-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.25);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 20px 20px 6px;
+}
 
-        .breadcrumb-custom {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
-        }
+.tl-mode-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    position: relative;
+}
+.tl-mode-link:hover {
+    color: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.04);
+}
+.tl-mode-link.active {
+    color: #fff;
+    font-weight: 700;
+    border-left-color: #5b7cff;
+    background: rgba(91,124,255,0.08);
+}
 
-        .category-nav {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            overflow-x: auto;
-            padding: 5px 0 15px;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-        }
-        .category-nav::-webkit-scrollbar { display: none; }
+.tl-mode-icon {
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.tl-mode-icon img { width: 100%; height: 100%; object-fit: cover; }
+.tl-mode-link.active .tl-mode-icon { background: rgba(91,124,255,0.25); }
 
-        .category-btn {
-            flex: 0 0 auto;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(0, 255, 136, 0.2);
-            border-radius: 12px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.8rem;
-            transition: 0.3s;
-        }
+/* ═══════════════════════════════════════════════
+   CONTENU PRINCIPAL
+════════════════════════════════════════════════ */
+.tl-content {
+    flex: 1;
+    padding: 32px 40px 60px;
+    min-width: 0;
+}
 
-        .category-btn.active {
-            background: #00ff88;
-            color: #0a0e27;
-            border-color: #00ff88;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
-        }
+/* ── Header mode ── */
+.tl-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 36px;
+}
+.tl-header-img {
+    width: 64px; height: 64px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+.tl-header-info { flex: 1; }
+.tl-header-group {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 4px;
+}
+.tl-header-name {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1;
+}
+.tl-header-actions { display: flex; gap: 8px; align-items: center; }
+.tl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s;
+}
+.tl-btn-edit {
+    background: rgba(91,124,255,0.15);
+    border: 1px solid rgba(91,124,255,0.35);
+    color: #7a9bff;
+}
+.tl-btn-edit:hover { background: rgba(91,124,255,0.25); color: #a0b8ff; }
 
-        /* --- TIERS (Mobile First) --- */
-        .tiers-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+/* ── Séparateur ── */
+.tl-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin-bottom: 24px;
+}
 
-        .tier-row {
-            display: flex;
-            flex-direction: column;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            overflow: hidden;
-        }
+/* ═══════════════════════════════════════════════
+   TIER TABLE
+════════════════════════════════════════════════ */
+.tl-table { display: flex; flex-direction: column; gap: 4px; }
 
-        .tier-label {
-            width: 100%;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: 900;
-            color: #fff;
-        }
+.tl-row {
+    display: flex;
+    align-items: stretch;
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 100px;
+}
 
-        .tier-heroes {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-            gap: 12px;
-            padding: 15px;
-        }
+/* Label du tier */
+.tl-row-label {
+    width: 68px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    position: relative;
+}
 
-        /* --- HERO CARD (Lisibilité Boostée) --- */
-        .hero-card {
-            position: relative;
-            aspect-ratio: 1 / 1.25;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            background: #000;
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+/* Corps du tier (héros) */
+.tl-row-body {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+}
 
-        .hero-card:active { transform: scale(0.92); }
+/* Couleurs des tiers */
+.tl-row-sss .tl-row-label { background: linear-gradient(160deg, #fffde7, #fff5c0); font-size: 1.3rem; letter-spacing: -2px; color: #1a1a00; text-shadow: none; }
+.tl-row-sss .tl-row-body  { background: linear-gradient(90deg, rgba(255,245,192,0.14) 0%, rgba(255,245,192,0.03) 60%, rgba(13,15,24,0.6) 100%); }
 
-        .hero-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.9;
-        }
+.tl-row-ss .tl-row-label  { background: linear-gradient(160deg, #f6c90e, #d4a00a); font-size: 1.5rem; letter-spacing: -2px; }
+.tl-row-ss .tl-row-body   { background: linear-gradient(90deg, rgba(246,201,14,0.14) 0%, rgba(246,201,14,0.03) 60%, rgba(13,15,24,0.6) 100%); }
 
-        .hero-name {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            /* Dégradé noir profond pour la lisibilité */
-            background: linear-gradient(to top, 
-                rgba(0, 0, 0, 1) 0%, 
-                rgba(0, 0, 0, 0.8) 60%, 
-                transparent 100%
-            );
-            color: #ffffff;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-align: center;
-            padding: 12px 3px 5px 3px;
-            text-transform: uppercase;
-            /* Contour des lettres pour fond clair */
-            text-shadow: 2px 2px 2px #000;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1;
-        }
+.tl-row-s .tl-row-label   { background: linear-gradient(160deg, #fb8c00, #e65100); }
+.tl-row-s .tl-row-body    { background: linear-gradient(90deg, rgba(251,140,0,0.16) 0%, rgba(251,140,0,0.04) 60%, rgba(13,15,24,0.6) 100%); }
 
-        .hero-rarity-badge {
-            position: absolute;
-            top: 4px; left: 4px;
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-size: 0.6rem;
-            font-weight: 900;
-            z-index: 5;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
+.tl-row-a .tl-row-label   { background: linear-gradient(160deg, #dd6b20, #c05621); }
+.tl-row-a .tl-row-body    { background: linear-gradient(90deg, rgba(192,86,33,0.16) 0%, rgba(192,86,33,0.04) 60%, rgba(13,15,24,0.6) 100%); }
 
-        /* --- COULEURS DES TIERS --- */
-        .tier-S { border-left: 6px solid #ff1744; } .tier-S .tier-label { background: #ff1744; }
-        .tier-A { border-left: 6px solid #ff9100; } .tier-A .tier-label { background: #ff9100; }
-        .tier-B { border-left: 6px solid #ffd600; } .tier-B .tier-label { background: #ffd600; color: #000; }
-        .tier-C { border-left: 6px solid #00e676; } .tier-C .tier-label { background: #00e676; }
-        .tier-D { border-left: 6px solid #2979ff; } .tier-D .tier-label { background: #2979ff; }
+.tl-row-b .tl-row-label   { background: linear-gradient(160deg, #d69e2e, #b7791f); }
+.tl-row-b .tl-row-body    { background: linear-gradient(90deg, rgba(183,121,31,0.16) 0%, rgba(183,121,31,0.04) 60%, rgba(13,15,24,0.6) 100%); }
 
-        /* Rareté */
-        .rarity-legendary { border-color: #ffd700; }
-        .rarity-badge-legendary { background: #ffd700; color: #000; }
-        .rarity-epic { border-color: #a855f7; }
-        .rarity-badge-epic { background: #a855f7; color: #fff; }
+.tl-row-c .tl-row-label   { background: linear-gradient(160deg, #2f855a, #276749); }
+.tl-row-c .tl-row-body    { background: linear-gradient(90deg, rgba(39,103,73,0.16) 0%, rgba(39,103,73,0.04) 60%, rgba(13,15,24,0.6) 100%); }
 
-        /* --- DESKTOP --- */
-        @media (min-width: 992px) {
-            .tier-row { flex-direction: row; min-height: 110px; }
-            .tier-label { width: 100px; height: auto; font-size: 3rem; }
-            .tier-heroes { 
-                display: flex; 
-                flex-wrap: wrap; 
-                flex: 1; 
-                gap: 15px;
-                padding: 10px 20px;
-                align-items: center;
-            }
-            .hero-card { width: 85px; }
-            .hero-card:hover { transform: translateY(-8px); border-color: #00ff88; }
-            .hero-card:hover .hero-name { color: #00ff88; font-size: 0.7rem; }
-        }
+.tl-row-d .tl-row-label   { background: linear-gradient(160deg, #3182ce, #2b6cb0); }
+.tl-row-d .tl-row-body    { background: linear-gradient(90deg, rgba(43,108,176,0.16) 0%, rgba(43,108,176,0.04) 60%, rgba(13,15,24,0.6) 100%); }
 
-        .admin-btn {
-            position: fixed;
-            bottom: 25px; right: 25px;
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            color: #0a0e27;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 800;
-            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.4);
-            z-index: 1000;
-            transition: 0.3s;
-        }
-        .admin-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 255, 136, 0.6); }
-    </style>
+/* Tier vide */
+.tl-empty {
+    color: rgba(255,255,255,0.15);
+    font-size: 0.78rem;
+    font-style: italic;
+    padding: 4px 2px;
+}
+
+/* ═══════════════════════════════════════════════
+   HERO CARDS — style portrait
+════════════════════════════════════════════════ */
+.tl-hero {
+    position: relative;
+    width: 72px;
+    height: 96px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+    border: 2px solid rgba(255,255,255,0.12);
+}
+.tl-hero:hover {
+    transform: translateY(-6px) scale(1.04);
+    z-index: 10;
+}
+
+.tl-hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+}
+
+/* Overlay gradient + nom */
+.tl-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.92) 0%,
+        rgba(0,0,0,0.5) 35%,
+        transparent 65%
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 5px 4px 4px;
+    pointer-events: none;
+}
+
+.tl-hero-name {
+    font-size: 0.52rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.2;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* Rarity glow */
+.tl-hero.rar-legendary  { border-color: #f6c90e; box-shadow: 0 0 0 1px rgba(246,201,14,0.3); }
+.tl-hero.rar-légendaire { border-color: #f6c90e; box-shadow: 0 0 0 1px rgba(246,201,14,0.3); }
+.tl-hero.rar-epic       { border-color: #8b5cf6; box-shadow: 0 0 0 1px rgba(139,92,246,0.3); }
+.tl-hero.rar-rare       { border-color: #3b82f6; box-shadow: 0 0 0 1px rgba(59,130,246,0.3); }
+.tl-hero.rar-uncommon   { border-color: #10b981; box-shadow: 0 0 0 1px rgba(16,185,129,0.3); }
+
+.tl-hero:hover.rar-legendary  { box-shadow: 0 12px 28px rgba(246,201,14,0.4), 0 0 0 1px rgba(246,201,14,0.5); }
+.tl-hero:hover.rar-légendaire { box-shadow: 0 12px 28px rgba(246,201,14,0.4), 0 0 0 1px rgba(246,201,14,0.5); }
+.tl-hero:hover.rar-epic       { box-shadow: 0 12px 28px rgba(139,92,246,0.4), 0 0 0 1px rgba(139,92,246,0.5); }
+.tl-hero:hover.rar-rare       { box-shadow: 0 12px 28px rgba(59,130,246,0.4), 0 0 0 1px rgba(59,130,246,0.5); }
+.tl-hero:hover.rar-uncommon   { box-shadow: 0 12px 28px rgba(16,185,129,0.4), 0 0 0 1px rgba(16,185,129,0.5); }
+.tl-hero:hover:not([class*="rar-"]) { box-shadow: 0 12px 24px rgba(0,0,0,0.6); }
+
+/* Badge rareté en haut à droite */
+.tl-hero-rar {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.5);
+}
+.rar-legendary  .tl-hero-rar, .rar-légendaire .tl-hero-rar { background: #f6c90e; }
+.rar-epic       .tl-hero-rar { background: #8b5cf6; }
+.rar-rare       .tl-hero-rar { background: #3b82f6; }
+.rar-uncommon   .tl-hero-rar { background: #10b981; }
+.rar-common     .tl-hero-rar { background: #6b7280; }
+
+/* ═══════════════════════════════════════════════
+   MODAL
+════════════════════════════════════════════════ */
+#hero-modal .modal-content {
+    background: #0e1122;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    max-height: 88vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+#hero-modal .modal-body { padding: 0; }
+</style>
 {% endblock %}
 
 {% block body %}
-<div class="tier-container">
-    <nav class="breadcrumb-custom">
-        <a href="{{ path('app_tier_list_index') }}" style="color: #00ff88; text-decoration: none; font-weight: 700;">🏠 TIER LISTS</a>
-        <span style="opacity: 0.3">/</span>
-        <span style="text-transform: uppercase; letter-spacing: 1px; opacity: 0.8">{{ category }}</span>
-    </nav>
+<div class="tl-page">
 
-    <div class="tier-header">
-        <h1 class="tier-title">{{ category }} Tier List</h1>
-    </div>
+    {# ════════════════════════════════
+       SIDEBAR
+    ════════════════════════════════ #}
+    <aside class="tl-sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-brand">Tier List</div>
+        </div>
 
-    <div class="category-nav">
-        {% for cat in allCategories %}
-            <a href="{{ path('app_tier_list_show', {category: cat}) }}" 
-               class="category-btn {{ cat == category ? 'active' : '' }}">
-                {{ cat }}
-            </a>
+        {% for groupName, modes in groupedModes %}
+            <div class="tl-group-label">{{ groupName }}</div>
+            {% for m in modes %}
+                <a href="{{ path('app_tier_list_show', {slug: m.slug}) }}"
+                   class="tl-mode-link {{ m.slug == mode.slug ? 'active' : '' }}">
+                    <span class="tl-mode-icon">
+                        {% if m.imageUrl %}
+                            <img src="{{ m.imageUrl }}" alt="">
+                        {% else %}
+                            {{ m.name|slice(0,1)|upper }}
+                        {% endif %}
+                    </span>
+                    {{ m.name }}
+                </a>
+            {% endfor %}
         {% endfor %}
-    </div>
+    </aside>
 
-    <div class="tiers-wrapper">
-        {% for tier, heroes in tierData %}
-            <div class="tier-row tier-{{ tier }}">
-                <div class="tier-label">{{ tier }}</div>
-                <div class="tier-heroes">
-                    {% if heroes|length > 0 %}
-                        {% for entry in heroes %}
-                            {% set hero = entry.hero %}
-                            <div class="hero-card {% if hero.rarityEntity %}rarity-{{ hero.rarityEntity.name|lower }}{% endif %}" 
-                                 onclick="window.location.href='{{ path('app_heroes_show', {slug: hero.slug}) }}'">
-                                
-                                {% if hero.rarityEntity %}
-                                    <span class="hero-rarity-badge rarity-badge-{{ hero.rarityEntity.name|lower }}">
-                                        {{ hero.rarityEntity.name|slice(0, 1)|upper }}
-                                    </span>
-                                {% endif %}
-                                
-                                <img src="{{ hero.imageUrl }}" alt="{{ hero.name }}" loading="lazy">
-                                <div class="hero-name">{{ hero.name }}</div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div style="padding: 20px; color: rgba(255,255,255,0.2); font-style: italic;">Aucun héros</div>
-                    {% endif %}
+    {# ════════════════════════════════
+       CONTENU
+    ════════════════════════════════ #}
+    <main class="tl-content">
+
+        {# Header #}
+        <div class="tl-header">
+            {% if mode.imageUrl %}
+                <img src="{{ mode.imageUrl }}" alt="{{ mode.name }}" class="tl-header-img"
+                     onerror="this.style.display='none'">
+            {% endif %}
+            <div class="tl-header-info">
+                <div class="tl-header-group">{{ mode.groupName }}</div>
+                <div class="tl-header-name">{{ mode.name }}</div>
+            </div>
+            <div class="tl-header-actions">
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_tier_list_edit', {slug: mode.slug}) }}" class="tl-btn tl-btn-edit">
+                        <i class="fas fa-pen"></i> Éditer
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tl-divider"></div>
+
+        {# ── Tier table ── #}
+        {% set rarClass = {
+            'Legendary': 'rar-legendary',
+            'Légendaire': 'rar-légendaire',
+            'Epic':       'rar-epic',
+            'Rare':       'rar-rare',
+            'Uncommon':   'rar-uncommon',
+            'Common':     'rar-common'
+        } %}
+        {% set tierRowClass = {
+            'SSS': 'tl-row-sss',
+            'SS':  'tl-row-ss',
+            'S':   'tl-row-s',
+            'A':   'tl-row-a',
+            'B':   'tl-row-b',
+            'C':   'tl-row-c',
+            'D':   'tl-row-d'
+        } %}
+
+        <div class="tl-table">
+            {% for tier, entries in tierData %}
+                <div class="tl-row {{ tierRowClass[tier] ?? '' }}">
+                    <div class="tl-row-label">{{ tier }}</div>
+                    <div class="tl-row-body">
+                        {% if entries is empty %}
+                            <span class="tl-empty">Aucun héros classé</span>
+                        {% else %}
+                            {% for entry in entries %}
+                                {% set hero = entry.hero %}
+                                {% set rc = rarClass[hero.rarityEntity ? hero.rarityEntity.name : ''] ?? '' %}
+                                <div class="tl-hero {{ rc }}" onclick="openHeroModal('{{ hero.slug }}')" title="{{ hero.name }}">
+                                    <img src="{{ hero.imageUrl }}" alt="{{ hero.name }}"
+                                         onerror="this.src='/images/OddOneGaming_Logo.png'">
+                                    <div class="tl-hero-overlay">
+                                        <div class="tl-hero-name">{{ hero.name }}</div>
+                                    </div>
+                                    <div class="tl-hero-rar"></div>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </main>
+</div>
+
+{# ── Modal héros ── #}
+<div class="modal fade" id="hero-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body" id="modal-body">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" style="width:2.5rem;height:2.5rem;"></div>
                 </div>
             </div>
-        {% endfor %}
+        </div>
     </div>
-
-    {% if is_granted('ROLE_ADMIN') %}
-        <a href="{{ path('app_tier_list_edit', {category: category}) }}" class="admin-btn">
-            ⚙️ MODIFIER LA LISTE
-        </a>
-    {% endif %}
 </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+const heroCache = {};
+const heroModal = new bootstrap.Modal(document.getElementById('hero-modal'));
+
+async function openHeroModal(slug) {
+    document.getElementById('modal-body').innerHTML =
+        '<div class="text-center py-5"><div class="spinner-border text-primary" style="width:2.5rem;height:2.5rem;"></div></div>';
+    heroModal.show();
+    if (!heroCache[slug]) {
+        const res = await fetch('/heroes/' + slug + '/modal');
+        heroCache[slug] = await res.text();
+    }
+    document.getElementById('modal-body').innerHTML = heroCache[slug];
+}
+</script>
 {% endblock %}

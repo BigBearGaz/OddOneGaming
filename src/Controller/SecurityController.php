@@ -69,6 +69,9 @@ class SecurityController extends AbstractController
             $state['heroes']['last_run'] = $old['synced_at'] ?? null;
         }
 
+        $seedStateFile = $this->getParameter('kernel.project_dir') . '/var/seed_state.json';
+        $seedState     = file_exists($seedStateFile) ? (json_decode(file_get_contents($seedStateFile), true) ?? []) : [];
+
         return $this->render('security/dashboard.html.twig', [
             'heroes_count'   => $heroesCount,
             'dungeons_count' => $dungeonsCount,
@@ -77,6 +80,7 @@ class SecurityController extends AbstractController
             'imprints_count' => $imprintsCount,
             'sets_count'     => $setsCount,
             'sync_state'     => $state,
+            'seed_state'     => $seedState,
         ]);
     }
 
@@ -130,6 +134,55 @@ class SecurityController extends AbstractController
             $this->addFlash('success', "✅ Sync complete — {$labels} updated successfully.");
         } else {
             $this->addFlash('error', '⚠️ Partial sync — errors on: ' . implode(', ', $errors));
+        }
+
+        return $this->redirectToRoute('app_admin_dashboard');
+    }
+
+    #[Route('/admin/seed', name: 'app_admin_seed', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function seed(Request $request, KernelInterface $kernel): Response
+    {
+        $action = $request->request->get('action', '');
+
+        if (!$this->isCsrfTokenValid('seed_' . $action, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid CSRF token.');
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
+        set_time_limit(300);
+
+        $commands = [
+            'dungeons'       => ['command' => 'app:seed-dungeons',        'args' => [],                    'label' => 'Dungeons'],
+            'dungeons-force' => ['command' => 'app:seed-dungeons',        'args' => ['--force' => true],   'label' => 'Dungeons (reseed)'],
+            'sets'           => ['command' => 'app:seed-sets',            'args' => [],                    'label' => 'Armor Sets'],
+            'tier-modes'     => ['command' => 'app:seed-tier-list-modes', 'args' => [],                    'label' => 'Tier List Modes'],
+            'skill-upgrades' => ['command' => 'app:scrape-skill-upgrades','args' => [],                    'label' => 'Skill Upgrades'],
+        ];
+
+        if (!isset($commands[$action])) {
+            $this->addFlash('error', "Unknown seed action: {$action}");
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
+        $job    = $commands[$action];
+        $app    = new Application($kernel);
+        $app->setAutoExit(false);
+        $output = new BufferedOutput();
+        $code   = $app->run(new ArrayInput(array_merge(['command' => $job['command']], $job['args'])), $output);
+
+        $stateFile = $this->getParameter('kernel.project_dir') . '/var/seed_state.json';
+        $state     = file_exists($stateFile) ? (json_decode(file_get_contents($stateFile), true) ?? []) : [];
+        $state[$action] = [
+            'last_run' => (new \DateTimeImmutable())->format(\DateTime::ATOM),
+            'status'   => $code === 0 ? 'ok' : 'error',
+        ];
+        file_put_contents($stateFile, json_encode($state, JSON_PRETTY_PRINT));
+
+        if ($code === 0) {
+            $this->addFlash('success', "✅ {$job['label']} seeded successfully.");
+        } else {
+            $this->addFlash('error', "⚠️ {$job['label']} seed failed. Check logs.");
         }
 
         return $this->redirectToRoute('app_admin_dashboard');

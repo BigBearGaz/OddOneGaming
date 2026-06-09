@@ -825,6 +825,14 @@
             padding: 20px;
         }
 
+        /* Level Upgrades */
+        .skill-levelups { border-top: 1px solid rgba(255,255,255,0.07); padding: 12px 20px 14px; background: rgba(0,0,0,0.2); }
+        .skill-levelups-title { font-size: 0.68rem; font-weight: 800; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+        .skill-levelup-row { display: flex; align-items: baseline; gap: 10px; padding: 3px 0; font-size: 0.82rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .skill-levelup-row:last-child { border-bottom: none; }
+        .skill-levelup-num { font-weight: 800; min-width: 58px; color: rgba(255,255,255,0.4); }
+        .skill-levelup-val { color: rgba(255,255,255,0.85); }
+
         /* Description principale */
         .skill-description {
             color: rgba(255, 255, 255, 0.95);
@@ -1642,10 +1650,10 @@
                 <h2 class="skills-title">⚡ Skills & Abilities</h2>
                 <div class="skills-grid">
                     {% set skillDefs = [
-                        { field: hero.base,     type: 'basic',   badge: 'Basic',    badgeClass: 'base',    label: 'Basic' },
-                        { field: hero.core,     type: 'core',    badge: 'Core',     badgeClass: 'core',    label: 'Core' },
-                        { field: hero.ultimate, type: 'ultimate',badge: 'Ultimate', badgeClass: 'ultimate', label: 'Ultimate' },
-                        { field: hero.passive,  type: 'passive', badge: 'P',  badgeClass: 'passive', label: 'Passive' },
+                        { field: hero.base,     suType: 'base',     type: 'basic',    badge: 'Basic',    badgeClass: 'base',     label: 'Basic' },
+                        { field: hero.core,     suType: 'core',     type: 'core',     badge: 'Core',     badgeClass: 'core',     label: 'Core' },
+                        { field: hero.ultimate, suType: 'ultimate', type: 'ultimate', badge: 'Ultimate', badgeClass: 'ultimate', label: 'Ultimate' },
+                        { field: hero.passive,  suType: 'passive',  type: 'passive',  badge: 'P',        badgeClass: 'passive',  label: 'Passive' },
                     ] %}
 
                     {% for skill in skillDefs %}
@@ -1655,6 +1663,7 @@
                             {% set abilityDesc = parts[1] ?? skill.field %}
                             {% set abilityIcon = parts[2] ?? '' %}
                             {% set abilityCooldown = parts[3] ?? '' %}
+                            {% set su = hero.skillUpgradeByType(skill.suType) %}
                             <div class="skill-card skill-card-{{ skill.badgeClass }}">
                                 <div class="skill-header">
                                     <div class="skill-title-wrapper">
@@ -1683,13 +1692,25 @@
                                 <div class="skill-body">
                                     <div class="skill-description">{{ abilityDesc|parse_effects|raw }}</div>
                                 </div>
+                                {% if su and (su.level1 or su.level2 or su.level3 or su.level4 or su.level5 or su.level6) %}
+                                <div class="skill-levelups">
+                                    <div class="skill-levelups-title">Level Upgrades</div>
+                                    {% for idx in 1..6 %}
+                                        {% set lv = attribute(su, 'level' ~ idx) %}
+                                        {% if lv %}
+                                            <div class="skill-levelup-row">
+                                                <span class="skill-levelup-num">Level {{ idx }}</span>
+                                                <span class="skill-levelup-val">{{ lv }}</span>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
                             </div>
                         {% endif %}
                     {% endfor %}
                 </div>
             </div>
-
-            {# Skill Level Upgrades et Skill Awakenings non utilisés — données non renseignées via API #}
 
             <!-- Bonuses Section -->
             {% if hero.awakeningBonuses or hero.ascensionBonuses %}

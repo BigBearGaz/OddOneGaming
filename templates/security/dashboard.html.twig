@@ -228,6 +228,50 @@ body { background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); min-height
 
     </div>
 
+    {# Seeds & Tools #}
+    <p class="section-title">🌱 Seeds & Tools</p>
+    <div class="sync-grid" style="margin-bottom:35px">
+
+        {% set seeds = [
+            { action: 'dungeons',       label: 'Dungeons',         icon: '🏰', color: 'rgba(255,82,82,.2)',     btn: 'red',   desc: 'Insère les 9 boss si absents (skip si déjà présents).' },
+            { action: 'dungeons-force', label: 'Dungeons Reseed',  icon: '🔄', color: 'rgba(255,82,82,.35)',    btn: 'red',   desc: '⚠️ Supprime tout et recrée les 9 boss depuis zéro.' },
+            { action: 'sets',           label: 'Armor Sets',       icon: '🛡️', color: 'rgba(251,191,36,.2)',    btn: 'amber', desc: 'Popule la table des armor sets de base.' },
+            { action: 'tier-modes',     label: 'Tier List Modes',  icon: '📊', color: 'rgba(102,126,234,.2)',   btn: 'blue',  desc: 'Crée les modes General, Ascension, Armor, Fafnir.' },
+            { action: 'skill-upgrades', label: 'Skill Upgrades',   icon: '⚡', color: 'rgba(0,255,136,.2)',     btn: 'green', desc: 'Scrape les coûts d\'upgrade depuis godforgedb.app.' },
+        ] %}
+
+        {% for seed in seeds %}
+            {% set ss = seed_state[seed.action] ?? null %}
+            <div class="sync-card" style="border-color:{{ seed.color }}">
+                <div class="sync-card-head">
+                    <div class="sync-card-icon">{{ seed.icon }}</div>
+                    <div>
+                        <div class="sync-card-title">{{ seed.label }}</div>
+                        <div class="sync-card-desc">{{ seed.desc }}</div>
+                    </div>
+                </div>
+                <div>
+                    {% if ss %}
+                        <span class="sync-last {{ ss.status == 'ok' ? 'ok' : 'error' }}">
+                            {{ ss.status == 'ok' ? '✅' : '⚠️' }} Last run: {{ ss.last_run|date('Y-m-d H:i') }}
+                        </span>
+                    {% else %}
+                        <span class="sync-last never">⚠️ Never run</span>
+                    {% endif %}
+                </div>
+                <form method="POST" action="{{ path('app_admin_seed') }}"
+                      onsubmit="return {% if seed.action ends with '-force' %}confirm('⚠️ Supprimer TOUS les donjons et reseeder depuis zéro ?') && {% endif %}startSync(this,'seed-btn-{{ seed.action }}')">
+                    <input type="hidden" name="action" value="{{ seed.action }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('seed_' ~ seed.action) }}">
+                    <button id="seed-btn-{{ seed.action }}" class="sync-btn {{ seed.btn }}" type="submit">
+                        {{ seed.icon }} Run {{ seed.label }}
+                    </button>
+                </form>
+            </div>
+        {% endfor %}
+
+    </div>
+
     {# Quick Actions #}
     <p class="section-title">⚡ Quick Actions</p>
     <div class="actions-grid">

@@ -83,6 +83,14 @@
 /* Link button */
 .mc-full-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 20px; background: linear-gradient(135deg, var(--rc), #00ccff); color: #04081e; font-weight: 900; font-size: 0.82rem; border-radius: 8px; text-decoration: none; transition: filter 0.2s; }
 .mc-full-link:hover { filter: brightness(1.1); color: #04081e; }
+
+/* Level Upgrades */
+.mc-levelup-list { padding: 7px 12px 10px; background: rgba(0,0,0,0.25); border-top: 1px solid rgba(255,255,255,0.07); }
+.mc-levelup-header { font-size: 0.65rem; font-weight: 800; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+.mc-levelup-row { display: flex; align-items: baseline; gap: 8px; padding: 2px 0; font-size: 0.74rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.mc-levelup-row:last-child { border-bottom: none; }
+.mc-levelup-num { font-weight: 800; min-width: 52px; opacity: 0.45; }
+.mc-levelup-val { color: rgba(255,255,255,0.85); }
 </style>
 
 <div class="mc">
@@ -191,10 +199,10 @@
 
     {# ── SKILLS ── #}
     {% set skillDefs = [
-        {field: hero.base,     badge: 'Basic',    cls: 'mc-skill-s1', label: 'Basic'},
-        {field: hero.core,     badge: 'Core',     cls: 'mc-skill-s2', label: 'Core'},
-        {field: hero.ultimate, badge: 'Ultimate', cls: 'mc-skill-s3', label: 'Ultimate'},
-        {field: hero.passive,  badge: 'Passive',  cls: 'mc-skill-p',  label: 'Passive'},
+        {field: hero.base,     badge: 'Basic',    cls: 'mc-skill-s1', label: 'Basic',    type: 'base'},
+        {field: hero.core,     badge: 'Core',     cls: 'mc-skill-s2', label: 'Core',     type: 'core'},
+        {field: hero.ultimate, badge: 'Ultimate', cls: 'mc-skill-s3', label: 'Ultimate', type: 'ultimate'},
+        {field: hero.passive,  badge: 'Passive',  cls: 'mc-skill-p',  label: 'Passive',  type: 'passive'},
     ] %}
     {% set hasSkills = hero.base or hero.core or hero.ultimate or hero.passive %}
     {% if hasSkills %}
@@ -208,6 +216,7 @@
                     {% set sDesc = parts[1] ?? skill.field %}
                     {% set sIcon = parts[2] ?? '' %}
                     {% set sCd   = parts[3] ?? '' %}
+                    {% set su = hero.skillUpgradeByType(skill.type) %}
                     <div class="mc-skill {{ skill.cls }}">
                         <div class="mc-skill-head">
                             {% if sIcon %}<img src="{{ sIcon }}" alt="{{ sName }}" class="mc-skill-icon" onerror="this.style.display='none'">{% endif %}
@@ -222,6 +231,20 @@
                             </div>
                         </div>
                         <div class="mc-skill-body">{{ sDesc|parse_effects|raw }}</div>
+                        {% if su and (su.level1 or su.level2 or su.level3 or su.level4 or su.level5 or su.level6) %}
+                            <div class="mc-levelup-list">
+                                <div class="mc-levelup-header">Level Upgrades</div>
+                                {% for idx in 1..6 %}
+                                    {% set lv = attribute(su, 'level' ~ idx) %}
+                                    {% if lv %}
+                                        <div class="mc-levelup-row">
+                                            <span class="mc-levelup-num">Level {{ idx }}</span>
+                                            <span class="mc-levelup-val">{{ lv }}</span>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
                 {% endif %}
             {% endfor %}

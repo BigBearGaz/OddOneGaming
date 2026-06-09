@@ -28,6 +28,9 @@ class DungeonPassive
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageUrl = null;
+
     #[ORM\Column]
     private int $passiveOrder = 1;
 
@@ -77,6 +80,17 @@ class DungeonPassive
     public function setDescription(string $description): static
     {
         $this->description = $description;
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): static
+    {
+        $this->imageUrl = $imageUrl;
         return $this;
     }
 

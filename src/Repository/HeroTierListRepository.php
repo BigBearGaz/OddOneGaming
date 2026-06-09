@@ -16,28 +16,14 @@ class HeroTierListRepository extends ServiceEntityRepository
         parent::__construct($registry, HeroTierList::class);
     }
 
-//    /**
-//     * @return HeroTierList[] Returns an array of HeroTierList objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('h')
-//            ->andWhere('h.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('h.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?HeroTierList
-//    {
-//        return $this->createQueryBuilder('h')
-//            ->andWhere('h.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /** Charge toutes les entrées avec le héros en un seul JOIN (évite N+1). */
+    public function findAllWithHeroes(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->select('e', 'h')
+            ->join('e.hero', 'h')
+            ->orderBy('h.Name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
