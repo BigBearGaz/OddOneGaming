@@ -19,6 +19,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 )]
 class ScrapeSkillUpgradesCommand extends Command
 {
+    use CommandGuardTrait;
+
     private const BASE_URL   = 'https://www.ravenpyros.com/heroes/';
     private const TYPE_MAP   = ['Basic' => 'base', 'Core' => 'core', 'Ultimate' => 'ultimate', 'Passive' => 'passive'];
     private const SLEEP_MS   = 400; // ms entre chaque requête
@@ -44,6 +46,12 @@ class ScrapeSkillUpgradesCommand extends Command
         $force  = $input->getOption('force');
         $slug   = $input->getOption('slug');
         $rpSlug = $input->getOption('rp-slug');
+
+        if (!$this->acquireLock($this->getName())) {
+            $io->error('La commande est déjà en cours d\'exécution. Abandon pour éviter les conflits.');
+            return Command::FAILURE;
+        }
+        $this->applyResourceLimits();
 
         $io->title('Scrape Level Upgrades — ravenpyros.com');
 

@@ -21,6 +21,8 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 )]
 class SyncCatalogFromApiCommand extends Command
 {
+    use CommandGuardTrait;
+
     private const API_BASE = 'https://www.ravenpyros.com/api/public/v1';
 
     public function __construct(
@@ -43,6 +45,12 @@ class SyncCatalogFromApiCommand extends Command
     {
         $io     = new SymfonyStyle($input, $output);
         $dryRun = $input->getOption('dry-run');
+
+        if (!$this->acquireLock($this->getName())) {
+            $io->error('La commande est déjà en cours d\'exécution. Abandon pour éviter les conflits.');
+            return Command::FAILURE;
+        }
+        $this->applyResourceLimits();
 
         // Sans option spécifique, on sync tout
         $anySpecific = $input->getOption('weapons') || $input->getOption('imprints') || $input->getOption('sets');

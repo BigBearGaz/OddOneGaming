@@ -22,23 +22,26 @@ class TierListController extends AbstractController
 
     // INDEX → classement par score cumulé (héros × modes)
     #[Route('/', name: 'app_tier_list_index')]
-    public function index(HeroTierListRepository $tierListRepo, TierListModeRepository $modeRepo): Response
+    public function index(HeroTierListRepository $tierListRepo, HeroesRepository $heroesRepo, TierListModeRepository $modeRepo): Response
     {
         $modes    = $modeRepo->findBy([], ['sortOrder' => 'ASC']);
-        $entries  = $tierListRepo->findAllWithHeroes();
         $maxScore = count($modes) * max(self::TIER_SCORES);
 
+        // Initialiser tous les héros avec score 0
         $matrix = [];
-        foreach ($entries as $entry) {
-            $hero = $entry->getHero();
-            $id   = $hero->getId();
-            if (!isset($matrix[$id])) {
-                $matrix[$id] = ['hero' => $hero, 'grades' => [], 'score' => 0];
+        foreach ($heroesRepo->findAll() as $hero) {
+            $matrix[$hero->getId()] = ['hero' => $hero, 'grades' => [], 'score' => 0];
+        }
+
+        // Remplir les grades existants
+        foreach ($tierListRepo->findAllWithHeroes() as $entry) {
+            $id   = $entry->getHero()->getId();
+            $slug = $entry->getCategory();
+            $tier = $entry->getTier();
+            if (isset($matrix[$id])) {
+                $matrix[$id]['grades'][$slug]  = $tier;
+                $matrix[$id]['score']         += self::TIER_SCORES[$tier] ?? 0;
             }
-            $slug  = $entry->getCategory();
-            $tier  = $entry->getTier();
-            $matrix[$id]['grades'][$slug]  = $tier;
-            $matrix[$id]['score']         += self::TIER_SCORES[$tier] ?? 0;
         }
 
         // Tri décroissant par score, puis alphabétique à égalité

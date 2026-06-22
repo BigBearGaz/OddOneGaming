@@ -29,8 +29,11 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 )]
 class SyncHeroesFromApiCommand extends Command
 {
+    use CommandGuardTrait;
+
     private const API_BASE      = 'https://www.ravenpyros.com/api/public/v1';
     private const STATE_FILE    = '/var/ravenpyros_sync_state.json';
+    private const BATCH_SIZE    = 50;
 
     public function __construct(
         private EntityManagerInterface $em,
@@ -53,6 +56,12 @@ class SyncHeroesFromApiCommand extends Command
         $io     = new SymfonyStyle($input, $output);
         $dryRun = $input->getOption('dry-run');
         $force  = $input->getOption('force');
+
+        if (!$this->acquireLock($this->getName())) {
+            $io->error('La commande est déjà en cours d\'exécution. Abandon pour éviter les conflits.');
+            return Command::FAILURE;
+        }
+        $this->applyResourceLimits();
 
         // Charge l'état de la dernière sync
         $stateFile     = $this->projectDir . self::STATE_FILE;
@@ -112,6 +121,7 @@ class SyncHeroesFromApiCommand extends Command
         $created = 0;
         $updated = 0;
         $errors  = [];
+        $batch   = 0;
 
         foreach ($heroList as $heroData) {
             $heroName = $heroData['name'] ?? null;
@@ -143,6 +153,11 @@ class SyncHeroesFromApiCommand extends Command
             } catch (\Throwable $e) {
                 $errors[] = sprintf('%s : %s', $heroName, $e->getMessage());
                 $io->writeln(sprintf('  <error>✗ %s — %s</error>', $heroName, $e->getMessage()));
+            }
+
+            if (!$dryRun && ++$batch % self::BATCH_SIZE === 0) {
+                $this->em->flush();
+                $io->writeln(sprintf('  <comment>… flush intermédiaire (%d héros)</comment>', $batch));
             }
         }
 

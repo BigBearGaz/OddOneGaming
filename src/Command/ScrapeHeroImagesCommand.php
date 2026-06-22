@@ -18,7 +18,10 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 )]
 class ScrapeHeroImagesCommand extends Command
 {
-    private const API_BASE = 'https://www.ravenpyros.com/api/public/v1';
+    use CommandGuardTrait;
+
+    private const API_BASE   = 'https://www.ravenpyros.com/api/public/v1';
+    private const SLEEP_MS   = 300; // ms entre chaque héros pour ne pas surcharger le serveur
 
     public function __construct(
         private EntityManagerInterface $em,
@@ -40,6 +43,12 @@ class ScrapeHeroImagesCommand extends Command
         $io     = new SymfonyStyle($input, $output);
         $dryRun = $input->getOption('dry-run');
         $force  = $input->getOption('force');
+
+        if (!$this->acquireLock($this->getName())) {
+            $io->error('La commande est déjà en cours d\'exécution. Abandon pour éviter les conflits.');
+            return Command::FAILURE;
+        }
+        $this->applyResourceLimits();
 
         // Dossiers locaux
         $portraitsDir  = $this->projectDir . '/public/images/portraits';
@@ -130,6 +139,10 @@ class ScrapeHeroImagesCommand extends Command
                 if ($result === 'ok') $success++;
                 elseif ($result === 'skipped') $skipped++;
                 else $failed[] = $hero->getName() . ' (' . $type . ')';
+            }
+
+            if (!$dryRun) {
+                usleep(self::SLEEP_MS * 1000);
             }
         }
 
